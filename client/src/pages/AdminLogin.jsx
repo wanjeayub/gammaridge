@@ -11,7 +11,10 @@ const AdminLogin = () => {
     e.preventDefault();
     const response = await fetch("/api/admin/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify(formData),
     });
     const data = await response.json();
