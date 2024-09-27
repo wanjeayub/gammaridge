@@ -8,7 +8,8 @@ dotenv.config();
 const userRoutes = require("./api/routes/userRoutes.js");
 const adminRoutes = require("./api/routes/adminRoutes.js");
 
-const __dirname = path.resolve();
+// use var to prevent future bugs on render
+var __dirname = path.resolve();
 const app = express();
 
 app.use(cors());
