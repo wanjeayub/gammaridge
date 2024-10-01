@@ -38,9 +38,17 @@ const loginUser = async (req, res) => {
 
 // Apply for Loan
 const applyLoan = async (req, res) => {
-  const { amount, duration } = req.body;
+  const { amount } = req.body;
+  const myAmount = parseFloat(amount);
+  const interest = 0.2 * myAmount;
+  const totalLoan = parseFloat(myAmount + interest);
 
-  const loan = await Loan.create({ user: req.user._id, amount, duration });
+  const loan = await Loan.create({
+    user: req.user._id,
+    amount: myAmount,
+    interest,
+    totalLoan,
+  });
 
   res.status(201).json(loan);
 };
