@@ -6,7 +6,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch("http://localhost:5000/api/users/loans", {
+      const response = await fetch("/api/users/loans", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -33,15 +33,17 @@ const UserDashboard = () => {
     });
     const data = await response.json();
     setLoans([...loans, data]);
-    setLoanData({});
+    setLoanData({
+      amount: "",
+    });
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto p-3">
       <h1 className="text-2xl font-bold">User Dashboard</h1>
-      <div>
+      <div className="flex flex-col gap-4">
         <h2 className="text-xl">Apply for a new loan</h2>
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
+        <form onSubmit={handleSubmit} className="max-w-md ">
           <input
             name="amount"
             value={loanData.amount}
@@ -50,14 +52,7 @@ const UserDashboard = () => {
             required
             className="border p-2 w-full"
           />
-          <input
-            name="duration"
-            value={loanData.duration}
-            onChange={handleChange}
-            placeholder="Duration (months)"
-            required
-            className="border p-2 w-full"
-          />
+
           <button
             type="submit"
             className="bg-green-500 text-white py-2 px-4 w-full"
@@ -67,15 +62,18 @@ const UserDashboard = () => {
         </form>
       </div>
 
-      <h2 className="text-xl mt-8">Your Loans</h2>
+      <h2 className="text-xl mt-8">My Loans</h2>
       {loans.length === 0 ? (
         <p>No loans found</p>
       ) : (
-        <ul>
+        <ul className="flex p-4 flex-col">
           {loans.map((loan) => (
-            <li key={loan._id}>
-              Amount: {loan.amount} - Duration: {loan.duration} months - Status:{" "}
-              {loan.status}
+            <li key={loan._id} className="mb-2">
+              Amount: <span className="font-semibold">Ksh</span> {loan.amount} -
+              Interest: <span className="font-semibold">Ksh</span>
+              {loan.interest} - Total Amount:
+              <span className="font-semibold"> Ksh</span> {loan.totalLoan} -
+              Status: {loan.status}
             </li>
           ))}
         </ul>

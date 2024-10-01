@@ -62,6 +62,11 @@ const Register = () => {
           Register
         </button>
       </form>
+      <div>
+        <p className="max-w-md mx-auto space-y-4">
+          Already registered? <span className="text-green-700">Login</span>
+        </p>
+      </div>
     </div>
   );
 };
