@@ -25,16 +25,19 @@ const Login = () => {
   };
 
   return (
-    <div className="container mx-auto ">
-      <div>
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
+    <div className="text-white max-w-6xl mx-auto">
+      <div className="p-3">
+        <div className="mb-4">
+          <p className="text-3xl">Sign in with email</p>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 max-w-md">
           <input
             name="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="Email"
             required
-            className="border p-2 w-full"
+            className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b]"
           />
           <input
             name="password"
@@ -43,11 +46,11 @@ const Login = () => {
             onChange={handleChange}
             placeholder="Password"
             required
-            className="border p-2 w-full"
+            className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b]"
           />
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 w-full"
+            className="bg-[#b9283b] rounded-md text-white py-2 px-4 w-full"
           >
             Login
           </button>
