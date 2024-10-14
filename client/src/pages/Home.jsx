@@ -4,7 +4,7 @@ import moneyIMG from "../assets/img/money-img.jpg";
 function Home() {
   // space-x-4
   return (
-    <div className="flex p-3 max-w-6xl mx-auto text-white items-center">
+    <div className="flex p-3 max-w-6xl mx-auto text-white items-center flex-col md:flex-row">
       <div className="flex  flex-col p-3 max-w-1/2">
         <h1 className="text-5xl mb-4">
           Welcome to Gammaridge Financial Solutions!

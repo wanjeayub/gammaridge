@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import { MdOutlineMenuOpen } from "react-icons/md";
 
 function Navbar() {
   return (
-    <nav className="shadow-md mb-4 text-white">
-      <div className="max-w-6xl mx-auto p-3 flex flex-row justify-between items-center">
+    <div className="shadow-lg">
+      <div className="flex items-center justify-between p-3 max-w-6xl mx-auto">
         <div className="text-xl">
           <Link to="/">
             <span className="text-[#eeeeee] font-bold">Gamma</span>
@@ -11,13 +12,14 @@ function Navbar() {
           </Link>
         </div>
         <div className="flex flex-row gap-3 items-center">
+          <MdOutlineMenuOpen className="text-3xl text-white hover:text-[#b9283b] md:hidden" />
           <Link to={"/services"}>
-            <span className="hover:underline font-semibold hidden md:flex">
+            <span className="hover:underline font-semibold hidden md:flex text-white">
               What we do
             </span>
           </Link>
           <Link to={"/contact"}>
-            <span className="hover:underline font-semibold hidden md:flex">
+            <span className="hover:underline font-semibold hidden md:flex text-white">
               Contact
             </span>
           </Link>
@@ -34,7 +36,7 @@ function Navbar() {
           </Link> */}
         </div>
       </div>
-    </nav>
+    </div>
   );
 }
 
