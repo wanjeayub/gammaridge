@@ -53,9 +53,9 @@ const Login = () => {
               className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] "
             />
             <input
-              name="password"
+              name="password1"
               type="password"
-              value={formData.password}
+              value={formData.password1}
               onChange={handleChange}
               placeholder="Password"
               required
