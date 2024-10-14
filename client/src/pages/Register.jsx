@@ -4,6 +4,8 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
+    alternatephone: "",
     password: "",
   });
 
@@ -13,15 +15,24 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
+
+    // Trim spaces and check uniqueness
+    if (formData.alternatephone.trim() === formData.phone.trim()) {
+      alert("The two phone numbers must be different.");
+      return;
+    }
+
     const response = await fetch("/api/users/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
     const data = await response.json();
+
     if (response.ok) {
-      localStorage.setItem("token", data.token);
-      window.location.href = "/login";
+      // localStorage.setItem("token", data.token);
+      window.location.href = "/docs";
     } else {
       alert(data.message);
     }
@@ -35,6 +46,22 @@ const Register = () => {
           value={formData.name}
           onChange={handleChange}
           placeholder="Name"
+          required
+          className="border p-2 w-full"
+        />
+        <input
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="Mobile Number"
+          required
+          className="border p-2 w-full"
+        />
+        <input
+          name="alternatephone"
+          value={formData.alternatephone}
+          onChange={handleChange}
+          placeholder="Alternate Mobile Number"
           required
           className="border p-2 w-full"
         />
@@ -57,7 +84,7 @@ const Register = () => {
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white py-2 px-4 w-full"
+          className="bg-[#6D1321] text-white py-2 px-4 w-full rounded-md"
         >
           Register
         </button>

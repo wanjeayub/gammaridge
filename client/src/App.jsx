@@ -6,6 +6,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import AdminLogin from "./pages/AdminLogin";
+import UploadFiles from "./pages/UploadFiles";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/adminogin" element={<AdminLogin />} />
+        <Route path="/docs" element={<UploadFiles />} />
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
