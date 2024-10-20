@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import AdminLogin from "./pages/AdminLogin";
 import UploadFiles from "./pages/UploadFiles";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/docs" element={<UploadFiles />} />
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
       </Routes>
     </Router>
   );
