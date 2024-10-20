@@ -4,17 +4,22 @@ const Loan = require("../models/loanModel.js");
 
 // Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
 // Register
 const registerUser = async (req, res) => {
-  const { name, mobile, alternatemobile, email, password } = req.body;
+  const { name, mobile, alternatemobile, email, password1, password2 } =
+    req.body;
 
   const userExists = await User.findOne({ email });
 
   if (userExists)
     return res.status(400).json({ message: "User already exists" });
+
+  if (password1 != password2) {
+    return res.status(400).json({ message: "password should match" });
+  }
 
   // if (mobile === alternatemobile)
   //   return res
@@ -26,7 +31,7 @@ const registerUser = async (req, res) => {
     mobile,
     alternatemobile,
     email,
-    password,
+    password1,
   });
 
   if (user) {
@@ -38,10 +43,10 @@ const registerUser = async (req, res) => {
 
 // Login
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password1 } = req.body;
   const user = await User.findOne({ email });
 
-  if (user && (await user.matchPassword(password))) {
+  if (user && (await user.matchPassword(password1))) {
     res.json({ _id: user._id, token: generateToken(user._id) });
   } else {
     res.status(400).json({ message: "Invalid email or password" });
