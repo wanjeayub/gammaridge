@@ -113,6 +113,7 @@ const Register = () => {
                 name="agreedTerms"
                 checked={formData.agreedTerms}
                 onChange={handleChange}
+                required
               />
               read our{" "}
               <Link to={"/terms"}>
