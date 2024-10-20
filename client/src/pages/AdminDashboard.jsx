@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
+// import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch("/api/admin/loans", {
+      const response = await fetch("localhost:5000/api/admin/loans", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -69,9 +69,7 @@ const AdminDashboard = () => {
       </div>
       <div>
         <span className="text-3xl">Special Loans</span>
-        <div>
-          <ShowSpecialLoans />
-        </div>
+        <div>{/* <ShowSpecialLoans /> */}</div>
       </div>
     </section>
   );
