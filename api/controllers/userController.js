@@ -9,17 +9,13 @@ const generateToken = (id) => {
 
 // Register
 const registerUser = async (req, res) => {
-  const { name, mobile, alternatemobile, email, password1, password2 } =
+  const { name, mobile, alternatemobile, email, password, agreedTerms } =
     req.body;
 
   const userExists = await User.findOne({ email });
 
   if (userExists)
     return res.status(400).json({ message: "User already exists" });
-
-  if (password1 != password2) {
-    return res.status(400).json({ message: "password should match" });
-  }
 
   // if (mobile === alternatemobile)
   //   return res
@@ -31,11 +27,12 @@ const registerUser = async (req, res) => {
     mobile,
     alternatemobile,
     email,
-    password1,
+    password,
+    agreedTerms,
   });
 
   if (user) {
-    res.status(201).json({ _id: user._id, token: generateToken(user._id) });
+    res.status(201).json({ message: "User added successfully!" });
   } else {
     res.status(400).json({ message: "Invalid user data" });
   }
@@ -43,10 +40,10 @@ const registerUser = async (req, res) => {
 
 // Login
 const loginUser = async (req, res) => {
-  const { email, password1 } = req.body;
+  const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (user && (await user.matchPassword(password1))) {
+  if (user && (await user.matchPassword(password))) {
     res.json({ _id: user._id, token: generateToken(user._id) });
   } else {
     res.status(400).json({ message: "Invalid email or password" });

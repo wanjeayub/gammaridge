@@ -9,6 +9,11 @@ const loanSchema = new mongoose.Schema({
   totalLoan: {
     type: Number,
   },
+  // the isPaid and status fields will be changed by the admin
+  isPaid: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: String,
     enum: ["pending", "approved", "rejected"],
