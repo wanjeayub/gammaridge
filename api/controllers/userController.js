@@ -12,15 +12,14 @@ const registerUser = async (req, res) => {
   const { name, mobile, alternatemobile, email, password, agreedTerms } =
     req.body;
 
+  const idPhotoUrl = "sampleurl";
+  // console.log(alternatemobile);
+  // console.log(mobile);
+
   const userExists = await User.findOne({ email });
 
   if (userExists)
     return res.status(400).json({ message: "User already exists" });
-
-  // if (mobile === alternatemobile)
-  //   return res
-  //     .status(400)
-  //     .json({ message: "Mobile numbers can not be the same" });
 
   const user = await User.create({
     name,
@@ -29,6 +28,7 @@ const registerUser = async (req, res) => {
     email,
     password,
     agreedTerms,
+    idPhotoUrl,
   });
 
   if (user) {
