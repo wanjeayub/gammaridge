@@ -99,74 +99,89 @@ const RegisterForm = () => {
   return (
     <div className="max-w-6xl mx-auto p-4 text-white">
       <div className="flex flex-col md:flex-row">
-        <div className="md:w-[600px] hidden md:block">Side</div>
+        <div className="md:w-[600px] md:block md:p-4 p-4">
+          <h1 className="text-6xl justify-center mb-5 mt-2">
+            Welcome to <span className="text-[#b9283b]">Gammaridge!</span>
+          </h1>
+          <p className="mb-5 text-xl">
+            We’re excited to have you here. Join our community to access quick,
+            reliable loans tailored to your needs. By registering, you’ll unlock
+            an easy-to-use dashboard where you can manage your loan
+            applications, track your loan status, and enjoy personalized
+            financial services.
+          </p>
+          <p className="mb-5 text-xl">
+            Sign up now and take the first step toward securing your financial
+            future with us!
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="md:w-[600px] p-3 w-full">
-          <div>
+          <div className="mb-2">
             <label className="block">Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="block">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="block">Password</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="block">Mobile</label>
             <input
               type="text"
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="block">Alternate Mobile</label>
             <input
               type="text"
               name="alternatemobile"
               value={formData.alternatemobile}
               onChange={handleChange}
-              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="block">Photo</label>
             <input
               type="file"
               name="photo"
               onChange={handleFileChange}
-              className="border p-2 w-full"
+              className="border p-2 w-full text-white"
             />
           </div>
 
-          <div>
+          <div className="mb-2">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"
