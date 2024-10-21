@@ -27,7 +27,15 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto flex flex-col items-center">
+      <div className="text-white items-center">
+        <p className="text-3xl mb-4">
+          This is a restricted page. Do not share the link
+        </p>
+        <p className="mb-4">
+          Enter your credentials to access the admin dashboard
+        </p>
+      </div>
       <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
         <input
           name="email"

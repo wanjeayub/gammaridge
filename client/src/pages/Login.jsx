@@ -10,7 +10,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("/api/users/login", {
+    const response = await fetch("http://localhost:5000/api/users/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -53,9 +53,9 @@ const Login = () => {
               className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] "
             />
             <input
-              name="password1"
+              name="password"
               type="password"
-              value={formData.password1}
+              value={formData.password}
               onChange={handleChange}
               placeholder="Password"
               required

@@ -23,7 +23,7 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("/api/users/loan", {
+    const response = await fetch("http://localhost:5000/api/users/loan", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
