@@ -26,22 +26,18 @@ const Login = () => {
 
   return (
     <div className="text-white max-w-6xl justify-between mx-auto">
-      <div className="flex flex-col md:flex-row mt-20 px-4">
-        <div className="bg-[#b64b59] items-center justify-center p-16 hidden md:block md:w-[600px]">
-          <p className="text-4xl text-center">
-            Get up and running to access your loan
+      <div className="flex flex-col md:flex-row mt-5">
+        <div className="md:block md:w-[600px] px-4">
+          <p className="md:text-6xl text-4xl justify-center mb-2 mt-2">
+            Welcome Back to <span className="text-[#b9283b]">Gammaridge!</span>
+          </p>
+          <p className="mb-2 md:text-xl text-lg">
+            We’re glad to see you again. Log in to access your dashboard, manage
+            your loans, and stay on top of your financial journey.
           </p>
         </div>
 
         <div className="flex flex-col p-6 w-full lg:w-[600px]">
-          {/* side image */}
-          <div className="mb-3">
-            <p className="text-4xl text-center">Sign in with email</p>
-            <p className="mt-2">
-              Let&apos;s get you onboard the platform securely
-            </p>
-          </div>
-
           {/* form side */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
