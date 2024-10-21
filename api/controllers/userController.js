@@ -9,12 +9,15 @@ const generateToken = (id) => {
 
 // Register
 const registerUser = async (req, res) => {
-  const { name, mobile, alternatemobile, email, password, agreedTerms } =
+  const { name, email, password, mobile, alternatemobile, photoURL, terms } =
     req.body;
 
-  const idPhotoUrl = "sampleurl";
-  // console.log(alternatemobile);
-  // console.log(mobile);
+  // Check if mobile numbers are the same (redundant as frontend should handle this too)
+  if (mobile === alternatemobile) {
+    return res
+      .status(400)
+      .json({ message: "Mobile numbers cannot be the same" });
+  }
 
   const userExists = await User.findOne({ email });
 
@@ -23,12 +26,12 @@ const registerUser = async (req, res) => {
 
   const user = await User.create({
     name,
-    mobile,
-    alternatemobile,
     email,
     password,
-    agreedTerms,
-    idPhotoUrl,
+    mobile,
+    alternatemobile,
+    photoURL,
+    terms,
   });
 
   if (user) {

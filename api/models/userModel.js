@@ -7,10 +7,9 @@ const userSchema = new mongoose.Schema({
   alternatemobile: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  agreeTerms: { type: Boolean, required: true, default: false },
-  idPhotoUrl: {
-    type: Array,
-    default: "",
+  terms: { type: Boolean, required: true, default: false },
+  photoURL: {
+    type: String,
   },
   role: { type: String, enum: ["user", "admin"], default: "user" },
   loans: [{ type: mongoose.Schema.Types.ObjectId, ref: "Loan" }],
