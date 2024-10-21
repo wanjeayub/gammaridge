@@ -1,13 +1,19 @@
 import { useState } from "react";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Link } from "react-router-dom";
+import app from "../firebase/firebase";
 
 const Register = () => {
+  // initialize firebase
+  const storage = getStorage(app);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     mobile: "",
     alternatemobile: "",
     password: "",
+    photo: null,
     agreedTerms: false,
   });
 
@@ -18,28 +24,56 @@ const Register = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+  const handleImageChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]:
+        e.target.type === "file" ? e.target.files[0] : e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log(formData);
 
-    // Trim spaces and check uniqueness
-    if (formData.alternatemobile.trim() === formData.mobile.trim()) {
-      alert("The two phone numbers must be different.");
-      return;
-    }
+    try {
+      // send photo to firebase and import photourl
+      const storageRef = ref(storage, `images/${formData.photo.name}`);
+      await uploadBytes(storageRef, formData.photo);
+      const photoURL = await getDownloadURL(storageRef);
 
-    const response = await fetch("http://localhost:5000/api/users/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await response.json();
+      // log the url recieved from firebase
+      console.log(photoURL);
 
-    if (response.ok) {
-      window.location.href = "/login";
-    } else {
-      alert(data.message);
+      console.log(formData);
+
+      // Trim spaces and check uniqueness
+      if (formData.alternatemobile.trim() === formData.mobile.trim()) {
+        alert("The two phone numbers must be different.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          formData.name,
+          formData.agreedTerms,
+          formData.alternatemobile,
+          formData.email,
+          formData.mobile,
+          formData.password,
+          photoURL
+        ),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        window.location.href = "/login";
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -102,6 +136,14 @@ const Register = () => {
               placeholder="Password"
               required
               className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b]"
+            />
+            <input
+              type="file"
+              name="photo"
+              id="photo"
+              accept="image/*"
+              onChange={handleImageChange}
+              required
             />
 
             <label
