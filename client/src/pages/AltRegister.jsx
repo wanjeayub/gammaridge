@@ -172,7 +172,7 @@ const RegisterForm = () => {
           </div>
 
           <div className="mb-2">
-            <label className="block">Photo</label>
+            <label className="block">Front ID photo</label>
             <input
               type="file"
               name="photo"
