@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 import app from "../firebase/firebase";
+import { Link } from "react-router-dom";
 
 const RegisterForm = () => {
   const storage = getStorage(app);
@@ -96,93 +97,102 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block">Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block">Mobile</label>
-          <input
-            type="text"
-            name="mobile"
-            value={formData.mobile}
-            onChange={handleChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block">Alternate Mobile</label>
-          <input
-            type="text"
-            name="alternatemobile"
-            value={formData.alternatemobile}
-            onChange={handleChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block">Photo</label>
-          <input
-            type="file"
-            name="photo"
-            onChange={handleFileChange}
-            className="border p-2 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="inline-flex items-center">
+    <div className="max-w-6xl mx-auto p-4 text-white">
+      <div className="flex flex-col md:flex-row">
+        <div className="md:w-[600px] hidden md:block">Side</div>
+        <form onSubmit={handleSubmit} className="md:w-[600px] p-3 w-full">
+          <div>
+            <label className="block">Name</label>
             <input
-              type="checkbox"
-              name="terms"
-              checked={formData.terms}
+              type="text"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
+              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
             />
-            <span className="ml-2">I agree to the terms and conditions</span>
-          </label>
-        </div>
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded"
-          disabled={loading}
-        >
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
+          <div>
+            <label className="block">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block">Mobile</label>
+            <input
+              type="text"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleChange}
+              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block">Alternate Mobile</label>
+            <input
+              type="text"
+              name="alternatemobile"
+              value={formData.alternatemobile}
+              onChange={handleChange}
+              className="bg-gray-600 text-gray-900 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b] w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block">Photo</label>
+            <input
+              type="file"
+              name="photo"
+              onChange={handleFileChange}
+              className="border p-2 w-full"
+            />
+          </div>
+
+          <div>
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                name="terms"
+                checked={formData.terms}
+                onChange={handleChange}
+              />
+              <span className="ml-2">I agree to the terms and conditions</span>
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            className="bg-[#b9283b] w-full text-white p-2 rounded"
+            disabled={loading}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+          <div className="mt-3">
+            Already have an account?{" "}
+            <Link to={"/login"}>
+              <span className="text-[#b9283b]">Login</span>
+            </Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
