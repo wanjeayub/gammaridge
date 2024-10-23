@@ -19,7 +19,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproval = async (id, status) => {
-    await fetch(`/api/admin/loan/${id}`, {
+    await fetch(`http://localhost:5000/api/admin/loan/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -47,8 +47,8 @@ const AdminDashboard = () => {
               <ul className="flex gap-4 flex-col">
                 {loans.map((loan) => (
                   <li key={loan._id}>
-                    {/* User: {loan.user.name} */}- Amount: {loan.amount} -
-                    Duration: {loan.duration} months - Status: {loan.status}
+                    User: {loan.user.name}- Amount: {loan.amount} - Duration:{" "}
+                    {loan.duration} months - Status: {loan.status}
                     <button
                       onClick={() => handleApproval(loan._id, "approved")}
                       className="bg-green-500 text-white ml-4 p-3"
