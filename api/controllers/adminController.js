@@ -45,7 +45,10 @@ const loginAdmin = async (req, res) => {
 
 // Get all loans
 const getLoans = async (req, res) => {
-  const loans = await Loan.find().populate("user", "name email");
+  const loans = await Loan.find().populate(
+    "user",
+    "name photoURLFront photoURLBack"
+  );
   res.json(loans);
 };
 
