@@ -12,7 +12,8 @@ const RegisterForm = () => {
     password: "",
     mobile: "",
     alternatemobile: "",
-    photo: null,
+    photoFront: null,
+    photoBack: null,
     terms: false,
   });
 
@@ -29,10 +30,18 @@ const RegisterForm = () => {
   };
 
   // Handle file (photo) change separately
-  const handleFileChange = (e) => {
+  const handleFile1Change = (e) => {
     setFormData({
       ...formData,
-      photo: e.target.files[0],
+      photoFront: e.target.files[0],
+    });
+  };
+
+  // Handle file (photo) change separately
+  const handleFile2Change = (e) => {
+    setFormData({
+      ...formData,
+      photoBack: e.target.files[0],
     });
   };
 
@@ -40,8 +49,16 @@ const RegisterForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, email, password, mobile, alternatemobile, photo, terms } =
-      formData;
+    const {
+      name,
+      email,
+      password,
+      mobile,
+      alternatemobile,
+      photoFront,
+      photoBack,
+      terms,
+    } = formData;
 
     // Validate form data
     if (
@@ -50,7 +67,8 @@ const RegisterForm = () => {
       !password ||
       !mobile ||
       !alternatemobile ||
-      !photo ||
+      !photoFront ||
+      !photoBack ||
       terms == false
     ) {
       alert("All fields are required.");
@@ -66,14 +84,18 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      // Upload photo to Firebase
-      const photoRef = ref(storage, `users/${Date.now()}-${photo.name}`);
-      const snapshot = await uploadBytes(photoRef, photo);
-      const photoURL = await getDownloadURL(snapshot.ref);
-      // log url
-      console.log(photoURL);
+      // Upload photoFront to Firebase
+      const photoRef1 = ref(storage, `users/${Date.now()}-${photoFront.name}`);
+      const snapshot1 = await uploadBytes(photoRef1, photoFront);
+      const photoURLFront = await getDownloadURL(snapshot1.ref);
+
+      // Upload photoFront to Firebase
+      const photoRef2 = ref(storage, `users/${Date.now()}-${photoBack.name}`);
+      const snapshot2 = await uploadBytes(photoRef2, photoBack);
+      const photoURLBack = await getDownloadURL(snapshot2.ref);
+
       // Save data to backend (MongoDB)
-      const response = await fetch("/api/users/register", {
+      const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +104,8 @@ const RegisterForm = () => {
           password,
           mobile,
           alternatemobile,
-          photoURL,
+          photoURLFront,
+          photoURLBack,
           terms,
         }),
       });
@@ -175,8 +198,18 @@ const RegisterForm = () => {
             <label className="block">Front ID photo</label>
             <input
               type="file"
-              name="photo"
-              onChange={handleFileChange}
+              name="photoFront"
+              onChange={handleFile1Change}
+              className="border p-2 w-full text-white"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="block">Back ID photo</label>
+            <input
+              type="file"
+              name="photoBack"
+              onChange={handleFile2Change}
               className="border p-2 w-full text-white"
             />
           </div>

@@ -9,8 +9,16 @@ const generateToken = (id) => {
 
 // Register
 const registerUser = async (req, res) => {
-  const { name, email, password, mobile, alternatemobile, photoURL, terms } =
-    req.body;
+  const {
+    name,
+    email,
+    password,
+    mobile,
+    alternatemobile,
+    photoURLFront,
+    photoURLBack,
+    terms,
+  } = req.body;
 
   // Check if mobile numbers are the same (redundant as frontend should handle this too)
   if (mobile === alternatemobile) {
@@ -30,7 +38,8 @@ const registerUser = async (req, res) => {
     password,
     mobile,
     alternatemobile,
-    photoURL,
+    photoURLFront,
+    photoURLBack,
     terms,
   });
 

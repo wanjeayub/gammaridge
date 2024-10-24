@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   terms: { type: Boolean, required: true, default: false },
-  photoURL: {
+  photoURLFront: {
+    type: String,
+  },
+  photoURLBack: {
     type: String,
   },
   role: { type: String, enum: ["user", "admin"], default: "user" },

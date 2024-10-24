@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 // import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
 
 const AdminDashboard = () => {
@@ -33,37 +34,59 @@ const AdminDashboard = () => {
   };
 
   return (
-    <section className="container mx-auto">
+    <section className="max-w-6xl mx-auto text-white">
       <div>
         <span className="text-3xl">Admin Dashboard</span>
       </div>
       <div>
-        <span className="text-3xl">Normal Loans</span>
+        <span className="text-3xl font-semibold">Normal Loans</span>
         <div>
           <div>
             {loans.length === 0 ? (
               <p>No loans found</p>
             ) : (
-              <ul className="flex gap-4 flex-col">
+              <div className="flex gap-4 flex-col">
                 {loans.map((loan) => (
-                  <li key={loan._id}>
-                    User: {loan.user.name}- Amount: {loan.amount} - Duration:{" "}
-                    {loan.duration} months - Status: {loan.status}
-                    <button
-                      onClick={() => handleApproval(loan._id, "approved")}
-                      className="bg-green-500 text-white ml-4 p-3"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleApproval(loan._id, "rejected")}
-                      className="bg-red-500 text-white ml-2"
-                    >
-                      Reject
-                    </button>
-                  </li>
+                  <div key={loan._id}>
+                    <div className="flex flex-row gap-3">
+                      <Link to={loan.user.photoURLFront} target="_blank">
+                        <img
+                          src={loan.user.photoURLFront}
+                          alt="id front image"
+                          className="w-[200px]"
+                        />
+                      </Link>
+                      <Link to={loan.user.photoURLBack}>
+                        <img
+                          src={loan.user.photoURLBack}
+                          alt="id front image"
+                          className="w-[200px]"
+                        />
+                      </Link>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <span>User: {loan.user.name}</span>
+                      <span>Amount: {loan.amount}</span>
+                      <span>Duration: {loan.duration} months</span>
+                      <span>Status: {loan.status}</span>
+                      <div className="flex flex-row gap-3">
+                        <button
+                          onClick={() => handleApproval(loan._id, "approved")}
+                          className="bg-green-500 text-white ml-4 p-2"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleApproval(loan._id, "rejected")}
+                          className="bg-red-500 text-white ml-2 p-2"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </div>
