@@ -114,7 +114,7 @@ const RegisterForm = () => {
       window.location.href = "/login";
       console.log(result.message);
     } catch (error) {
-      console.error("Error uploading photo or saving data:", error);
+      console.error(error);
       alert("Something went wrong.");
       return;
     }
