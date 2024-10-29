@@ -56,7 +56,7 @@ const AdminDashboard = () => {
                           className="w-[200px]"
                         />
                       </Link>
-                      <Link to={loan.user.photoURLBack}>
+                      <Link to={loan.user.photoURLBack} target="_blank">
                         <img
                           src={loan.user.photoURLBack}
                           alt="id front image"
