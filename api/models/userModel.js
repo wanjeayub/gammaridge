@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   role: { type: String, enum: ["user", "admin"], default: "user" },
-  loan: { type: mongoose.Schema.Types.ObjectId, ref: "Loan", required: true },
+  loan: { type: mongoose.Schema.Types.ObjectId, ref: "Loan" },
 });
 
 // Hash password before saving
