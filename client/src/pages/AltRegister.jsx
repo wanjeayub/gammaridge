@@ -116,6 +116,7 @@ const RegisterForm = () => {
     } catch (error) {
       console.error("Error uploading photo or saving data:", error);
       alert("Something went wrong.");
+      return;
     }
   };
 
