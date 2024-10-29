@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
+// import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
@@ -91,12 +91,13 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      <div>
+      {/* removed special loans */}
+      {/* <div>
         <span className="text-3xl">Special Loans</span>
         <div>
           <ShowSpecialLoans />
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };
