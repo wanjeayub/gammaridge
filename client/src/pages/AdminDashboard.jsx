@@ -7,7 +7,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch("http://:5000/api/admin/loans", {
+      const response = await fetch("/api/admin/loans", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -20,7 +20,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproval = async (id, status) => {
-    await fetch(`http://:5000/api/admin/loan/${id}`, {
+    await fetch(`/api/admin/loan/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
