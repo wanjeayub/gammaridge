@@ -116,6 +116,7 @@ const RegisterForm = () => {
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
+      setLoading(false);
       return;
     }
   };
