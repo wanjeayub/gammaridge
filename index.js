@@ -26,6 +26,10 @@ mongoose
 
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+// test
+app.use("/", (req, res) => {
+  res.status(200).json("good");
+});
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 
