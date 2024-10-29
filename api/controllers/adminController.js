@@ -62,6 +62,8 @@ const approveLoan = async (req, res) => {
   res.json(loan);
 };
 
+// SPECIAL LOANS - This feature is shelved for now
+
 // add special loan
 const applySpecialLoan = async (req, res) => {
   const { fullname, principal } = req.body;
