@@ -5,8 +5,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const userRoutes = require("./api/routes/userRoutes.js");
-const adminRoutes = require("./api/routes/adminRoutes.js");
+const userRoutes = require("./src/routes/userRoutes.js");
+const adminRoutes = require("./src/routes/adminRoutes.js");
 
 const app = express();
 // use var to prevent future bugs on render
@@ -14,11 +14,7 @@ var __dirname = path.resolve();
 
 app.use(
   cors({
-    origin: [
-      "*",
-      "https://gammaridge.vercel.app/",
-      "https://gammaridge-ejzl.vercel.app/",
-    ],
+    origin: ["*"],
   })
 );
 
