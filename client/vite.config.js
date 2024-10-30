@@ -14,5 +14,8 @@ export default defineConfig({
     },
     cors: false,
   },
+  build: {
+    outDir: "dist",
+  },
   plugins: [react()],
 });
