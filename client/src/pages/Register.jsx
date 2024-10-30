@@ -52,19 +52,22 @@ const Register = () => {
         return;
       }
 
-      const response = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          formData.name,
-          formData.agreedTerms,
-          formData.alternatemobile,
-          formData.email,
-          formData.mobile,
-          formData.password,
-          photoURL
-        ),
-      });
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/users/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            formData.name,
+            formData.agreedTerms,
+            formData.alternatemobile,
+            formData.email,
+            formData.mobile,
+            formData.password,
+            photoURL
+          ),
+        }
+      );
       const data = await response.json();
 
       if (response.ok) {

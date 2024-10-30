@@ -10,11 +10,14 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("/api/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    const response = await fetch(
+      "https://gammaridge-server.vercel.app/api/users/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      }
+    );
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("token", data.token);

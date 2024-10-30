@@ -7,12 +7,15 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch("/api/admin/loans", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/admin/loans",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       const data = await response.json();
       setLoans(data);
     };
@@ -20,7 +23,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproval = async (id, status) => {
-    await fetch(`/api/admin/loan/${id}`, {
+    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

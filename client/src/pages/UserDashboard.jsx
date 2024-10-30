@@ -6,11 +6,14 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch("/api/users/loans", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/users/loans",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       const data = await response.json();
       setLoans(data);
     };
@@ -23,14 +26,17 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("/api/users/loan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify(loanData),
-    });
+    const response = await fetch(
+      "https://gammaridge-server.vercel.app/api/users/loan",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(loanData),
+      }
+    );
     const data = await response.json();
     setLoans([...loans, data]);
     setLoanData({
