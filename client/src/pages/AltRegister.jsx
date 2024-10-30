@@ -94,6 +94,10 @@ const RegisterForm = () => {
       const snapshot2 = await uploadBytes(photoRef2, photoBack);
       const photoURLBack = await getDownloadURL(snapshot2.ref);
 
+      // log the recieved urls
+      console.log(photoURLFront);
+      console.log(photoURLBack);
+
       // Save data to backend (MongoDB)
       const response = await fetch("/api/users/register", {
         method: "POST",
@@ -111,6 +115,7 @@ const RegisterForm = () => {
       });
 
       const result = await response.json();
+
       window.location.href = "/login";
       console.log(result.message);
     } catch (error) {
