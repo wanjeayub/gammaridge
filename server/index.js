@@ -12,17 +12,17 @@ const app = express();
 // use var to prevent future bugs on render
 var __dirname = path.resolve();
 
-app.use(
-  cors({
-    origin: [
-      "*",
-      "https://gammaridge.vercel.app",
-      "https://gammaridge-server.vercel.app",
-      "https://gammaridge-server-wanjeayubs-projects.vercel.app",
-      "https://gammaridge-server-git-main-wanjeayubs-projects.vercel.app",
-    ],
-  })
-);
+app.use(cors());
+// cors links
+// {
+//   origin: [
+//     "*",
+//     "https://gammaridge.vercel.app",
+//     "https://gammaridge-server.vercel.app",
+//     "https://gammaridge-server-wanjeayubs-projects.vercel.app",
+//     "https://gammaridge-server-git-main-wanjeayubs-projects.vercel.app",
+//   ],
+// }
 
 app.use(express.json());
 

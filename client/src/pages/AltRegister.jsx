@@ -95,8 +95,8 @@ const RegisterForm = () => {
       const photoURLBack = await getDownloadURL(snapshot2.ref);
 
       // log the recieved urls
-      console.log(photoURLFront);
-      console.log(photoURLBack);
+      // console.log(photoURLFront);
+      // console.log(photoURLBack);
 
       // Save data to backend (MongoDB)
       const response = await fetch(

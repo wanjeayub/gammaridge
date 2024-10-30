@@ -7,9 +7,9 @@ export default defineConfig({
     proxy: {
       "/api": {
         target: "https://gammaridge-server.vercel.app",
-        // changeOrigin: true,
+        changeOrigin: true,
         secure: false,
-        // rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
     cors: false,
