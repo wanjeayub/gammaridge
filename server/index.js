@@ -14,7 +14,11 @@ var __dirname = path.resolve();
 
 app.use(
   cors({
-    origin: ["*", "https://gammaridge.vercel.app/"],
+    origin: [
+      "*",
+      "https://gammaridge.vercel.app/",
+      "https://gammaridge-ejzl.vercel.app/",
+    ],
   })
 );
 
