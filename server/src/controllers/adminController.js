@@ -19,6 +19,9 @@ const registerAdmin = async (req, res) => {
       password,
       mobile,
       alternatemobile,
+      photoURLFront,
+      photoURLBack,
+      terms,
       role: "admin", // Set role to admin
     });
 
