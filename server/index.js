@@ -16,6 +16,7 @@ app.use(
   cors({
     origin: [
       "*",
+      "https://gammaridge.vercel.app/",
       "https://gammaridge-server.vercel.app",
       "https://gammaridge-server-wanjeayubs-projects.vercel.app",
       "https://gammaridge-server-git-main-wanjeayubs-projects.vercel.app",
@@ -38,10 +39,10 @@ app.use("/", (req, res) => {
   res.status(200).json("good");
 });
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+// app.use(express.static(path.join(__dirname, "/client/dist")));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+// });
 
 app.listen(5000, () => console.log("Server running on port 5000"));
