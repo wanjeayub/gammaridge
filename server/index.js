@@ -12,7 +12,11 @@ const app = express();
 // use var to prevent future bugs on render
 var __dirname = path.resolve();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["*", "https://gammaridge.vercel.app/"],
+  })
+);
 
 app.use(express.json());
 
