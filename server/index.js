@@ -16,7 +16,6 @@ app.use(
   cors({
     origin: [
       "*",
-      "https://gammaridge.vercel.app",
       "https://gammaridge-server.vercel.app",
       "https://gammaridge-server-wanjeayubs-projects.vercel.app",
       "https://gammaridge-server-git-main-wanjeayubs-projects.vercel.app",
