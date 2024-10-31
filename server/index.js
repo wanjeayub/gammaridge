@@ -12,13 +12,7 @@ const app = express();
 // use var to prevent future bugs on render
 var __dirname = path.resolve();
 
-app.use(
-  cors({
-    origin: ["*", "https://gammaridge.netlify.app"],
-    methods: ["PUT", "GET", "POST", "PATCH"],
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // cors links
 
@@ -35,10 +29,10 @@ app.use("/", (req, res) => {
   res.status(200).json("good");
 });
 
-// app.use(express.static(path.join(__dirname, "/client/dist")));
+app.use(express.static(path.join(__dirname, "/client/dist")));
 
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-// });
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+});
 
 app.listen(5000, () => console.log("Server running on port 5000"));
