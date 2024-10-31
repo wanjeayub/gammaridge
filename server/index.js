@@ -14,12 +14,7 @@ var __dirname = path.resolve();
 
 app.use(
   cors({
-    origin: [
-      "*",
-      "https://gammaridge.vercel.app",
-      "https://gammaridge-wanjeayubs-projects.vercel.app",
-      "https://gammaridge-git-main-wanjeayubs-projects.vercel.app",
-    ],
+    origin: ["*", "https://gammaridge.netlify.app"],
     methods: ["PUT", "GET", "POST", "PATCH"],
     credentials: true,
   })

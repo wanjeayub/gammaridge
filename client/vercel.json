@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/login",
-      "dest": "/dist/index.html"
+      "dest": "dist/index.html"
     }
   ]
 }
