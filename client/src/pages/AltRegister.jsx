@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
 import app from "../firebase/firebase";
 import { Link } from "react-router-dom";
+import imageCompression from "browser-image-compression";
 
 const RegisterForm = () => {
   const storage = getStorage(app);
@@ -84,14 +85,25 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
+      // compress image
+      const options = {
+        maxSizeMB: 1, // Maximum file size in MB
+        maxWidthOrHeight: 800, // Max width/height in pixels
+        useWebWorker: true, // Enable web worker for faster compression
+      };
+
+      // compress images
+      const IDfront = await imageCompression(photoFront, options);
+      const IDback = await imageCompression(photoBack, options);
+
       // Upload photoFront to Firebase
-      const photoRef1 = ref(storage, `users/${Date.now()}-${photoFront.name}`);
-      const snapshot1 = await uploadBytes(photoRef1, photoFront);
+      const photoRef1 = ref(storage, `users/${Date.now()}-${IDfront.name}`);
+      const snapshot1 = await uploadBytes(photoRef1, IDfront);
       const photoURLFront = await getDownloadURL(snapshot1.ref);
 
       // Upload photoFront to Firebase
-      const photoRef2 = ref(storage, `users/${Date.now()}-${photoBack.name}`);
-      const snapshot2 = await uploadBytes(photoRef2, photoBack);
+      const photoRef2 = ref(storage, `users/${Date.now()}-${IDback.name}`);
+      const snapshot2 = await uploadBytes(photoRef2, IDback);
       const photoURLBack = await getDownloadURL(snapshot2.ref);
 
       // log the recieved urls
