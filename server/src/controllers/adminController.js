@@ -10,7 +10,16 @@ const generateToken = (id) => {
 };
 // Register Admin
 const registerAdmin = async (req, res) => {
-  const { name, email, password, mobile, alternatemobile } = req.body;
+  const {
+    name,
+    email,
+    password,
+    mobile,
+    alternatemobile,
+    photoURLFront,
+    photoURLBack,
+    terms,
+  } = req.body;
 
   try {
     const newAdmin = new User({
