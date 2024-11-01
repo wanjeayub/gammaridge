@@ -7,7 +7,6 @@ export default defineConfig({
     proxy: {
       "/api": "https://gammaridge-server.vercel.app",
     },
-    cors: false,
   },
   plugins: [react()],
 });
