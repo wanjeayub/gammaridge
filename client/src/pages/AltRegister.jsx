@@ -99,20 +99,23 @@ const RegisterForm = () => {
       // console.log(photoURLBack);
 
       // Save data to backend (MongoDB)
-      const response = await fetch("/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          mobile,
-          alternatemobile,
-          photoURLFront,
-          photoURLBack,
-          terms,
-        }),
-      });
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/users/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            mobile,
+            alternatemobile,
+            photoURLFront,
+            photoURLBack,
+            terms,
+          }),
+        }
+      );
 
       const result = await response.json();
 
