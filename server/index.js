@@ -21,8 +21,6 @@ app.use(
   })
 );
 
-// cors links
-
 app.use(express.json());
 
 mongoose
@@ -31,6 +29,7 @@ mongoose
 
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+
 // test
 app.use("/", (req, res) => {
   res.status(200).json("good");
