@@ -5,12 +5,7 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
   server: {
     proxy: {
-      "/api": {
-        target: "https://gammaridge-server.vercel.app",
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
+      "/api": "https://gammaridge-server.vercel.app",
     },
     cors: false,
   },
