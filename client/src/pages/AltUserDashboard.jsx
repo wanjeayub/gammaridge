@@ -9,7 +9,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     // Fetch loans data from the backend
-    fetch("https://gammaridge-server.vercel.app/api/loans")
+    fetch("/api/loans")
       .then((res) => res.json())
       .then((data) => setLoans(data));
   }, []);
@@ -25,7 +25,7 @@ const UserDashboard = () => {
 
   const handleEditLoan = (loanId) => {
     // Send loan update request to backend
-    fetch(`https://gammaridge-server.vercel.app/api/edit-loan/${loanId}`, {
+    fetch(`/api/edit-loan/${loanId}`, {
       method: "POST",
       body: JSON.stringify({ amount: newLoanAmount }),
       headers: { "Content-Type": "application/json" },
