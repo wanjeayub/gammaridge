@@ -49,7 +49,7 @@ const UserDashboard = () => {
     <div className="container mx-auto p-3 text-white">
       <div>
         <h1 className="text-2xl font-bold">User Dashboard</h1>
-        {loans.length > 1 && loans.status === "pending" ? (
+        {loans.status === "pending" ? (
           <p>Your loan is not yet approved</p>
         ) : (
           <div className="flex flex-col gap-4">
@@ -82,7 +82,7 @@ const UserDashboard = () => {
         ) : (
           <div className="flex p-4 flex-col">
             {loans.map((loan) => (
-              <div key={loan._id} className="mb-2 border">
+              <div key={loan._id} className="mb-2 border p-3">
                 Amount: <span className="font-semibold">Ksh</span> {loan.amount}{" "}
                 - Interest: <span className="font-semibold">Ksh</span>
                 {loan.interest} - Total Amount:
