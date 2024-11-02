@@ -27,7 +27,25 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loans.length >= 1 && loans.status === "pending") {
+
+    if (loans.length == 0) {
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/users/loan",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(loanData),
+        }
+      );
+      const data = await response.json();
+      setLoans([...loans, data]);
+      setLoanData({
+        amount: "",
+      });
+    } else {
       alert(
         "you can not apply for another loan until your current loan is fully paid"
       );
@@ -36,22 +54,6 @@ const UserDashboard = () => {
       });
       return;
     }
-    const response = await fetch(
-      "https://gammaridge-server.vercel.app/api/users/loan",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(loanData),
-      }
-    );
-    const data = await response.json();
-    setLoans([...loans, data]);
-    setLoanData({
-      amount: "",
-    });
   };
 
   return (
