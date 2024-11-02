@@ -28,7 +28,7 @@ const UserDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loans.length == 0) {
+    if (loans.length == 0 || loans[0].isPaid == true) {
       const response = await fetch(
         "https://gammaridge-server.vercel.app/api/users/loan",
         {
