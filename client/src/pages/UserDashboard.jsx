@@ -27,6 +27,12 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loans[0].status === "pending") {
+      alert(
+        "you can not apply for another loan until your current loan is approved"
+      );
+      return;
+    }
     const response = await fetch(
       "https://gammaridge-server.vercel.app/api/users/loan",
       {
@@ -49,30 +55,27 @@ const UserDashboard = () => {
     <div className="container mx-auto p-3 text-white">
       <div>
         <h1 className="text-2xl font-bold">User Dashboard</h1>
-        {loans.status === "pending" ? (
-          <p>Your loan is not yet approved</p>
-        ) : (
-          <div className="flex flex-col gap-4">
-            <h2 className="text-xl">Apply for a new loan</h2>
-            <form onSubmit={handleSubmit} className="max-w-md gap-3 flex">
-              <input
-                name="amount"
-                value={loanData.amount}
-                onChange={handleChange}
-                placeholder="Amount"
-                required
-                className="border p-2 w-full bg-gray-600 text-white"
-              />
 
-              <button
-                type="submit"
-                className="bg-[#b9283b] text-white py-2 px-4 w-full"
-              >
-                Apply
-              </button>
-            </form>
-          </div>
-        )}
+        <div className="flex flex-col gap-4">
+          <h2 className="text-xl">Apply for a new loan</h2>
+          <form onSubmit={handleSubmit} className="max-w-md gap-3 flex">
+            <input
+              name="amount"
+              value={loanData.amount}
+              onChange={handleChange}
+              placeholder="Amount"
+              required
+              className="border p-2 w-full bg-gray-600 text-white"
+            />
+
+            <button
+              type="submit"
+              className="bg-[#b9283b] text-white py-2 px-4 w-full"
+            >
+              Apply
+            </button>
+          </form>
+        </div>
       </div>
 
       <div>
