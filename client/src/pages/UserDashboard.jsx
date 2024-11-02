@@ -27,7 +27,7 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loans.isPaid == false) {
+    if (loans.length >= 1 && loans.status === "pending") {
       alert(
         "you can not apply for another loan until your current loan is fully paid"
       );
