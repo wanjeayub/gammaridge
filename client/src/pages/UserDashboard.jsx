@@ -31,6 +31,9 @@ const UserDashboard = () => {
       alert(
         "you can not apply for another loan until your current loan is approved"
       );
+      setLoanData({
+        amount: "",
+      });
       return;
     }
     const response = await fetch(
