@@ -54,9 +54,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user) {
-    res.status(404).json({ message: "User not found!" });
-  }
+  if (!user) res.status(404).json({ message: "User not found!" });
 
   if (user && (await user.matchPassword(password))) {
     res.json({ _id: user._id, token: generateToken(user._id) });
