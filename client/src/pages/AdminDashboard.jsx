@@ -84,7 +84,6 @@ const AdminDashboard = () => {
                       <div className="flex flex-col">
                         <span>User: {loan.user.name}</span>
                         <span>Amount: {loan.amount}</span>
-                        <span>Duration: {loan.duration} months</span>
                         <span>Status: {loan.status}</span>
                         <span>Status: {loan.isPaid}</span>
                       </div>
