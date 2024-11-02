@@ -85,7 +85,9 @@ const AdminDashboard = () => {
                         <span>User: {loan.user.name}</span>
                         <span>Amount: {loan.amount}</span>
                         <span>Status: {loan.status}</span>
-                        <span>Status: {loan.isPaid}</span>
+                        <span>
+                          Status: {loan.isPaid ? "Paid" : "In Progress"}
+                        </span>
                       </div>
                       <div className="flex flex-row gap-3">
                         <button
