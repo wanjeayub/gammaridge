@@ -70,6 +70,16 @@ const applyLoan = async (req, res) => {
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
 
+  const unpaidLoan = await Loan.findOne({ user: req.user._id, isPaid: false });
+
+  if (unpaidLoan) {
+    // User has an unpaid loan, block the new application
+    return res.status(400).json({
+      message:
+        "You cannot apply for a new loan until the previous loan is fully paid.",
+    });
+  }
+
   const loan = await Loan.create({
     user: req.user._id,
     amount: myAmount,
