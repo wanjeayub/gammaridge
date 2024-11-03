@@ -28,32 +28,28 @@ const UserDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (loans.length == 0 || loans[0].isPaid == true) {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/loan",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(loanData),
-        }
-      );
-      const data = await response.json();
-      setLoans([...loans, data]);
-      setLoanData({
-        amount: "",
-      });
-    } else {
-      alert(
-        "you can not apply for another loan until your current loan is fully paid"
-      );
-      setLoanData({
-        amount: "",
-      });
+    const response = await fetch(
+      "https://gammaridge-server.vercel.app/api/users/loan",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(loanData),
+      }
+    );
+    const data = await response.json();
+
+    // Inform the user about the unpaid loan
+    if (!response.ok) {
+      alert(data.message);
       return;
     }
+    setLoans([...loans, data]);
+    setLoanData({
+      amount: "",
+    });
   };
 
   return (
