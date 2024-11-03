@@ -44,6 +44,9 @@ const UserDashboard = () => {
     // Inform the user about the unpaid loan
     if (!response.ok) {
       alert(data.message);
+      setLoanData({
+        amount: "",
+      });
       return;
     }
     setLoans([...loans, data]);
