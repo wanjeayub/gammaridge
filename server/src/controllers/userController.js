@@ -70,33 +70,28 @@ const applyLoan = async (req, res) => {
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
 
-  try {
-    // Check if the user has any unpaid loans
-    const unpaidLoan = await Loan.findOne({
-      userId,
-      status: { $ne: "pending" },
+  // Check if the user has any unpaid loans
+  const unpaidLoan = await Loan.findOne({
+    userId,
+    status: { $ne: "pending" },
+  });
+
+  if (unpaidLoan) {
+    // User has an unpaid loan, block the new application
+    return res.status(400).json({
+      message:
+        "You cannot apply for a new loan until the previous loan is paid in full.",
     });
-
-    if (unpaidLoan) {
-      // User has an unpaid loan, block the new application
-      return res.status(400).json({
-        message:
-          "You cannot apply for a new loan until the previous loan is paid in full.",
-      });
-    }
-
-    const loan = await Loan.create({
-      user: req.user._id,
-      amount: myAmount,
-      interest,
-      totalLoan,
-    });
-
-    res.status(201).json(loan);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "An error occurred. Please try again." });
   }
+
+  const loan = await Loan.create({
+    user: req.user._id,
+    amount: myAmount,
+    interest,
+    totalLoan,
+  });
+
+  res.status(201).json(loan);
 };
 
 // Get User Loans
