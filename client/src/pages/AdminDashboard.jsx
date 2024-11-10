@@ -36,7 +36,7 @@ const AdminDashboard = () => {
     );
   };
   const handlePay = async (id, isPaid) => {
-    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
+    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
