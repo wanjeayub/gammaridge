@@ -45,7 +45,7 @@ const AdminDashboard = () => {
       body: JSON.stringify({ ispaid }),
     });
     setLoans(
-      loans.map((loan) => (loan._id === id ? { ...loan, ispaid } : loan))
+      loans.map((loan) => (loan._id === id ? { ...loan, ispaid:true } : loan))
     );
   };
 
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                         </button>
                         <div>
                           {/* <input type="text" placeholder="Enter amount paid" /> */}
-                          <button className="bg-[#b9283b] p-2 ml-2 text-white" onClick={() => handlePay(loan._id,true)}>
+                          <button className="bg-[#b9283b] p-2 ml-2 text-white" onClick={() => handlePay(loan._id)}>
                           Pay
                         </button>
                         </div>
