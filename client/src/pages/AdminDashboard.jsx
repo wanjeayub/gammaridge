@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                         </button>
                         <div>
                           {/* <input type="text" placeholder="Enter amount paid" /> */}
-                          <button onClick={() => handlePay(loan._id,true)}>
+                          <button className="bg-[#b9283b] p-2 ml-2 text-white" onClick={() => handlePay(loan._id,true)}>
                           Pay
                         </button>
                         </div>
