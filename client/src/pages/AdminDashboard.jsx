@@ -45,7 +45,7 @@ const AdminDashboard = () => {
       body: JSON.stringify({ ispaid }),
     });
     setLoans(
-      loans.map((loan) => (loan._id === id ? { ...loan, ispaid:true } : loan))
+      loans.map((loan) => (loan._id === id ? { ...loan, isPaid:true } : loan))
     );
   };
 
