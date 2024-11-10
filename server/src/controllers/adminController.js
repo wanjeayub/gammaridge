@@ -76,12 +76,21 @@ const approveLoan = async (req, res) => {
 
 // pay loan
 const payLoan = async(req,res)=>{
-  const loan = await Loan.findById(req.params.id)
-  if(!loan) return res.status(404).json({message:"Loan not found"});
+  try {
+    const loanId = req.params.id;
+    const loan = await Loan.findById(loanId);
 
-  loan.isPaid = req.body.isPaid;
-  await loan.save()
-  res.json(loan)
+    if (!loan) {
+        return res.status(404).json({ message: 'Loan not found' });
+    }
+
+    loan.isPaid = true;
+    await loan.save();
+
+    res.status(200).json({ message: 'Loan marked as paid', loan });
+} catch (error) {
+    res.status(500).json({ message: 'Error updating loan status', error });
+}
 }
 
 // SPECIAL LOANS - This feature is shelved for now
