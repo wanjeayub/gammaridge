@@ -35,6 +35,19 @@ const AdminDashboard = () => {
       loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
     );
   };
+  const handlePay = async (id, ispaid) => {
+    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ ispaid }),
+    });
+    setLoans(
+      loans.map((loan) => (loan._id === id ? { ...loan, ispaid } : loan))
+    );
+  };
 
   return (
     <section className="max-w-6xl mx-auto text-white">
@@ -89,6 +102,12 @@ const AdminDashboard = () => {
                         >
                           Reject
                         </button>
+                        <div>
+                          {/* <input type="text" placeholder="Enter amount paid" /> */}
+                          <button onClick={() => handlePay(loan._id,true)}>
+                          Pay
+                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>

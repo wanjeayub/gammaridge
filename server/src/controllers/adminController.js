@@ -74,6 +74,16 @@ const approveLoan = async (req, res) => {
   res.json(loan);
 };
 
+// pay loan
+const payLoan = async(req,res)=>{
+  const loan = await Loan.findById(req.params.id)
+  if(!loan) return res.status(404).json({message:"Loan not found"});
+
+  loan.isPaid = req.body.isPaid;
+  await loan.save()
+  res.json(loan)
+}
+
 // SPECIAL LOANS - This feature is shelved for now
 
 // add special loan
