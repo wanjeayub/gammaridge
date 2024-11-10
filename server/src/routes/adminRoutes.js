@@ -8,6 +8,7 @@ const {
   getSpecialLoans,
   editSpecialLoan,
   deleteSpecialLoan,
+  payLoan,
 } = require("../controllers/adminController.js");
 const { adminProtect, protect } = require("../middleware/authMiddleware.js");
 
@@ -17,6 +18,7 @@ router.post("/register", registerAdmin);
 router.post("/login", loginAdmin);
 router.get("/loans", adminProtect, getLoans);
 router.put("/loan/:id", adminProtect, approveLoan);
+router.put("/loan/:id",adminProtect,payLoan)
 router.post("/sloan", adminProtect, applySpecialLoan);
 router.get("/sloans", adminProtect, getSpecialLoans);
 router.put("/sloans/:id", adminProtect, editSpecialLoan);

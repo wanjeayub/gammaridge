@@ -142,6 +142,7 @@ const deleteSpecialLoan = async (req, res) => {
 module.exports = {
   getLoans,
   approveLoan,
+  payLoan,
   registerAdmin,
   loginAdmin,
   applySpecialLoan,
