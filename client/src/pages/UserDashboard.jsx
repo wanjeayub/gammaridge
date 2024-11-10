@@ -95,6 +95,7 @@ const UserDashboard = () => {
                 {loan.interest} - Total Amount:
                 <span className="font-semibold"> Ksh</span> {loan.totalLoan} -
                 Status: {loan.status}
+                Payment Status: {loan.isPaid ? ("Fully Paid"):("In Progress")}
               </div>
             ))}
           </div>
