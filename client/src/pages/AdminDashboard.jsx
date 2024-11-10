@@ -35,14 +35,14 @@ const AdminDashboard = () => {
       loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
     );
   };
-  const handlePay = async (id, ispaid) => {
+  const handlePay = async (id, isPaid) => {
     await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ ispaid }),
+      body: JSON.stringify({ isPaid }),
     });
     setLoans(
       loans.map((loan) => (loan._id === id ? { ...loan, isPaid:true } : loan))
