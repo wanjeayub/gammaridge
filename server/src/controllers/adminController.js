@@ -54,6 +54,23 @@ const loginAdmin = async (req, res) => {
     res.status(400).json({ message: "Invalid email or password" });
   }
 };
+// edit admin details
+const editAdminDetails = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  try {
+      const user = await User.findById(req.user.id);
+
+      if (name) user.name = name;
+      if (email) user.email = email;
+      if (password) user.password = await bcrypt.hash(password, 10);
+
+      await user.save();
+      res.json(user);
+  } catch (error) {
+      res.status(500).json({ message: 'Error updating admin details' });
+  }
+}
 
 // Get all loans
 const getLoans = async (req, res) => {
@@ -101,6 +118,39 @@ const getPendingLoans=async(req,res)=>{
   } catch (error) {
     console.error('Error fetching pending loans:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
+// get approved loans
+const getApprovedLoans=async(req,res)=>{
+  try {
+    const approvedLoans = await Loan.find({ status: 'approved' });
+    res.status(200).json(approvedLoans);
+  } catch (error) {
+    console.error('Error fetching pending loans:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+// get rejected loans
+const getRejectedLoans=async(req,res)=>{
+  try {
+    const rejectedLoans = await Loan.find({ status: 'rejected' });
+    res.status(200).json(rejectedLoans);
+  } catch (error) {
+    console.error('Error fetching pending loans:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
+// get paid loans
+const getPaidLoans = async(req,res)=>{
+  try {
+    const paidLoans = await Loan.find({isPaid:true});
+  res.status(200).json(paidLoans)
+  } catch (error) {
+    console.error('Error fetching paid loans: ',error);
+    res.status(500).json({message:"Internal Server Error"})
+    
   }
 }
 
@@ -165,7 +215,11 @@ module.exports = {
   payLoan,
   registerAdmin,
   loginAdmin,
+  editAdminDetails,
   getPendingLoans,
+  getApprovedLoans,
+  getRejectedLoans,
+  getPaidLoans,
   applySpecialLoan,
   getSpecialLoans,
   editSpecialLoan,

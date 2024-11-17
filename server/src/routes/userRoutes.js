@@ -18,4 +18,5 @@ router.post("/login", loginUser);
 router.post("/loan", protect, applyLoan);
 router.get("/loans", protect, getUserLoans);
 
+
 module.exports = router;

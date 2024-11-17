@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
+  const [pendingLoans, setPendingLoans]= useState([])
+  const [approvedLoans, setApprovedLoans]= useState([])
+  const [rejectedLoans, setRejectedLoans]= useState([])
+  const [paidLoans, setPaidLoans]= useState([])
 
   useEffect(() => {
     const fetchLoans = async () => {
@@ -21,6 +25,8 @@ const AdminDashboard = () => {
     };
     fetchLoans();
   }, []);
+
+
 
   const handleApproval = async (id, status) => {
     await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
@@ -49,13 +55,13 @@ const AdminDashboard = () => {
     );
   };
 
-  const approvedLoans = loans.filter((loan)=>{loan.status == "approved"})
-  console.log(loans)
-  const rejectedLoans = loans.filter((loan)=>{loan.status === "rejected"})
-  const pendingLoans = loans.filter((loan)=>{loan.status === "pending"})
-
+  
   return (
     <section className="max-w-6xl mx-auto text-white">
+      <div>
+        <Link to={"/edit"}>
+        <span>edit admin details</span></Link>
+      </div>
       <div>
         <span className="text-3xl">Admin Dashboard</span>
       </div>
@@ -107,36 +113,8 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      <div>
-        <div className="flex flex-col gap-4">
-          <span className="text-3xl">Sorted Loans</span>
-        <div>
-          <span>Approved Loans</span>
-        <div>
-          {approvedLoans.length === 0 ? (<div><p>No Approved Loans</p></div>):(<div>{approvedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
-            <span>User: {loan.user.name}</span>
-            </div></div>))}</div>)}
-        </div>
-        </div>
-        <div>
-          <span>Rejected Loans</span>
-        <div>
-          {approvedLoans.length === 0 ? (<div><p>No Rejected Loans</p></div>):(<div>{rejectedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
-            <span>User: {loan.user.name}</span>
-            </div></div>))}</div>)}
-        </div>
-        </div>
-        <div>
-          <span>Pending Loans</span>
-        <div>
-          {approvedLoans.length === 0 ? (<div><p>No Pending Loans</p></div>):(<div>{pendingLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
-            <span>User: {loan.user.name}</span>
-            </div></div>))}</div>)}
-        </div>
-        </div>
-        
-        </div>
-      </div>
+      
+
     </section>
   );
 };
