@@ -49,7 +49,9 @@ const AdminDashboard = () => {
     );
   };
 
-  const approvedLoans = loans.filter((loan)=>{loan.isPaid == true})
+  const approvedLoans = loans.filter((loan)=>{loan.status === "approved"})
+  const rejectedLoans = loans.filter((loan)=>{loan.status === "rejected"})
+  const pendingLoans = loans.filter((loan)=>{loan.status === "pending"})
 
   return (
     <section className="max-w-6xl mx-auto text-white">
@@ -105,11 +107,31 @@ const AdminDashboard = () => {
         </div>
       </div>
       <div>
-        <div><span className="text-3xl">Sorted Loans</span>
+        <div className="flex flex-row gap-4">
+          <span className="text-3xl">Sorted Loans</span>
         <div>
-          {approvedLoans.length > 0 ? (<div><p>No Approved Loans</p></div>):(<div>{approvedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
+          <span>Approved Loans</span>
+        <div>
+          {approvedLoans.length === 0 ? (<div><p>No Approved Loans</p></div>):(<div>{approvedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
             <span>User: {loan.user.name}</span>
             </div></div>))}</div>)}
+        </div>
+        </div>
+        <div>
+          <span>Rejected Loans</span>
+        <div>
+          {approvedLoans.length === 0 ? (<div><p>No Rejected Loans</p></div>):(<div>{rejectedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
+            <span>User: {loan.user.name}</span>
+            </div></div>))}</div>)}
+        </div>
+        </div>
+        <div>
+          <span>Pending Loans</span>
+        <div>
+          {approvedLoans.length === 0 ? (<div><p>No Pending Loans</p></div>):(<div>{pendingLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
+            <span>User: {loan.user.name}</span>
+            </div></div>))}</div>)}
+        </div>
         </div>
         </div>
       </div>
