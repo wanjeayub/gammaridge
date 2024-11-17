@@ -25,7 +25,7 @@ const App = () => {
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
-        <Route path="/edit" element={<EditAdminPage />} />
+        <Route path="/admin/edit" element={<EditAdminPage />} />
       </Routes>
     </Router>
   );
