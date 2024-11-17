@@ -49,6 +49,8 @@ const AdminDashboard = () => {
     );
   };
 
+  const approvedLoans = loans.filter((loans)=>{loans.status === "approved"})
+
   return (
     <section className="max-w-6xl mx-auto text-white">
       <div>
@@ -117,13 +119,17 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      {/* removed special loans */}
-      {/* <div>
-        <span className="text-3xl">Special Loans</span>
+      <div>
+        <div><span className="text-3xl">Sorted Loans</span>
         <div>
-          <ShowSpecialLoans />
+          {approvedLoans.length === 0?(<p>No loans found</p>):(<div>{approvedLoans.map((aLoan)=>(<div key={aLoans._id}>
+            <div>{aLoan.user.name}</div>
+          </div>))}</div>)
+
+          }
         </div>
-      </div> */}
+        </div>
+      </div>
     </section>
   );
 };
