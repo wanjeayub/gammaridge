@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     );
   };
 
-  const approvedLoans = loans.filter((loan)=>{loan.amount > 1000})
+  const approvedLoans = loans.filter((loan)=>{loan.status == "approved"})
   console.log(loans)
   const rejectedLoans = loans.filter((loan)=>{loan.status === "rejected"})
   const pendingLoans = loans.filter((loan)=>{loan.status === "pending"})
