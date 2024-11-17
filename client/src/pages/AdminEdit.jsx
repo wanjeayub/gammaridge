@@ -75,7 +75,7 @@ const EditAdminPage = () => {
     return (
         <div>
             <div>
-                <Link to={"admin/edit"}>
+                <Link to={"/edit"}>
                 <span>Go to dashboard</span>
                 </Link>
             </div>
