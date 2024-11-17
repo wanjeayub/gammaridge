@@ -59,7 +59,7 @@ const AdminDashboard = () => {
   return (
     <section className="max-w-6xl mx-auto text-white">
       <div>
-        <Link to={"admin/edit"}>
+        <Link to={"/edit"}>
         <span>edit admin details</span></Link>
       </div>
       <div>
