@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     );
   };
 
-  const approvedLoans = loans.filter((loans)=>{loans.status === "approved"})
+  const approvedLoans = loans.filter((loan)=>{loan.status === "approved"})
 
   return (
     <section className="max-w-6xl mx-auto text-white">
