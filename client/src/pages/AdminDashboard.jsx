@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     );
   };
 
-  const approvedLoans = loans.filter((loan)=>{loan.status === "approved"})
+  const approvedLoans = loans.filter((loan)=>{loan.amount > 1000})
   console.log(loans)
   const rejectedLoans = loans.filter((loan)=>{loan.status === "rejected"})
   const pendingLoans = loans.filter((loan)=>{loan.status === "pending"})
@@ -134,6 +134,7 @@ const AdminDashboard = () => {
             </div></div>))}</div>)}
         </div>
         </div>
+        
         </div>
       </div>
     </section>
