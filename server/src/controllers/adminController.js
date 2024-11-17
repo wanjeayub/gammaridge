@@ -93,6 +93,17 @@ const payLoan = async(req,res)=>{
 }
 }
 
+// get pending loans
+const getPendingLoans=async(req,res)=>{
+  try {
+    const pendingLoans = await Loan.find({ status: 'pending' });
+    res.status(200).json(pendingLoans);
+  } catch (error) {
+    console.error('Error fetching pending loans:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
 // SPECIAL LOANS - This feature is shelved for now
 
 // add special loan
@@ -154,6 +165,7 @@ module.exports = {
   payLoan,
   registerAdmin,
   loginAdmin,
+  getPendingLoans,
   applySpecialLoan,
   getSpecialLoans,
   editSpecialLoan,
