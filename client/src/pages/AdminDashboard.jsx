@@ -107,11 +107,9 @@ const AdminDashboard = () => {
       <div>
         <div><span className="text-3xl">Sorted Loans</span>
         <div>
-          {approvedLoans.length === 0?(<p>No loans found</p>):(<div>{approvedLoans.map((aLoan)=>(<div key={aLoans._id}>
-            <div>{aLoan.user.name}</div>
-          </div>))}</div>)
-
-          }
+          {approvedLoans.length > 0 ? (<div><p>No Approved Loans</p></div>):(<div>{aprrovedLoans.map((loan)=>(<div key={loan._id}><div className="flex flex-row">
+            <span>User: {loan.user.name}</span>
+            </div></div>))}</div>)}
         </div>
         </div>
       </div>
