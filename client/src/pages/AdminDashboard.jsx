@@ -107,7 +107,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       <div>
-        <div className="flex flex-row gap-4">
+        <div className="flex flex-col gap-4">
           <span className="text-3xl">Sorted Loans</span>
         <div>
           <span>Approved Loans</span>
