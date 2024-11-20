@@ -92,8 +92,10 @@ const AdminDashboard = () => {
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-col">
                         <span>User: {loan.user.name}</span>
-                        <span>Number: {loan.user.mobile}</span>
-                        <span>Number: {loan.user.alternatemobile}</span>
+                        <span>Mobile: {loan.user.mobile}</span>
+                        <span>
+                          Alternate Mobile: {loan.user.alternatemobile}
+                        </span>
                         <span>Amount: {loan.amount}</span>
                         <span>Status: {loan.status}</span>
                         <span>

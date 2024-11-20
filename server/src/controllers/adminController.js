@@ -59,24 +59,24 @@ const editAdminDetails = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-      const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id);
 
-      if (name) user.name = name;
-      if (email) user.email = email;
-      if (password) user.password = await bcrypt.hash(password, 10);
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = await bcrypt.hash(password, 10);
 
-      await user.save();
-      res.json(user);
+    await user.save();
+    res.json(user);
   } catch (error) {
-      res.status(500).json({ message: 'Error updating admin details' });
+    res.status(500).json({ message: "Error updating admin details" });
   }
-}
+};
 
 // Get all loans
 const getLoans = async (req, res) => {
   const loans = await Loan.find().populate(
     "user",
-    "name photoURLFront photoURLBack"
+    "name mobile alternatemobile"
   );
   res.json(loans);
 };
@@ -92,67 +92,66 @@ const approveLoan = async (req, res) => {
 };
 
 // pay loan
-const payLoan = async(req,res)=>{
+const payLoan = async (req, res) => {
   try {
     const loanId = req.params.id;
     const loan = await Loan.findById(loanId);
 
     if (!loan) {
-        return res.status(404).json({ message: 'Loan not found' });
+      return res.status(404).json({ message: "Loan not found" });
     }
 
     loan.isPaid = true;
     await loan.save();
 
-    res.status(200).json({ message: 'Loan marked as paid', loan });
-} catch (error) {
-    res.status(500).json({ message: 'Error updating loan status', error });
-}
-}
+    res.status(200).json({ message: "Loan marked as paid", loan });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating loan status", error });
+  }
+};
 
 // get pending loans
-const getPendingLoans=async(req,res)=>{
+const getPendingLoans = async (req, res) => {
   try {
-    const pendingLoans = await Loan.find({ status: 'pending' });
+    const pendingLoans = await Loan.find({ status: "pending" });
     res.status(200).json(pendingLoans);
   } catch (error) {
-    console.error('Error fetching pending loans:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching pending loans:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 // get approved loans
-const getApprovedLoans=async(req,res)=>{
+const getApprovedLoans = async (req, res) => {
   try {
-    const approvedLoans = await Loan.find({ status: 'approved' });
+    const approvedLoans = await Loan.find({ status: "approved" });
     res.status(200).json(approvedLoans);
   } catch (error) {
-    console.error('Error fetching pending loans:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching pending loans:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 // get rejected loans
-const getRejectedLoans=async(req,res)=>{
+const getRejectedLoans = async (req, res) => {
   try {
-    const rejectedLoans = await Loan.find({ status: 'rejected' });
+    const rejectedLoans = await Loan.find({ status: "rejected" });
     res.status(200).json(rejectedLoans);
   } catch (error) {
-    console.error('Error fetching pending loans:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching pending loans:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 // get paid loans
-const getPaidLoans = async(req,res)=>{
+const getPaidLoans = async (req, res) => {
   try {
-    const paidLoans = await Loan.find({isPaid:true});
-  res.status(200).json(paidLoans)
+    const paidLoans = await Loan.find({ isPaid: true });
+    res.status(200).json(paidLoans);
   } catch (error) {
-    console.error('Error fetching paid loans: ',error);
-    res.status(500).json({message:"Internal Server Error"})
-    
+    console.error("Error fetching paid loans: ", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 // SPECIAL LOANS - This feature is shelved for now
 
