@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
-  const [pendingLoans, setPendingLoans]= useState([])
-  const [approvedLoans, setApprovedLoans]= useState([])
-  const [rejectedLoans, setRejectedLoans]= useState([])
-  const [paidLoans, setPaidLoans]= useState([])
+  const [pendingLoans, setPendingLoans] = useState([]);
+  const [approvedLoans, setApprovedLoans] = useState([]);
+  const [rejectedLoans, setRejectedLoans] = useState([]);
+  const [paidLoans, setPaidLoans] = useState([]);
 
   useEffect(() => {
     const fetchLoans = async () => {
@@ -26,7 +26,18 @@ const AdminDashboard = () => {
     fetchLoans();
   }, []);
 
-
+  // const fetchUserData = async () => {
+  //   const response = await fetch(
+  //     "https://gammaridge-server.vercel.app/api/admin",
+  //     {
+  //       method: "GET",
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //     }
+  //   );
+  //   const userData = response.json();
+  // };
 
   const handleApproval = async (id, status) => {
     await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
@@ -42,25 +53,28 @@ const AdminDashboard = () => {
     );
   };
   const handlePay = async (id, isPaid) => {
-    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ isPaid }),
-    });
+    await fetch(
+      `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ isPaid }),
+      }
+    );
     setLoans(
-      loans.map((loan) => (loan._id === id ? { ...loan, isPaid:true } : loan))
+      loans.map((loan) => (loan._id === id ? { ...loan, isPaid: true } : loan))
     );
   };
 
-  
   return (
     <section className="max-w-6xl mx-auto text-white">
       <div>
         <Link to={"/admin/edit"}>
-        <span>edit admin details</span></Link>
+          <span>edit admin details</span>
+        </Link>
       </div>
       <div>
         <span className="text-3xl">Admin Dashboard</span>
@@ -75,10 +89,11 @@ const AdminDashboard = () => {
               <div className="flex gap-4 flex-col">
                 {loans.map((loan) => (
                   <div key={loan._id}>
-                    
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-col">
                         <span>User: {loan.user.name}</span>
+                        <span>Number: {loan.user.mobile}</span>
+                        <span>Number: {loan.user.alternatemobile}</span>
                         <span>Amount: {loan.amount}</span>
                         <span>Status: {loan.status}</span>
                         <span>
@@ -100,9 +115,12 @@ const AdminDashboard = () => {
                         </button>
                         <div>
                           {/* <input type="text" placeholder="Enter amount paid" /> */}
-                          <button className="bg-[#b9283b] p-2 ml-2 text-white" onClick={() => handlePay(loan._id)}>
-                          Pay
-                        </button>
+                          <button
+                            className="bg-[#b9283b] p-2 ml-2 text-white"
+                            onClick={() => handlePay(loan._id)}
+                          >
+                            Pay
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -113,8 +131,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-      
-
     </section>
   );
 };
