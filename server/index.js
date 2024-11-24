@@ -17,7 +17,6 @@ app.use(
   cors({
     origin: ["*", "https://gammaridge.vercel.app"],
     methods: "GET,POST,PUT,DELETE",
-    credentials: true,
   })
 );
 
