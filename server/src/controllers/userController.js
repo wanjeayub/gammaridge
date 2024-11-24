@@ -63,6 +63,66 @@ const loginUser = async (req, res) => {
   }
 };
 
+// reset password
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = User.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  const resetToken = jwt.sign({ id: user.email }, process.env.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+
+  // Send reset email using Nodemailer
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Reset Request",
+    text: `Please use the following link to reset your password: https://gammaridge-server.vercel.app/reset-password/${resetToken}`,
+  };
+
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      return res.status(500).json({ message: "Error sending email" });
+    }
+    res.json({ message: "Password reset email sent" });
+  });
+};
+
+// forgot password
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    res.json({ message: "Password successfully updated" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+};
+
 // Apply for Loan
 const applyLoan = async (req, res) => {
   const { amount } = req.body;
@@ -96,4 +156,11 @@ const getUserLoans = async (req, res) => {
   res.json(loans);
 };
 
-module.exports = { registerUser, loginUser, applyLoan, getUserLoans };
+module.exports = {
+  registerUser,
+  loginUser,
+  forgotPassword,
+  resetPassword,
+  applyLoan,
+  getUserLoans,
+};

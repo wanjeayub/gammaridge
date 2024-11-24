@@ -4,6 +4,8 @@ const {
   loginUser,
   applyLoan,
   getUserLoans,
+  resetPassword,
+  forgotPassword,
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 
@@ -15,8 +17,11 @@ router.get("/testing", (req, res) => {
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+// reset options
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+
 router.post("/loan", protect, applyLoan);
 router.get("/loans", protect, getUserLoans);
-
 
 module.exports = router;

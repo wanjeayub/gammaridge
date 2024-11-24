@@ -11,6 +11,8 @@ import UploadFiles from "./pages/UploadFiles";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import RegisterForm from "./pages/AltRegister";
 import EditAdminPage from "./pages/AdminEdit";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -25,6 +27,8 @@ const App = () => {
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/edit" element={<EditAdminPage />} />
       </Routes>
     </Router>
