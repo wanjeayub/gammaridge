@@ -10,25 +10,26 @@ const ForgotPassword = () => {
     setMessage("");
     setError("");
 
-    try {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/forgot-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("Password reset email sent successfully. Check your inbox.");
-      } else {
-        setError(data.message || "Something went wrong. Please try again.");
+    // try {
+    const response = await fetch(
+      "https://gammaridge-server.vercel.app/api/users/forgot-password",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       }
-    } catch (error) {
-      setError("Failed to send reset email. Please try again later.");
+    );
+
+    const data = await response.json();
+    if (response.ok) {
+      setMessage("Password reset email sent successfully. Check your inbox.");
+    } else {
+      setError(data.message || "Something went wrong. Please try again.");
     }
+    // } catch (error) {
+    //   alert(error.message);
+    //   setError("Failed to send reset email. Please try again later.");
+    // }
   };
 
   return (

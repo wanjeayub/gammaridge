@@ -63,10 +63,12 @@ const loginUser = async (req, res) => {
   }
 };
 
-// reset password
+// forgot password
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = User.findOne({ email });
+
+  console.log(email);
 
   if (!user) {
     return res.status(400).json({ message: "User not found" });
@@ -100,7 +102,7 @@ const forgotPassword = async (req, res) => {
   });
 };
 
-// forgot password
+// reset password
 const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
