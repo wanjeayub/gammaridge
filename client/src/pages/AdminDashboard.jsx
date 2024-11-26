@@ -11,37 +11,43 @@ const AdminDashboard = () => {
   const [paidLoans, setPaidLoans] = useState([]);
 
   useEffect(() => {
-    const fetchLoans = async () => {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/loans",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const data = await response.json();
-      setLoans(data);
-    };
-    fetchLoans();
-  }, []);
+    axios
+      .get("https://gammaridge-server.vercel.app/api/admin/loans")
+      .then((response) => setLoans(response.data))
+      .catch((error) => console.error("Error fetching loans:", error));
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/users",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const userData = response.json();
-      setUsers(userData);
-    };
-    fetchUserData();
+    // Fetch users
+    axios
+      .get("https://gammaridge-server.vercel.app/api/admin/users")
+      .then((response) => setUsers(response.data))
+      .catch((error) => console.error("Error fetching users:", error));
+
+    //   const fetchLoans = async () => {
+    //     const response = await fetch(
+    //       "https://gammaridge-server.vercel.app/api/admin/loans",
+    //       {
+    //         method: "GET",
+    //         headers: {
+    //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //         },
+    //       }
+    //     );
+    //     const data = await response.json();
+    //     setLoans(data);
+    //   };
+    //  const fetchUserData = async () => {
+    //    const response = await fetch(
+    //      "https://gammaridge-server.vercel.app/api/admin/users",
+    //      {
+    //        method: "GET",
+    //        headers: {
+    //          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //        },
+    //      }
+    //    );
+    //    const userData = response.json();
+    //    setUsers(userData);
+    //  };
   }, []);
 
   const handleApproval = async (id, status) => {

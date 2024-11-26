@@ -155,11 +155,11 @@ const getPaidLoans = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: "user" });
-    res.status(200).json(users);
-  } catch (error) {
-    console.error("error fetching users: ", error);
-    res.status(500).json({ message: "Internal Server error" });
+    const users = await User.find({}, "name mobile photoURLFront");
+    res.json(users);
+  } catch (err) {
+    console.error("Error retrieving users", err);
+    res.status(500).send("Error retrieving users");
   }
 };
 
