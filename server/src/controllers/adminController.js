@@ -153,6 +153,16 @@ const getPaidLoans = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "user" });
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("error fetching users: ", error);
+    res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
 // SPECIAL LOANS - This feature is shelved for now
 
 // add special loan
@@ -210,6 +220,7 @@ const deleteSpecialLoan = async (req, res) => {
 
 module.exports = {
   getLoans,
+  getAllUsers,
   approveLoan,
   payLoan,
   registerAdmin,

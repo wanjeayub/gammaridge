@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
+  const [users, setUsers] = useState([]);
   const [pendingLoans, setPendingLoans] = useState([]);
   const [approvedLoans, setApprovedLoans] = useState([]);
   const [rejectedLoans, setRejectedLoans] = useState([]);
@@ -26,18 +27,19 @@ const AdminDashboard = () => {
     fetchLoans();
   }, []);
 
-  // const fetchUserData = async () => {
-  //   const response = await fetch(
-  //     "https://gammaridge-server.vercel.app/api/admin",
-  //     {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //       },
-  //     }
-  //   );
-  //   const userData = response.json();
-  // };
+  const fetchUserData = async () => {
+    const response = await fetch(
+      "https://gammaridge-server.vercel.app/api/admin/users",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    const userData = response.json();
+    setUsers(userData);
+  };
 
   const handleApproval = async (id, status) => {
     await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
@@ -140,6 +142,21 @@ const AdminDashboard = () => {
               </div>
             )}
           </div>
+        </div>
+        <div>
+          {users.length === 0 ? (
+            <p>No users found</p>
+          ) : (
+            <div>
+              {users.map((user) => (
+                <div key={user._id}>
+                  <div>
+                    <span>My Name: {user.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

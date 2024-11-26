@@ -14,6 +14,7 @@ const {
   getRejectedLoans,
   getPaidLoans,
   editAdminDetails,
+  getAllUsers,
 } = require("../controllers/adminController.js");
 const { adminProtect, protect } = require("../middleware/authMiddleware.js");
 
@@ -21,18 +22,19 @@ const router = express.Router();
 
 router.post("/register", registerAdmin);
 router.post("/login", loginAdmin);
-router.put('/edit', adminProtect, editAdminDetails);
+router.put("/edit", adminProtect, editAdminDetails);
 
 // Loan routes
 router.get("/loans", adminProtect, getLoans);
 router.put("/loan/:id", adminProtect, approveLoan);
-router.put("/loan/repay/:id",adminProtect,payLoan);
+router.put("/loan/repay/:id", adminProtect, payLoan);
+router.get("/users", adminProtect, getAllUsers);
 
 // pending loans
-router.get('/loans/pending',adminProtect,getPendingLoans)
-router.get("/loans/approved",adminProtect,getApprovedLoans)
-router.get("/loans/rejected",adminProtect,getRejectedLoans)
-router.get("/loans/paid",adminProtect,getPaidLoans)
+router.get("/loans/pending", adminProtect, getPendingLoans);
+router.get("/loans/approved", adminProtect, getApprovedLoans);
+router.get("/loans/rejected", adminProtect, getRejectedLoans);
+router.get("/loans/paid", adminProtect, getPaidLoans);
 
 // special loans
 router.post("/sloan", adminProtect, applySpecialLoan);
