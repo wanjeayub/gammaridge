@@ -12,16 +12,40 @@ const AdminDashboard = () => {
   const [paidLoans, setPaidLoans] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("https://gammaridge-server.vercel.app/api/admin/loans")
-      .then((response) => setLoans(response.data))
-      .catch((error) => console.error("Error fetching loans:", error));
+    const fetchData = async () => {
+      try {
+        // Get the token from local storage
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("User not authenticated. Please log in.");
+          return;
+        }
 
-    // Fetch users
-    axios
-      .get("https://gammaridge-server.vercel.app/api/admin/users")
-      .then((response) => setUsers(response.data))
-      .catch((error) => console.error("Error fetching users:", error));
+        // Set the headers for the requests
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        // Fetch loans and users in parallel
+        const [loansResponse, usersResponse] = await Promise.all([
+          axios.get("https://gammaridge-server.vercel.app/api/admin/loans", {
+            headers,
+          }),
+          axios.get("https://gammaridge-server.vercel.app/api/admin/users", {
+            headers,
+          }),
+        ]);
+
+        // Update state with the fetched data
+        setLoans(loansResponse.data);
+        setUsers(usersResponse.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch data. Please check your authentication.");
+      }
+    };
+
+    fetchData();
 
     //   const fetchLoans = async () => {
     //     const response = await fetch(
