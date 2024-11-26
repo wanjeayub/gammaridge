@@ -184,8 +184,12 @@ const AdminDashboard = () => {
             <div>
               {users.map((user) => (
                 <div key={user._id}>
-                  <div className="grid grid-cols-1 gap-1">
-                    <img src={user.photoURLFront} />
+                  <div className="grid grid-cols-1 gap-1 bg-slate-200 p-1">
+                    <img
+                      src={user.photoURLFront}
+                      className="w-[500px]"
+                      alt="id front image"
+                    />
                     <span>My Name: {user.name}</span>
                     <span>My Name: {user.mobile}</span>
                   </div>
