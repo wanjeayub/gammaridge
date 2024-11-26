@@ -184,8 +184,10 @@ const AdminDashboard = () => {
             <div>
               {users.map((user) => (
                 <div key={user._id}>
-                  <div>
+                  <div className="grid grid-cols-1 gap-1">
+                    <span>My Name: {user.photoURLFront}</span>
                     <span>My Name: {user.name}</span>
+                    <span>My Name: {user.mobile}</span>
                   </div>
                 </div>
               ))}
