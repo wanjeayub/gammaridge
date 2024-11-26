@@ -99,7 +99,6 @@ const AdminDashboard = () => {
                       </Link>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <img src={loan.user} />
                       <div className="flex flex-col">
                         <span>User: {loan.user.name}</span>
                         <span>Mobile: {loan.user.mobile}</span>
