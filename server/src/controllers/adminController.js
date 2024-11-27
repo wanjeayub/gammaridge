@@ -76,7 +76,7 @@ const editAdminDetails = async (req, res) => {
 const getLoans = async (req, res) => {
   const loans = await Loan.find().populate(
     "user",
-    "name mobile alternatemobile"
+    "name mobile alternatemobile photoURLFront"
   );
   res.json(loans);
 };
