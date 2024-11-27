@@ -186,7 +186,7 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
-        <div>
+        {/* <div>
           <div>
             <span className="text-3xl">User Details</span>
           </div>
@@ -249,7 +249,7 @@ const AdminDashboard = () => {
               ))
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );
