@@ -27,18 +27,28 @@ const AdminDashboard = () => {
         };
 
         // Fetch loans and users in parallel
-        const [loansResponse, usersResponse] = await Promise.all([
-          axios.get("https://gammaridge-server.vercel.app/api/admin/loans", {
-            headers,
-          }),
-          axios.get("https://gammaridge-server.vercel.app/api/admin/users", {
-            headers,
-          }),
-        ]);
+        const [loansResponse, pendingLoansResponse, usersResponse] =
+          await Promise.all([
+            axios.get("https://gammaridge-server.vercel.app/api/admin/loans", {
+              headers,
+            }),
+
+            axios.get(
+              "https://gammaridge-server.vercel.app/api/admin/loans/pending",
+              {
+                headers,
+              }
+            ),
+
+            axios.get("https://gammaridge-server.vercel.app/api/admin/users", {
+              headers,
+            }),
+          ]);
 
         // Update state with the fetched data
         setLoans(loansResponse.data);
         setUsers(usersResponse.data);
+        setPendingLoans(pendingLoansResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to fetch data. Please check your authentication.");
@@ -178,25 +188,68 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div>
-          {users.length === 0 ? (
-            <p>No users found</p>
-          ) : (
-            <div>
-              {users.map((user) => (
-                <div key={user._id}>
-                  <div className="grid grid-cols-3 gap-3 bg-slate-600 p-1">
-                    <img
-                      src={user.photoURLFront}
-                      className="w-[300px]"
-                      alt="id front image"
-                    />
-                    <span>My Name: {user.name}</span>
-                    <span>My Name: {user.mobile}</span>
+          <div>
+            <span className="text-3xl">User Details</span>
+          </div>
+          <div>
+            {users.length === 0 ? (
+              <p>No users found</p>
+            ) : (
+              <div>
+                {users.map((user) => (
+                  <div key={user._id}>
+                    <div className="grid grid-cols-3 gap-3 bg-slate-600 p-1">
+                      <img
+                        src={user.photoURLFront}
+                        className="w-[300px]"
+                        alt="id front image"
+                      />
+                      <span>My Name: {user.name}</span>
+                      <span>My Name: {user.mobile}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div>
+            {users.length === 0 ? (
+              <p>No users found</p>
+            ) : (
+              <div>
+                {users.map((user) => (
+                  <div key={user._id}>
+                    <div className="grid grid-cols-3 gap-3 bg-slate-600 p-1">
+                      <img
+                        src={user.photoURLFront}
+                        className="w-[300px]"
+                        alt="id front image"
+                      />
+                      <span>My Name: {user.name}</span>
+                      <span>My Name: {user.mobile}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div>
+          <span>Pending Loans</span>
+          <div>
+            {pendingLoans.length === 0 ? (
+              <p>No Pending Loans available</p>
+            ) : (
+              pendingLoans.map((ploan) => (
+                <div key={ploan._id}>
+                  <div className="flex flex-col gap-3">
+                    <span>Name: {ploan.user.name}</span>
+                    <span>Phone number: {ploan.user.mobile}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     </section>
