@@ -51,7 +51,6 @@ const AdminDashboard = () => {
         setPendingLoans(pendingLoansResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError("Failed to fetch data. Please check your authentication.");
       }
     };
 
