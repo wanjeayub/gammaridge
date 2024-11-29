@@ -94,7 +94,7 @@ const forgotPassword = async (req, res) => {
     text: `Please use the following link to reset your password: https://gammaridge-server.vercel.app/reset-password/${resetToken}`,
   };
 
-  transporter.sendMail(mailOptions, (err, info) => {
+  transporter.sendMail(mailOptions, (err) => {
     if (err) {
       console.log(err);
       return res.status(500).json({ message: "Error sending email" });
