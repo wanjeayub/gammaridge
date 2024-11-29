@@ -9,7 +9,7 @@ const userRoutes = require("./src/routes/userRoutes.js");
 const adminRoutes = require("./src/routes/adminRoutes.js");
 
 const app = express();
-const cors = require("cors");
+let cors = require("cors");
 // use var to prevent future bugs on render
 var __dirname = path.resolve();
 
