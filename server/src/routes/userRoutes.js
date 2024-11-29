@@ -1,3 +1,4 @@
+let cors = require("cors");
 const express = require("express");
 const {
   registerUser,
@@ -18,7 +19,7 @@ router.get("/testing", (req, res) => {
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 // reset options
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password", cors(), forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
 router.post("/loan", protect, applyLoan);
