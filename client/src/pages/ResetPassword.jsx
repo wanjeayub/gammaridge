@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const ResetPassword = () => {
   const { token } = useParams(); // Retrieve token from URL
@@ -13,23 +14,21 @@ const ResetPassword = () => {
     setError("");
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         "https://gammaridge-server.vercel.app/api/users/reset-password",
+        { token, newPassword },
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, newPassword }),
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("Password reset successful. You can now log in.");
-      } else {
-        setError(data.message || "Something went wrong. Please try again.");
-      }
-    } catch (error) {
-      setError("Failed to reset password. Please try again later.");
+      setMessage("Password reset successful. You can now log in.");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
     }
   };
 
