@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel.js");
 const Loan = require("../models/loanModel.js");
-const nodemailer = require("nodemailer");
 
 // Generate JWT
 const generateToken = (id) => {

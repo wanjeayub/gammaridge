@@ -1,4 +1,3 @@
-let cors = require("cors");
 const express = require("express");
 const {
   registerUser,
@@ -8,6 +7,7 @@ const {
   resetPassword,
   forgotPassword,
   getUSer,
+  tryLoan,
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 
@@ -24,6 +24,7 @@ router.post("/fpassword", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
 router.post("/apply-loan", protect, applyLoan);
+router.post("/loaner", protect, tryLoan);
 router.get("/user", protect, getUSer);
 router.get("/loans", protect, getUserLoans);
 
