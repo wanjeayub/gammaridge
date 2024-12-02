@@ -20,6 +20,7 @@ const loanSchema = new mongoose.Schema({
     default: "pending",
   },
   createdAt: { type: Date, default: Date.now },
+  dueDate: { type: Date },
 });
 
 module.exports = mongoose.model("Loan", loanSchema);

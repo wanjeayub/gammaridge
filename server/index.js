@@ -31,8 +31,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 
 // test
-app.use("/", (req, res) => {
-  res.status(200).json("good");
+app.use("/testing", (req, res) => {
+  res.status(200).json("all working okay");
 });
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
