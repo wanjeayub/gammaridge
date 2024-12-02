@@ -13,6 +13,7 @@ import RegisterForm from "./pages/AltRegister";
 import EditAdminPage from "./pages/AdminEdit";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import TestDashboard from "./pages/TestDashboard";
 
 const App = () => {
   return (
@@ -24,7 +25,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/adminogin" element={<AdminLogin />} />
         <Route path="/docs" element={<UploadFiles />} />
-        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/dashboard" element={<TestDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
