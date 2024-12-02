@@ -56,7 +56,7 @@ const TestDashboard = () => {
     );
 
     const data = await response.json();
-    setModalOpen(false);
+
     // Inform the user about the unpaid loan
     if (!response.ok) {
       alert(data.message);

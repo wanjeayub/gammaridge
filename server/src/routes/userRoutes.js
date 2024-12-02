@@ -13,7 +13,7 @@ const { protect } = require("../middleware/authMiddleware.js");
 
 const router = express.Router();
 // url testing
-router.get("/testing", (req, res) => {
+router.get("/", (req, res) => {
   res.status(200).json(message, "working okay");
 });
 

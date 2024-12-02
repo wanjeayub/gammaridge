@@ -144,6 +144,12 @@ const applyLoan = async (req, res) => {
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
 
+  const dueDate = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    3
+  );
+
   const unpaidLoan = await Loan.findOne({ user: req.user._id, isPaid: false });
 
   if (unpaidLoan) {
@@ -159,6 +165,7 @@ const applyLoan = async (req, res) => {
     amount: myAmount,
     interest,
     totalLoan,
+    dueDate,
   });
 
   res.status(201).json(loan);
