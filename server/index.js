@@ -31,7 +31,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 
 // test
-app.use("/testing", (req, res) => {
+app.use("/", (req, res) => {
   res.status(200).json("all working okay");
 });
 
