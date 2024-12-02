@@ -21,7 +21,7 @@ const loanSchema = new mongoose.Schema(
       default: "pending",
     },
   },
-  { timestamp }
+  { timestamps }
 );
 
 module.exports = mongoose.model("Loan", loanSchema);
