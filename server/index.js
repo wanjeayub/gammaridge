@@ -3,13 +3,14 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const cors = require("cors");
+
 dotenv.config();
 
 const userRoutes = require("./src/routes/userRoutes.js");
 const adminRoutes = require("./src/routes/adminRoutes.js");
 
 const app = express();
+const cors = require("cors");
 
 // use var to prevent future bugs on render
 var __dirname = path.resolve();
