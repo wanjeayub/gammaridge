@@ -23,7 +23,7 @@ router.post("/login", loginUser);
 router.post("/fpassword", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
-router.post("/apply-loan", protect, applyLoan);
+router.post("add/apply-loan", protect, applyLoan);
 router.post("/loaner", protect, tryLoan);
 router.get("/user", protect, getUSer);
 router.get("/loans", protect, getUserLoans);
