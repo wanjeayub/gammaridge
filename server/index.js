@@ -15,7 +15,7 @@ var __dirname = path.resolve();
 
 app.use(
   cors({
-    origin: ["*", "https://gammaridge.vercel.app"],
+    origin: ["*", "https://gammaridge.vercel.app", "http://localhost:5173"],
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
   })

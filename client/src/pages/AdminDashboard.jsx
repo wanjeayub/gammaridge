@@ -107,7 +107,8 @@ const AdminDashboard = () => {
                         <span>
                           Alternate Mobile: {loan.user.alternatemobile}
                         </span>
-                        <span>Amount: {loan.totalLoan}</span>
+                        <span>Loan Amount: {loan.totalLoan}</span>
+                        <span>Principal Amount: {loan.amount}</span>
                         <span>Status: {loan.status}</span>
                         <span>
                           Payment Status: {loan.isPaid ? "Paid" : "In Progress"}

@@ -21,6 +21,9 @@ const UserDashboard = () => {
     fetchLoans();
   }, []);
 
+  const paidLoans = loans.filter((loan) => loan.isPaid);
+  const pendingLoans = loans.filter((loan) => loan.status === "pending");
+
   const handleChange = (e) => {
     setLoanData({ ...loanData, [e.target.name]: e.target.value });
   };
@@ -85,7 +88,7 @@ const UserDashboard = () => {
       <div>
         <h2 className="text-xl mt-8">My Loans</h2>
         {loans.length === 0 ? (
-          <p>You have no running loans</p>
+          <p>You have no pending loans</p>
         ) : (
           <div className="flex p-4 flex-col">
             {loans.map((loan) => (
@@ -95,7 +98,7 @@ const UserDashboard = () => {
                 {loan.interest} - Total Amount:
                 <span className="font-semibold"> Ksh</span> {loan.totalLoan} -
                 Status: {loan.status}
-                Payment Status: {loan.isPaid ? ("Fully Paid"):("In Progress")}
+                Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
               </div>
             ))}
           </div>
