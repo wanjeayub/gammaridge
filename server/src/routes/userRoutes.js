@@ -20,7 +20,7 @@ router.get("/testing", (req, res) => {
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 // reset options
-router.post("/fpassword", cors(), forgotPassword);
+router.post("/fpassword", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
 router.post("/apply", protect, applyLoan);
