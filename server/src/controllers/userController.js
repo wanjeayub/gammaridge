@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel.js");
 const Loan = require("../models/loanModel.js");
+const nodemailer = require("nodemailer");
 
 // Generate JWT
 const generateToken = (id) => {
@@ -137,6 +138,11 @@ const getUSer = async (req, res) => {
   }
 };
 
+// try loan
+const tryLoan = async (req, res) => {
+  res.status(200).json({ message: "am tired of trying" });
+};
+
 // Apply for Loan
 const applyLoan = async (req, res) => {
   const { amount } = req.body;
@@ -183,6 +189,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   applyLoan,
+  tryLoan,
   getUSer,
   getUserLoans,
 };
