@@ -275,9 +275,31 @@ const editMyLoan = async (req, res) => {
   res.status(200).send("Loan updated!");
 };
 
-const deleteLoan = async (req, res) => {
+const deleteMyLoan = async (req, res) => {
   await Loan.findOneAndDelete({ _id: req.params.loanId, status: "pending" });
   res.status(200).send("Loan deleted!");
+};
+// new delete loan controller
+const deleteLoan = async (req, res) => {
+  const { loanId } = req.params;
+
+  try {
+    const loan = await Loan.findById(loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+
+    if (loan.isPaid) {
+      return res.status(400).json({ message: "Cannot delete a paid loan" });
+    }
+
+    await Loan.deleteOne({ _id: loanId });
+    res.status(200).json({ message: "Loan deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error deleting loan" });
+  }
 };
 
 // Get User Loans
