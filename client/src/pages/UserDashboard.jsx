@@ -88,13 +88,23 @@ const UserDashboard = () => {
         ) : (
           <div className="flex p-4 flex-col">
             {loans.map((loan) => (
-              <div key={loan._id} className="mb-2 border p-3">
-                Amount: <span className="font-semibold">Ksh</span> {loan.amount}{" "}
-                - Interest: <span className="font-semibold">Ksh</span>
-                {loan.interest} - Total Amount:
-                <span className="font-semibold"> Ksh</span> {loan.totalLoan} -
-                Status: {loan.status}
-                Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
+              <div key={loan._id} className="mb-2 border p-3 flex flex-col">
+                <p>
+                  Amount: <span className="font-semibold">Ksh</span>{" "}
+                  {loan.amount}
+                </p>
+                <p>
+                  Interest: <span className="font-semibold">Ksh</span>
+                  {loan.interest}
+                </p>
+                <p>
+                  Total Amount:
+                  <span className="font-semibold"> Ksh</span> {loan.totalLoan}
+                </p>
+                <p>
+                  Status: {loan.status}
+                  Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
+                </p>
               </div>
             ))}
           </div>
