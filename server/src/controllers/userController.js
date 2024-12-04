@@ -145,18 +145,51 @@ const tryLoan = async (req, res) => {
   res.status(200).json({ message: "am tired of trying" });
 };
 
+// new loan function
+exports.applyForLoan = async (req, res) => {
+  const { amount } = req.body;
+
+  if (!amount || isNaN(amount) || amount <= 0) {
+    return res.status(400).json({ message: "Invalid loan amount" });
+  }
+
+  try {
+    const userId = req.user.id;
+    const newLoan = new Loan({
+      userId,
+      amount,
+      interest: calculateInterest(amount), // Assuming you have a function to calculate interest
+      totalLoan: calculateTotalLoan(amount), // Assuming you have a function to calculate total loan
+      status: "pending", // New loan is pending by default
+      isPaid: false,
+      dueDate: calculateDueDate(), // Assuming you have a function to calculate due date
+    });
+
+    await newLoan.save();
+    res.status(201).json(newLoan);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error applying for loan" });
+  }
+};
+
+// calculate due date
+function calculateDueDate() {
+  const currentDate = new Date();
+  // Set the date to the 1st of the next month
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  currentDate.setDate(3); // Set the day to the 3rd of the month
+  return currentDate.toISOString();
+}
 // Apply for Loan
 const applyLoan = async (req, res) => {
   const { amount } = req.body;
   const myAmount = parseFloat(amount);
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
+  calcDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 3);
 
-  const dueDate = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    3
-  );
+  const dueDate = calcDate.toISOString();
 
   const unpaidLoan = await Loan.findOne({ user: req.user._id, isPaid: false });
 
@@ -179,18 +212,59 @@ const applyLoan = async (req, res) => {
   res.status(201).json(loan);
 };
 
-const editLoan = async (req, res) => {
-  const updates = req.body;
-  await Loan.findOneAndUpdate(
-    { _id: req.params.id, status: "pending" },
-    updates
-  );
-  res.status(200).send("Loan updated!");
+// new edit loan
+exports.editLoan = async (req, res) => {
+  const { loanId } = req.params;
+  const { amount } = req.body;
+
+  if (!amount || isNaN(amount) || amount <= 0) {
+    return res.status(400).json({ message: "Invalid loan amount" });
+  }
+
+  try {
+    const loan = await Loan.findById(loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+
+    if (loan.isPaid) {
+      return res.status(400).json({ message: "Cannot edit a paid loan" });
+    }
+
+    loan.amount = amount;
+    loan.interest = calculateInterest(amount);
+    loan.totalLoan = calculateTotalLoan(amount);
+
+    await loan.save();
+    res.status(200).json(loan);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error editing loan" });
+  }
 };
 
-const deleteLoan = async (req, res) => {
-  await Loan.findOneAndDelete({ _id: req.params.id, status: "pending" });
-  res.status(200).send("Loan deleted!");
+// delete loan
+exports.deleteLoan = async (req, res) => {
+  const { loanId } = req.params;
+
+  try {
+    const loan = await Loan.findById(loanId);
+
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+
+    if (loan.isPaid) {
+      return res.status(400).json({ message: "Cannot delete a paid loan" });
+    }
+
+    await Loan.deleteOne({ _id: loanId });
+    res.status(200).json({ message: "Loan deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error deleting loan" });
+  }
 };
 
 // Get User Loans
