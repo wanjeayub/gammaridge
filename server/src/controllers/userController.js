@@ -137,6 +137,9 @@ const getUSer = async (req, res) => {
   }
 };
 
+// edit user profile
+const editProfile = () => {};
+
 // try loan
 const tryLoan = async (req, res) => {
   res.status(200).json({ message: "am tired of trying" });
@@ -176,6 +179,20 @@ const applyLoan = async (req, res) => {
   res.status(201).json(loan);
 };
 
+const editLoan = async (req, res) => {
+  const updates = req.body;
+  await Loan.findOneAndUpdate(
+    { _id: req.params.id, status: "pending" },
+    updates
+  );
+  res.status(200).send("Loan updated!");
+};
+
+const deleteLoan = async (req, res) => {
+  await Loan.findOneAndDelete({ _id: req.params.id, status: "pending" });
+  res.status(200).send("Loan deleted!");
+};
+
 // Get User Loans
 const getUserLoans = async (req, res) => {
   const loans = await Loan.find({ user: req.user._id });
@@ -188,7 +205,10 @@ module.exports = {
   forgotPassword,
   resetPassword,
   applyLoan,
+  editLoan,
+  deleteLoan,
   tryLoan,
   getUSer,
+  editProfile,
   getUserLoans,
 };

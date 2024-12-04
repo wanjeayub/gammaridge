@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
-  const [loanData, setLoanData] = useState({ amount: "", duration: "" });
+  const [user, setUser] = useState("");
+  const [loanData, setLoanData] = useState({ amount: "" });
+
   useEffect(() => {
     const fetchLoans = async () => {
       const response = await fetch(
@@ -17,7 +19,18 @@ const UserDashboard = () => {
       console.log(data);
       setLoans(data);
     };
+    const fetchUser = async () => {
+      const response = await fetch(
+        "https://gammaridge-server.vercel.app/api/users/user",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await response.json();
+      setUser(data);
+    };
     fetchLoans();
+    fetchUser();
   }, []);
 
   const paidLoans = loans.filter((loan) => loan.isPaid);
@@ -55,10 +68,64 @@ const UserDashboard = () => {
       amount: "",
     });
   };
+
+  async function handleEditLoan(loanId, newAmount) {
+    try {
+      const response = await fetch(
+        `https://gammaridge-server.vercel.app/api/users/loans/edit/${loanId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ amount: newAmount }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Loan updated successfully!");
+        console.log(result.loan);
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error("Error editing loan:", error);
+    }
+  }
+
+  async function handleDeleteLoan(loanId) {
+    try {
+      const response = await fetch(
+        `https://gammaridge-server.vercel.app/api/users/loans/delete/${loanId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Loan deleted successfully!");
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error("Error deleting loan:", error);
+    }
+  }
+
   return (
     <div className="container mx-auto p-3 text-white">
       <div>
         <h1 className="text-2xl font-bold">User Dashboard</h1>
+        <h1>Welcome back {user?.name}, we are glad you are here</h1>
       </div>
       <div>
         <h2 className="text-xl mt-8">My Loans</h2>
@@ -87,8 +154,11 @@ const UserDashboard = () => {
           </div>
         ) : (
           <div className="flex p-4 flex-col">
-            {loans.map((loan) => (
-              <div key={loan._id} className="mb-2 border p-3 flex flex-col">
+            {pendingLoans.map((loan) => (
+              <div
+                key={loan._id}
+                className="mb-2 border p-3 flex flex-col bg-slate-500"
+              >
                 <p>
                   Amount: <span className="font-semibold">Ksh</span>{" "}
                   {loan.amount}
@@ -105,6 +175,15 @@ const UserDashboard = () => {
                   Status: {loan.status}
                   Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
                 </p>
+                <p>Due date: {loan.dueDate}</p>
+                <div>
+                  <button onClick={handleEditLoan} className="bg-[#2d2197]">
+                    Edit Loan
+                  </button>
+                  <button onClick={handleDeleteLoan} className="bg-red-600">
+                    Delete Loan
+                  </button>
+                </div>
               </div>
             ))}
           </div>

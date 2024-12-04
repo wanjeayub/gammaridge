@@ -8,6 +8,9 @@ const {
   forgotPassword,
   getUSer,
   tryLoan,
+  editLoan,
+  deleteLoan,
+  editProfile,
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 
@@ -24,8 +27,10 @@ router.post("/fpassword", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
 router.post("/loans/apply", protect, applyLoan);
-router.post("/loaner", protect, tryLoan);
+router.put("/loans/edit/:id", protect, editLoan);
+router.delete("/loans/delete/:id", protect, deleteLoan);
 router.get("/user", protect, getUSer);
+router.get("/user/edit-profile/:id", protect, editProfile);
 router.get("/loans", protect, getUserLoans);
 
 module.exports = router;
