@@ -1,4 +1,5 @@
 const express = require("express");
+
 const {
   registerUser,
   loginUser,
@@ -7,10 +8,9 @@ const {
   resetPassword,
   forgotPassword,
   getUSer,
-  tryLoan,
+  editProfile,
   editLoan,
   deleteLoan,
-  editProfile,
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 

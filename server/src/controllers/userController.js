@@ -213,7 +213,7 @@ const applyLoan = async (req, res) => {
 };
 
 // new edit loan
-exports.editLoan = async (req, res) => {
+const editLoan = async (req, res) => {
   const { loanId } = req.params;
   const { amount } = req.body;
 
@@ -245,7 +245,7 @@ exports.editLoan = async (req, res) => {
 };
 
 // delete loan
-exports.deleteLoan = async (req, res) => {
+const deleteLoan = async (req, res) => {
   const { loanId } = req.params;
 
   try {
