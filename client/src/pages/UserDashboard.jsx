@@ -175,7 +175,7 @@ const UserDashboard = () => {
                   Status: {loan.status}
                   Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
                 </p>
-                <p>Due date: {loan.dueDate.toLocaleDateString("en-GB")}</p>
+                <p>Due date: {loan.dueDate}</p>
                 <div>
                   <button onClick={handleEditLoan} className="bg-[#2d2197]">
                     Edit Loan
