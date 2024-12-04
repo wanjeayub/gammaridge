@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [loanData, setLoanData] = useState({ amount: "", duration: "" });
