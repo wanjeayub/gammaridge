@@ -77,7 +77,7 @@ const UserDashboard = () => {
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
     const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/edit/${editLoanId}`,
+      `https://gammaridge-server.vercel.app/api/users/loans/edit/${loanId}`,
       {
         method: "PUT",
         headers: {

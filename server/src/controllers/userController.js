@@ -127,7 +127,7 @@ const resetPassword = async (req, res) => {
 };
 
 // get user
-const getUSer = async (req, res) => {
+const getUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password"); // Exclude password from the response
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -187,9 +187,12 @@ const applyLoan = async (req, res) => {
   const myAmount = parseFloat(amount);
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
-  calcDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 3);
 
-  const dueDate = calcDate.toISOString();
+  const dueDate = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    3
+  );
 
   const unpaidLoan = await Loan.findOne({ user: req.user._id, isPaid: false });
 
@@ -212,31 +215,43 @@ const applyLoan = async (req, res) => {
   res.status(201).json(loan);
 };
 
-// new edit loan
+// Controller to edit an existing loan
 const editLoan = async (req, res) => {
-  const { loanId } = req.params;
-  const { amount } = req.body;
+  const { loanId } = req.params; // Extract the loanId from the request parameters
+  const { amount } = req.body; // Extract the new amount from the request body
 
   if (!amount || isNaN(amount) || amount <= 0) {
     return res.status(400).json({ message: "Invalid loan amount" });
   }
 
   try {
+    // Find the loan by ID
     const loan = await Loan.findById(loanId);
 
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
     }
 
+    // Ensure the loan has not been paid before allowing edits
     if (loan.isPaid) {
       return res.status(400).json({ message: "Cannot edit a paid loan" });
     }
 
-    loan.amount = amount;
-    loan.interest = calculateInterest(amount);
-    loan.totalLoan = calculateTotalLoan(amount);
+    // Update the loan amount and recalculate dependent fields
 
+    const myAmount = parseFloat(amount);
+    const interest = 0.2 * myAmount;
+    const totalLoan = parseFloat(myAmount + interest);
+
+    loan.amount = myAmount;
+    loan.interest = interest; // Recalculate interest based on the new amount
+    loan.totalLoan = totalLoan; // Recalculate the total loan (amount + interest)
+    loan.dueDate = calculateDueDate(); // Recalculate due date (the 3rd of the following month)
+
+    // Save the updated loan to the database
     await loan.save();
+
+    // Return the updated loan as the response
     res.status(200).json(loan);
   } catch (err) {
     console.error(err);
@@ -244,27 +259,25 @@ const editLoan = async (req, res) => {
   }
 };
 
-// delete loan
-const deleteLoan = async (req, res) => {
+// Helper function to calculate the due date (3rd of the following month)
+function calculateDueDate() {
+  const currentDate = new Date();
+  currentDate.setMonth(currentDate.getMonth() + 1); // Move to next month
+  currentDate.setDate(3); // Set the date to the 3rd of the month
+  return currentDate.toISOString(); // Return the ISO string of the date
+}
+
+const editMyLoan = async (req, res) => {
   const { loanId } = req.params;
+  const { amount } = req.body;
+  await Loan.findOneAndUpdate({ _id: req.params.loanId, status: "pending" });
 
-  try {
-    const loan = await Loan.findById(loanId);
+  res.status(200).send("Loan updated!");
+};
 
-    if (!loan) {
-      return res.status(404).json({ message: "Loan not found" });
-    }
-
-    if (loan.isPaid) {
-      return res.status(400).json({ message: "Cannot delete a paid loan" });
-    }
-
-    await Loan.deleteOne({ _id: loanId });
-    res.status(200).json({ message: "Loan deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error deleting loan" });
-  }
+const deleteLoan = async (req, res) => {
+  await Loan.findOneAndDelete({ _id: req.params.loanId, status: "pending" });
+  res.status(200).send("Loan deleted!");
 };
 
 // Get User Loans
@@ -282,7 +295,7 @@ module.exports = {
   editLoan,
   deleteLoan,
   tryLoan,
-  getUSer,
+  getUser,
   editProfile,
   getUserLoans,
 };
