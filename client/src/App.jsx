@@ -14,6 +14,7 @@ import EditAdminPage from "./pages/AdminEdit";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import TestDashboard from "./pages/TestDashboard";
+import TestPage from "./pages/testpage";
 
 const App = () => {
   return (
@@ -26,7 +27,7 @@ const App = () => {
         <Route path="/adminogin" element={<AdminLogin />} />
         <Route path="/docs" element={<UploadFiles />} />
         <Route path="/dashboard" element={<UserDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin" element={<TestPage />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
