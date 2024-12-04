@@ -29,7 +29,7 @@ const UserDashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const response = await fetch(
-      "https://gammaridge-server.vercel.app/api/users/loan",
+      "https://gammaridge-server.vercel.app/api/users/loans/apply",
       {
         method: "POST",
         headers: {
