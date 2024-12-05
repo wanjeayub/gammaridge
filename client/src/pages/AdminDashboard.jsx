@@ -259,19 +259,27 @@ const AdminDashboard = () => {
               {loansPerPage.map((loan) => (
                 <div
                   key={loan._id}
-                  className="bg-white p-4 rounded-lg shadow-md"
+                  className="bg-white p-4 rounded-lg shadow-md flex flex-row"
                 >
-                  <img
-                    src={loan.user.photoURLFront}
-                    alt="ID Front"
-                    className="w-full h-40 object-cover rounded cursor-pointer"
-                    onClick={() => openModal(loan.user.photoURLFront)}
-                  />
-                  <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
-                  <p>User: {loan.user.name}</p>
-                  <p>Amount: {loan.amount}</p>
-                  <p>Mobile: {loan.user.mobile}</p>
-                  <p>Status: {loan.status}</p>
+                  <div>
+                    <img
+                      src={loan.user.photoURLFront}
+                      alt="ID Front"
+                      className="w-[100px] h-40 object-cover rounded cursor-pointer"
+                      onClick={() => openModal(loan.user.photoURLFront)}
+                    />
+                  </div>
+                  <div className="w-3/4">
+                    <h3 className="text-lg font-semibold">
+                      Loan ID: {loan._id}
+                    </h3>
+                    <p>User: {loan.user.name}</p>
+                    <p>Amount: {loan.totalAmount}</p>
+                    <p>Amount: {loan.amount}</p>
+                    <p>Mobile: {loan.user.mobile}</p>
+                    <p>Mobile: {loan.user.alternatemobile}</p>
+                    <p>Status: {loan.status}</p>
+                  </div>
 
                   {/* Conditional Buttons for Pending Loans */}
                   {loan.status === "pending" && (
