@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-// import ShowSpecialLoans from "../specialLoans/ShowSpecialLoans";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
@@ -9,27 +8,19 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get the token from local storage
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("User not authenticated. Please log in.");
+          console.error("User not authenticated. Please log in.");
           return;
         }
 
-        // Set the headers for the requests
-        const headers = {
-          Authorization: `Bearer ${token}`,
-        };
+        const headers = { Authorization: `Bearer ${token}` };
 
-        // Fetch loans and users in parallel
-        const [loansResponse, pendingLoansResponse, usersResponse] =
-          await Promise.all([
-            axios.get("https://gammaridge-server.vercel.app/api/admin/loans", {
-              headers,
-            }),
-          ]);
+        const loansResponse = await axios.get(
+          "https://gammaridge-server.vercel.app/api/admin/loans",
+          { headers }
+        );
 
-        // Update state with the fetched data
         setLoans(loansResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -39,7 +30,21 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const pendingLoans = loans.filter((loan) => loan.status === "pending");
+  // Sort loans by status
+  const sortedLoans = [...loans].sort((a, b) =>
+    a.status.localeCompare(b.status)
+  );
+
+  // Group loans by creation month
+  const loansByMonth = sortedLoans.reduce((acc, loan) => {
+    const month = new Date(loan.createdAt).toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
+    acc[month] = acc[month] || [];
+    acc[month].push(loan);
+    return acc;
+  }, {});
 
   const handleApproval = async (id, status) => {
     await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
@@ -54,7 +59,8 @@ const AdminDashboard = () => {
       loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
     );
   };
-  const handlePay = async (id, isPaid) => {
+
+  const handlePay = async (id) => {
     await fetch(
       `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
       {
@@ -63,7 +69,7 @@ const AdminDashboard = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ isPaid }),
+        body: JSON.stringify({ isPaid: true }),
       }
     );
     setLoans(
@@ -76,70 +82,59 @@ const AdminDashboard = () => {
       <div>
         <span className="text-3xl">Admin Dashboard</span>
       </div>
-      <div>
-        <span className="text-3xl font-semibold">Normal Loans</span>
-        <div>
-          <div>
-            {loans.length === 0 ? (
-              <p>No loans found</p>
-            ) : (
-              <div className="flex gap-4 flex-col">
-                {loans.map((loan) => (
-                  <div key={loan._id}>
-                    <div className="flex flex-row gap-3">
-                      <Link to={loan.user.photoURLFront} target="_blank">
-                        <img
-                          src={loan.user.photoURLFront}
-                          alt="id front image"
-                          className="w-[200px]"
-                        />
-                      </Link>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-col">
-                        <span>User: {loan.user.name}</span>
-                        <span>Mobile: {loan.user.mobile}</span>
-                        <span>
-                          Alternate Mobile: {loan.user.alternatemobile}
-                        </span>
-                        <span>Loan Amount: {loan.totalLoan}</span>
-                        <span>Principal Amount: {loan.amount}</span>
-                        <span>Status: {loan.status}</span>
-                        <span>
-                          Payment Status: {loan.isPaid ? "Paid" : "In Progress"}
-                        </span>
-                      </div>
-                      <div className="flex flex-row gap-3">
-                        <button
-                          onClick={() => handleApproval(loan._id, "approved")}
-                          className="bg-green-500 text-white ml-4 p-2"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleApproval(loan._id, "rejected")}
-                          className="bg-red-500 text-white ml-2 p-2"
-                        >
-                          Reject
-                        </button>
-                        <div>
-                          {/* <input type="text" placeholder="Enter amount paid" /> */}
-                          <button
-                            className="bg-[#b9283b] p-2 ml-2 text-white"
-                            onClick={() => handlePay(loan._id)}
-                          >
-                            Pay
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+      {Object.entries(loansByMonth).map(([month, loans]) => (
+        <div key={month} className="mt-6">
+          <h2 className="text-2xl font-bold mb-4">{month}</h2>
+          <div className="flex flex-col gap-4">
+            {loans.map((loan) => (
+              <div key={loan._id} className="p-4 border rounded-md bg-gray-800">
+                {loan.status === "pending" && (
+                  <Link to={loan.user.photoURLFront} target="_blank">
+                    <img
+                      src={loan.user.photoURLFront}
+                      alt="ID Front"
+                      className="w-[200px] mb-4"
+                    />
+                  </Link>
+                )}
+                <div>
+                  <span>User: {loan.user.name}</span>
+                  <span>Mobile: {loan.user.mobile}</span>
+                  <span>Alternate Mobile: {loan.user.alternatemobile}</span>
+                  <span>Loan Amount: {loan.totalLoan}</span>
+                  <span>Principal Amount: {loan.amount}</span>
+                  <span>Status: {loan.status}</span>
+                  <span>
+                    Payment Status: {loan.isPaid ? "Paid" : "In Progress"}
+                  </span>
+                </div>
+                <div className="flex gap-3 mt-3">
+                  <button
+                    onClick={() => handleApproval(loan._id, "approved")}
+                    className="bg-green-500 text-white p-2"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleApproval(loan._id, "rejected")}
+                    className="bg-red-500 text-white p-2"
+                  >
+                    Reject
+                  </button>
+                  {!loan.isPaid && (
+                    <button
+                      className="bg-blue-500 p-2 text-white"
+                      onClick={() => handlePay(loan._id)}
+                    >
+                      Pay
+                    </button>
+                  )}
+                </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
-      </div>
+      ))}
     </section>
   );
 };
