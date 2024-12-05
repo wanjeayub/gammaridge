@@ -185,7 +185,9 @@ const AdminDashboard = () => {
                   {loans.length}
                 </p>
               </div>
-              <Pie data={chartData} />
+              <div className="w-[500px]">
+                <Pie data={chartData} />
+              </div>
             </div>
           </section>
         )}
