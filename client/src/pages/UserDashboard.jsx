@@ -180,12 +180,15 @@ const UserDashboard = () => {
 
         {loans.length === 0 || pendingLoans.length === 0 ? (
           <div>
-            <p>
+            <p className="mb-3">
               You have <span>{pendingLoans.length}</span> pending loans
             </p>
             <div className="flex flex-col gap-4">
               <h2 className="text-xl">Apply for a new loan</h2>
-              <form onSubmit={handleSubmit} className="max-w-md gap-3 flex">
+              <form
+                onSubmit={handleSubmit}
+                className="max-w-md gap-3 flex flex-col"
+              >
                 <input
                   name="amount"
                   value={newLoanData.amount}
