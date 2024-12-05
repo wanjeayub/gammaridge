@@ -277,7 +277,7 @@ const AdminDashboard = () => {
                     <p>Amount: {loan.totalAmount}</p>
                     <p>Amount: {loan.amount}</p>
                     <p>Mobile: {loan.user.mobile}</p>
-                    <p>Mobile: {loan.user.alternatemobile}</p>
+                    <p>Alternate Mobile: {loan.user.alternatemobile}</p>
                     <p>Status: {loan.status}</p>
                   </div>
 
