@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast"; // For toast notifications
 import { CSVLink } from "react-csv"; // For CSV export
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
@@ -14,6 +13,7 @@ const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [statusMessage, setStatusMessage] = useState("");
 
   // Fetch loans on component mount
   useEffect(() => {
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("User not authenticated. Please log in.");
+          setStatusMessage("User not authenticated. Please log in.");
           return;
         }
 
@@ -32,8 +32,9 @@ const AdminDashboard = () => {
         );
 
         setLoans(loansResponse.data);
+        setStatusMessage("Loans fetched successfully.");
       } catch (err) {
-        toast.error("Error fetching data. Please try again later.");
+        setStatusMessage("Error fetching data. Please try again later.");
         console.error(err);
       }
     };
@@ -54,11 +55,11 @@ const AdminDashboard = () => {
       setLoans(
         loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
       );
-      toast.success(
-        `Loan ${status === "approved" ? "approved" : "rejected"} successfully!`
+      setStatusMessage(
+        `Loan ${status === "approved" ? "approved" : "rejected"} successfully.`
       );
     } catch (error) {
-      toast.error("Error updating loan. Please try again.");
+      setStatusMessage("Error updating loan. Please try again.");
       console.error(error);
     }
   };
@@ -141,7 +142,13 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-6">
-        <Toaster /> {/* Toaster for notifications */}
+        {/* Status Message */}
+        {statusMessage && (
+          <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded">
+            {statusMessage}
+          </div>
+        )}
+
         {/* Overview Section */}
         {activeSection === "overview" && (
           <section>
@@ -159,6 +166,7 @@ const AdminDashboard = () => {
             </div>
           </section>
         )}
+
         {/* Loans Section */}
         {activeSection === "loans" && (
           <section>
