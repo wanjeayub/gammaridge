@@ -87,13 +87,13 @@ const AdminDashboard = () => {
                 {loans.map((loan) => (
                   <div key={loan._id}>
                     <div className="flex flex-row gap-3">
-                      {/* <Link to={loan.user.photoURLFront} target="_blank">
+                      <Link to={loan.user.photoURLFront} target="_blank">
                         <img
                           src={loan.user.photoURLFront}
                           alt="id front image"
                           className="w-[200px]"
                         />
-                      </Link> */}
+                      </Link>
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-col">
