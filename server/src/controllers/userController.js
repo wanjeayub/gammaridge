@@ -217,7 +217,7 @@ const applyLoan = async (req, res) => {
 
 // Controller to edit an existing loan
 const editLoan = async (req, res) => {
-  const { loanId } = req.params; // Extract the loanId from the request parameters
+  const { editLoanId } = req.params; // Extract the loanId from the request parameters
   const { amount } = req.body; // Extract the new amount from the request body
 
   if (!amount || isNaN(amount) || amount <= 0) {
@@ -226,7 +226,7 @@ const editLoan = async (req, res) => {
 
   try {
     // Find the loan by ID
-    const loan = await Loan.findById(loanId);
+    const loan = await Loan.findById(editLoanId);
 
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
