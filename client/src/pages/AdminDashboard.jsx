@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { CSVLink } from "react-csv";
+import toast, { Toaster } from "react-hot-toast"; // For toast notifications
+import { CSVLink } from "react-csv"; // For CSV export
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 
@@ -14,17 +15,17 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
+  // Fetch loans on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          console.error("User not authenticated. Please log in.");
+          toast.error("User not authenticated. Please log in.");
           return;
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-
         const loansResponse = await axios.get(
           "https://gammaridge-server.vercel.app/api/admin/loans",
           { headers }
@@ -32,13 +33,15 @@ const AdminDashboard = () => {
 
         setLoans(loansResponse.data);
       } catch (err) {
-        console.error("Error fetching data:", err);
+        toast.error("Error fetching data. Please try again later.");
+        console.error(err);
       }
     };
 
     fetchData();
   }, []);
 
+  // Handle loan approval or rejection
   const handleApproval = async (id, status) => {
     try {
       await axios.put(
@@ -51,17 +54,18 @@ const AdminDashboard = () => {
       setLoans(
         loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
       );
-      alert(
+      toast.success(
         `Loan ${status === "approved" ? "approved" : "rejected"} successfully!`
       );
     } catch (error) {
-      console.error("Error updating loan:", error);
+      toast.error("Error updating loan. Please try again.");
+      console.error(error);
     }
   };
 
-  const handleExport = () => {
-    // Prepare data for CSV export
-    return loans.map(({ _id, user, amount, status, isPaid }) => ({
+  // Handle CSV export data preparation
+  const handleExport = () =>
+    loans.map(({ _id, user, amount, status, isPaid }) => ({
       LoanID: _id,
       UserName: user.name,
       Mobile: user.mobile,
@@ -69,18 +73,16 @@ const AdminDashboard = () => {
       Status: status,
       PaymentStatus: isPaid ? "Paid" : "In Progress",
     }));
-  };
 
-  // Filters
+  // Filtered and searched loans
   const filteredLoans = loans.filter((loan) =>
     filterStatus === "all" ? true : loan.status === filterStatus
   );
-
   const displayedLoans = filteredLoans.filter((loan) =>
     loan.user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Graph Data for Overview
+  // Pie chart data for overview
   const loanStatuses = ["pending", "approved", "paid"];
   const loanStatusCounts = loanStatuses.map(
     (status) =>
@@ -101,7 +103,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-100">
       {/* Side Menu */}
       <aside className="w-64 bg-gray-900 text-white">
         <div className="p-6">
@@ -138,7 +140,8 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 bg-gray-100">
+      <main className="flex-1 p-6">
+        <Toaster /> {/* Toaster for notifications */}
         {/* Overview Section */}
         {activeSection === "overview" && (
           <section>
@@ -156,7 +159,6 @@ const AdminDashboard = () => {
             </div>
           </section>
         )}
-
         {/* Loans Section */}
         {activeSection === "loans" && (
           <section>
@@ -185,6 +187,37 @@ const AdminDashboard = () => {
             >
               Export CSV
             </CSVLink>
+            <div className="mt-4">
+              {displayedLoans.map((loan) => (
+                <div
+                  key={loan._id}
+                  className="bg-white p-4 rounded-lg shadow-md mb-4"
+                >
+                  <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
+                  <p>User: {loan.user.name}</p>
+                  <p>Amount: {loan.amount}</p>
+                  <p>Status: {loan.status}</p>
+                  <div className="flex gap-2 mt-2">
+                    {loan.status === "pending" && (
+                      <>
+                        <button
+                          className="bg-green-500 text-white px-4 py-2 rounded"
+                          onClick={() => handleApproval(loan._id, "approved")}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-2 rounded"
+                          onClick={() => handleApproval(loan._id, "rejected")}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
       </main>
