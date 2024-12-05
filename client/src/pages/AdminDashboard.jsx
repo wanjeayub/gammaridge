@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { CSVLink } from "react-csv"; // For CSV export
+import { CSVLink } from "react-csv";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -9,13 +9,12 @@ import {
   Legend,
   BarElement,
   LineElement,
-  CategoryScale, // Import CategoryScale
-  LinearScale, // Import LinearScale (used in bar/line charts)
+  CategoryScale,
+  LinearScale,
 } from "chart.js";
 import { Pie, Bar, Line } from "react-chartjs-2";
-import dayjs from "dayjs"; // For working with dates
-import Select from "react-select"; // For searchable dropdowns
-import ReactPaginate from "react-paginate"; // For pagination
+import dayjs from "dayjs";
+import ReactPaginate from "react-paginate";
 
 // Register Chart.js components
 ChartJS.register(
@@ -24,7 +23,7 @@ ChartJS.register(
   Legend,
   BarElement,
   LineElement,
-  CategoryScale, // Register required scales
+  CategoryScale,
   LinearScale
 );
 
@@ -35,8 +34,10 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [activeMonth, setActiveMonth] = useState(dayjs().format("YYYY-MM"));
   const [statusMessage, setStatusMessage] = useState("");
-  const [perPage] = useState(10); // Pagination per page
+  const [perPage] = useState(10);
   const [pageNumber, setPageNumber] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
+  const [modalImage, setModalImage] = useState(""); // Image URL for modal
 
   // Fetch loans on component mount
   useEffect(() => {
@@ -65,138 +66,43 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Handle loan approval, rejection, or marking as paid
-  const handleApproval = async (id, status) => {
-    try {
-      await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
-        { status },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setLoans(
-        loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
-      );
-      setStatusMessage(
-        `Loan ${status === "approved" ? "approved" : "rejected"} successfully.`
-      );
-    } catch (error) {
-      setStatusMessage("Error updating loan. Please try again.");
-      console.error(error);
-    }
+  const openModal = (imageUrl) => {
+    setModalImage(imageUrl);
+    setIsModalOpen(true);
   };
 
-  // Mark loan as paid
-  const handleMarkPaid = async (id) => {
-    try {
-      await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
-        { isPaid: true },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setLoans(
-        loans.map((loan) =>
-          loan._id === id ? { ...loan, isPaid: true } : loan
-        )
-      );
-      setStatusMessage("Loan marked as paid successfully.");
-    } catch (error) {
-      setStatusMessage("Error marking loan as paid. Please try again.");
-      console.error(error);
-    }
-  };
-
-  // Handle CSV export data preparation
-  const handleExport = () =>
-    loans.map(({ _id, user, amount, status, isPaid }) => ({
-      LoanID: _id,
-      UserName: user.name,
-      Mobile: user.mobile,
-      Amount: amount,
-      Status: status,
-      PaymentStatus: isPaid ? "Paid" : "In Progress",
-    }));
-
-  // Filtered and searched loans
-  const filteredLoans = loans.filter((loan) =>
-    filterStatus === "all"
-      ? true
-      : loan.status === filterStatus || (filterStatus === "paid" && loan.isPaid)
-  );
-  const displayedLoans = filteredLoans.filter((loan) =>
-    loan.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Group loans by month (using the loan created date)
-  const groupedLoansByMonth = loans.reduce((acc, loan) => {
-    const loanMonth = dayjs(loan.createdAt).format("YYYY-MM");
-    if (!acc[loanMonth]) acc[loanMonth] = [];
-    acc[loanMonth].push(loan);
-    return acc;
-  }, {});
-
-  // Pagination data for loans
-  const loansPerPage = displayedLoans.slice(
-    pageNumber * perPage,
-    (pageNumber + 1) * perPage
-  );
-  const pageCount = Math.ceil(displayedLoans.length / perPage);
-
-  // Pie chart data for overview
-  const loanStatuses = ["pending", "approved", "paid"];
-  const loanStatusCounts = loanStatuses.map(
-    (status) =>
-      loans.filter(
-        (loan) => loan.status === status || (status === "paid" && loan.isPaid)
-      ).length
-  );
-
-  const chartData = {
-    labels: ["Pending", "Approved", "Paid"],
-    datasets: [
-      {
-        label: "Loan Status",
-        data: loanStatusCounts,
-        backgroundColor: ["#FBBF24", "#10B981", "#3B82F6"],
-      },
-    ],
-  };
-
-  // Bar chart for loan amounts by month
-  const loanAmountsByMonth = Object.entries(groupedLoansByMonth).map(
-    ([month, loans]) => ({
-      month,
-      totalAmount: loans.reduce((total, loan) => total + loan.amount, 0),
-    })
-  );
-
-  const barChartData = {
-    labels: loanAmountsByMonth.map((item) => item.month),
-    datasets: [
-      {
-        label: "Loan Amounts",
-        data: loanAmountsByMonth.map((item) => item.totalAmount),
-        backgroundColor: "#3B82F6",
-      },
-    ],
-  };
-
-  const options = {
-    scales: {
-      x: {
-        type: "category", // Ensure this is set
-      },
-      y: {
-        type: "linear",
-      },
-    },
+  const closeModal = () => {
+    setModalImage("");
+    setIsModalOpen(false);
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
+      {/* Modal */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={closeModal}
+        >
+          <div
+            className="bg-white p-4 rounded shadow-lg relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-2 right-2 text-red-500 font-bold text-lg"
+              onClick={closeModal}
+            >
+              X
+            </button>
+            <img
+              src={modalImage}
+              alt="Loan Document"
+              className="w-full h-auto rounded"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Side Menu */}
       <aside className="w-64 bg-gray-900 text-white h-full flex-shrink-0">
         <div className="p-6">
@@ -219,42 +125,12 @@ const AdminDashboard = () => {
           >
             Loans
           </button>
-          <button
-            onClick={() => setActiveSection("transactions")}
-            className={`block w-full text-left px-6 py-3 ${
-              activeSection === "transactions"
-                ? "bg-gray-800"
-                : "hover:bg-gray-700"
-            }`}
-          >
-            Transactions
-          </button>
         </nav>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-y-auto">
         <div>{statusMessage && <div>{statusMessage}</div>}</div>
-        {/* Overview Section */}
-        {activeSection === "overview" && (
-          <section>
-            <h2 className="text-2xl font-bold mb-6">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-600">
-                  Total Loans
-                </h3>
-                <p className="text-2xl font-bold text-blue-500">
-                  {loans.length}
-                </p>
-              </div>
-              <Pie data={chartData} />
-            </div>
-            <div>
-              <Bar data={barChartData} />
-            </div>
-          </section>
-        )}
 
         {/* Loans Section */}
         {activeSection === "loans" && (
@@ -279,62 +155,45 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            {/* Monthly Tab */}
-            <div className="mb-4">
-              {Object.keys(groupedLoansByMonth).map((month) => (
-                <button
-                  key={month}
-                  className={`px-4 py-2 rounded ${
-                    activeMonth === month ? "bg-blue-500" : "bg-gray-300"
-                  }`}
-                  onClick={() => setActiveMonth(month)}
-                >
-                  {dayjs(month).format("MMMM YYYY")}
-                </button>
-              ))}
-            </div>
-
-            {/* Loans by Month */}
+            {/* Loans List */}
             <div className="overflow-auto">
-              {groupedLoansByMonth[activeMonth]?.map((loan) => (
+              {loans.map((loan) => (
                 <div
                   key={loan._id}
                   className="bg-white p-4 rounded-lg shadow-md mb-4"
                 >
-                  <Link to={loan.user.photoURLFront} target="_blank">
-                    <img
-                      src={loan.user.photoURLFront}
-                      alt="ID Front"
-                      className="w-full h-40 object-cover mb-4 rounded"
-                    />
-                  </Link>
+                  <img
+                    src={loan.user.photoURLFront}
+                    alt="ID Front"
+                    className="w-full h-40 object-cover mb-4 rounded cursor-pointer"
+                    onClick={() => openModal(loan.user.photoURLFront)}
+                  />
                   <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
                   <p>User: {loan.user.name}</p>
                   <p>Full Loan: {loan.totalAmount}</p>
                   <p>Mobile Number 1: {loan.user.mobile}</p>
                   <p>Mobile Number 2: {loan.user.alternatemobile}</p>
                   <p>Status: {loan.status}</p>
-                  <div className="flex gap-2 mt-2">
-                    {loan.status === "approved" && !loan.isPaid && (
-                      <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                        onClick={() => handleMarkPaid(loan._id)}
-                      >
-                        Mark as Paid
-                      </button>
-                    )}
-                    {loan.isPaid && (
-                      <span className="text-green-500">Paid</span>
-                    )}
-                  </div>
+                  {loan.status === "approved" && !loan.isPaid && (
+                    <button
+                      className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
+                      onClick={() => console.log("Mark as paid")}
+                    >
+                      Mark as Paid
+                    </button>
+                  )}
+                  {loan.isPaid && (
+                    <span className="text-green-500 mt-2 block">Paid</span>
+                  )}
                 </div>
               ))}
             </div>
+
             <ReactPaginate
               previousLabel={"Previous"}
               nextLabel={"Next"}
               breakLabel={"..."}
-              pageCount={pageCount}
+              pageCount={Math.ceil(loans.length / perPage)}
               marginPagesDisplayed={2}
               pageRangeDisplayed={5}
               onPageChange={(data) => setPageNumber(data.selected)}
