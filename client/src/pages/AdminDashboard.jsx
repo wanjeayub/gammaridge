@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Handle loan approval or rejection
+  // Handle loan approval, rejection, or marking as paid
   const handleApproval = async (id, status) => {
     try {
       await axios.put(
@@ -63,6 +63,28 @@ const AdminDashboard = () => {
     }
   };
 
+  // Mark loan as paid
+  const handleMarkPaid = async (id) => {
+    try {
+      await axios.put(
+        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        { isPaid: true },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setLoans(
+        loans.map((loan) =>
+          loan._id === id ? { ...loan, isPaid: true } : loan
+        )
+      );
+      setStatusMessage("Loan marked as paid successfully.");
+    } catch (error) {
+      setStatusMessage("Error marking loan as paid. Please try again.");
+      console.error(error);
+    }
+  };
+
   // Handle CSV export data preparation
   const handleExport = () =>
     loans.map(({ _id, user, amount, status, isPaid }) => ({
@@ -76,7 +98,9 @@ const AdminDashboard = () => {
 
   // Filtered and searched loans
   const filteredLoans = loans.filter((loan) =>
-    filterStatus === "all" ? true : loan.status === filterStatus
+    filterStatus === "all"
+      ? true
+      : loan.status === filterStatus || (filterStatus === "paid" && loan.isPaid)
   );
   const displayedLoans = filteredLoans.filter((loan) =>
     loan.user.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -220,6 +244,17 @@ const AdminDashboard = () => {
                           Reject
                         </button>
                       </>
+                    )}
+                    {loan.status === "approved" && !loan.isPaid && (
+                      <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={() => handleMarkPaid(loan._id)}
+                      >
+                        Mark as Paid
+                      </button>
+                    )}
+                    {loan.isPaid && (
+                      <span className="text-green-500">Paid</span>
                     )}
                   </div>
                 </div>
