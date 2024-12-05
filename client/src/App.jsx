@@ -13,8 +13,6 @@ import RegisterForm from "./pages/AltRegister";
 import EditAdminPage from "./pages/AdminEdit";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import TestDashboard from "./pages/TestDashboard";
-import TestPage from "./pages/testpage";
 
 const App = () => {
   return (
