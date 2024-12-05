@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [user, setUser] = useState("");
-  const [loanData, setLoanData] = useState({ amount: "" });
-  const [editLoanId, setEditLoanId] = useState(null); // For tracking the loan being edited
-  const [newLoanData, setNewLoanData] = useState({ amount: "" }); // For new loan form
+  const [editLoanId, setEditLoanId] = useState(null);
+  const [newLoanData, setNewLoanData] = useState({ amount: "" });
 
   useEffect(() => {
     const fetchLoans = async () => {
@@ -20,6 +19,7 @@ const UserDashboard = () => {
       const data = await response.json();
       setLoans(data);
     };
+
     const fetchUser = async () => {
       const response = await fetch(
         "https://gammaridge-server.vercel.app/api/users/user",
@@ -30,6 +30,7 @@ const UserDashboard = () => {
       const data = await response.json();
       setUser(data);
     };
+
     fetchLoans();
     fetchUser();
   }, []);
@@ -69,16 +70,16 @@ const UserDashboard = () => {
     setNewLoanData({ amount: "" });
   };
 
-  const handleEditLoan = async (loanId) => {
+  const handleEditLoan = (loanId) => {
     const loan = loans.find((loan) => loan._id === loanId);
     setEditLoanId(loanId);
-    setNewLoanData({ amount: loan.amount }); // Pre-fill the form with current loan data
+    setNewLoanData({ amount: loan.amount });
   };
 
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
     const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/edit/${loanId}`,
+      `https://gammaridge-server.vercel.app/api/users/loans/edit/${editLoanId}`,
       {
         method: "PUT",
         headers: {
@@ -95,7 +96,8 @@ const UserDashboard = () => {
           loan._id === editLoanId ? { ...loan, ...newLoanData } : loan
         )
       );
-      setEditLoanId(null); // Close the edit form
+      setEditLoanId(null);
+      setNewLoanData({ amount: "" });
       alert("Loan updated successfully!");
     } else {
       alert(data.message);
@@ -119,11 +121,9 @@ const UserDashboard = () => {
           },
         }
       );
-
       const result = await response.json();
-
       if (response.ok) {
-        setLoans(loans.filter((loan) => loan._id !== loanId)); // Remove the loan from the UI
+        setLoans(loans.filter((loan) => loan._id !== loanId));
         alert("Loan deleted successfully!");
       } else {
         alert(result.message);
@@ -133,11 +133,40 @@ const UserDashboard = () => {
     }
   };
 
+  // const handlePayLoan = async (loanId) => {
+  //   try {
+  //     const response = await fetch(
+  //       `https://gammaridge-server.vercel.app/api/users/loans/pay/${loanId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       setLoans(
+  //         loans.map((loan) =>
+  //           loan._id === loanId ? { ...loan, isPaid: true } : loan
+  //         )
+  //       );
+  //       alert("Loan paid successfully!");
+  //     } else {
+  //       alert(data.message);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error paying loan:", error);
+  //     alert("Failed to process payment. Please try again.");
+  //   }
+  // };
+
   return (
     <div className="container mx-auto p-3 text-white">
       <div>
         <h1 className="text-3xl font-bold">User Dashboard</h1>
-        <h1 className="text-2xl ">
+        <h1 className="text-2xl">
           Welcome back <span className="text-[#b9283b]">{user?.name}</span>, we
           are glad you are here
         </h1>
@@ -181,7 +210,7 @@ const UserDashboard = () => {
                   {loan.amount}
                 </p>
                 <p>
-                  Interest: <span className="font-semibold">Ksh</span>
+                  Interest: <span className="font-semibold">Ksh</span>{" "}
                   {loan.interest}
                 </p>
                 <p>
@@ -212,30 +241,44 @@ const UserDashboard = () => {
             ))}
           </div>
         )}
-      </div>
-      <div>
-        <div>
-          {approvedLoans.map((loan) => (
-            <div key={loan._id}>
-              <p>
-                Amount: <span className="font-semibold">Ksh</span> {loan.amount}
-              </p>
-              <p>
-                Interest: <span className="font-semibold">Ksh</span>
-                {loan.interest}
-              </p>
-              <p>
-                Total Amount:
-                <span className="font-semibold"> Ksh</span> {loan.totalLoan}
-              </p>
-              <p>Status: {loan.status}</p>
-              <p>
-                Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
-              </p>
-              <p>Due date: {loan.dueDate}</p>
+
+        {approvedLoans.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl">Approved Loans</h2>
+            <div className="flex flex-col gap-4">
+              {approvedLoans.map((loan) => (
+                <div
+                  key={loan._id}
+                  className="mb-2 border p-3 flex flex-col bg-slate-500"
+                >
+                  <p>
+                    Amount: <span className="font-semibold">Ksh</span>{" "}
+                    {loan.amount}
+                  </p>
+                  <p>
+                    Interest: <span className="font-semibold">Ksh</span>{" "}
+                    {loan.interest}
+                  </p>
+                  <p>
+                    Total Amount:
+                    <span className="font-semibold"> Ksh</span> {loan.totalLoan}
+                  </p>
+                  <p>Status: {loan.status}</p>
+                  <p>
+                    Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
+                  </p>
+                  <button
+                    onClick={() => handlePayLoan(loan._id)}
+                    className="bg-green-600 text-white py-2 px-4 mt-2"
+                    disabled={loan.isPaid}
+                  >
+                    {loan.isPaid ? "Paid" : "Pay Now"}
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {editLoanId && (
