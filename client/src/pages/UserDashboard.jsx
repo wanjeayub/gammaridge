@@ -151,7 +151,7 @@ const UserDashboard = () => {
       if (response.ok) {
         setLoans(
           loans.map((loan) =>
-            loan._id === id ? { ...loan, isPaid: true } : loan
+            loan._id === id ? { ...loan, isPaid: false } : loan
           )
         );
         alert("Loan paid successfully!");
