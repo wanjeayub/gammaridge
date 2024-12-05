@@ -133,34 +133,34 @@ const UserDashboard = () => {
     }
   };
 
-  // const handlePayLoan = async (id) => {
-  //   try {
-  //     const response = await fetch(
-  //       `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       setLoans(
-  //         loans.map((loan) =>
-  //           loan._id === id ? { ...loan, isPaid: true } : loan
-  //         )
-  //       );
-  //       alert("Loan paid successfully!");
-  //     } else {
-  //       alert(data.message);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error paying loan:", error);
-  //     alert("Failed to process payment. Please try again.");
-  //   }
-  // };
+  const handlePayLoan = async (id) => {
+    try {
+      const response = await fetch(
+        `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setLoans(
+          loans.map((loan) =>
+            loan._id === id ? { ...loan, isPaid: true } : loan
+          )
+        );
+        alert("Loan paid successfully!");
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error paying loan:", error);
+      alert("Failed to process payment. Please try again.");
+    }
+  };
 
   return (
     <div className="container mx-auto p-3 text-white">
@@ -244,7 +244,7 @@ const UserDashboard = () => {
           </div>
         )}
 
-        {approvedLoans.length > 0 && (
+        {approvedLoans.length > 0 && !approvedLoans.isPaid && (
           <div className="mt-8">
             <h2 className="text-xl">Approved Loans</h2>
             <div className="flex flex-col gap-4">
