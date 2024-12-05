@@ -4,6 +4,7 @@ import axios from "axios";
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
+  const [activeSection, setActiveSection] = useState("overview");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,132 +31,152 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const handleApproval = async (id, status) => {
-    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({ status }),
-    });
-    setLoans(
-      loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
-    );
-  };
-
-  const handlePay = async (id) => {
-    await fetch(
-      `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ isPaid: true }),
-      }
-    );
-    setLoans(
-      loans.map((loan) => (loan._id === id ? { ...loan, isPaid: true } : loan))
-    );
-  };
-
-  const sortedLoans = [...loans].sort((a, b) =>
-    a.status.localeCompare(b.status)
-  );
-
-  const loansByMonth = sortedLoans.reduce((acc, loan) => {
-    const month = new Date(loan.createdAt).toLocaleString("default", {
-      month: "long",
-      year: "numeric",
-    });
-    acc[month] = acc[month] || [];
-    acc[month].push(loan);
-    return acc;
-  }, {});
+  // Segregate loans by status
+  const pendingLoans = loans.filter((loan) => loan.status === "pending");
+  const approvedLoans = loans.filter((loan) => loan.status === "approved");
+  const paidLoans = loans.filter((loan) => loan.isPaid);
 
   return (
-    <section className="max-w-7xl mx-auto p-6 text-white">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-blue-500">Admin Dashboard</h1>
-        <p className="text-gray-400 mt-2">
-          Manage loans efficiently by approving, rejecting, or marking payments.
-        </p>
-      </header>
-
-      {Object.entries(loansByMonth).map(([month, loans]) => (
-        <div key={month} className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-200">{month}</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {loans.map((loan) => (
-              <div
-                key={loan._id}
-                className="p-4 border rounded-lg bg-gray-800 hover:bg-gray-700 transition-shadow shadow-lg"
-              >
-                {loan.status === "pending" && (
-                  <Link to={loan.user.photoURLFront} target="_blank">
-                    <img
-                      src={loan.user.photoURLFront}
-                      alt="ID Front"
-                      className="w-full h-40 object-cover mb-4 rounded"
-                    />
-                  </Link>
-                )}
-                <div className="mb-3">
-                  <h3 className="text-lg font-bold text-gray-300">
-                    {loan.user.name}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Mobile: {loan.user.mobile}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Alt Mobile: {loan.user.alternatemobile}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Loan Amount: Ksh:{loan.totalLoan}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Principal Amount: Ksh: {loan.amount}
-                  </p>
-                  <p className="text-sm text-gray-400">Status: {loan.status}</p>
-                  <p className="text-sm text-gray-400">
-                    Payment Status: {loan.isPaid ? "Paid" : "In Progress"}
-                  </p>
-                </div>
-                <div className="flex gap-3 mt-3">
-                  {loan.status !== "approved" && (
-                    <>
-                      <button
-                        onClick={() => handleApproval(loan._id, "approved")}
-                        className="bg-green-500 text-white px-4 py-2 rounded shadow hover:bg-green-600"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleApproval(loan._id, "rejected")}
-                        className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
-                  {!loan.isPaid && (
-                    <button
-                      className="bg-blue-500 px-4 py-2 text-white rounded shadow hover:bg-blue-600"
-                      onClick={() => handlePay(loan._id)}
-                    >
-                      Mark Paid
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="flex h-screen">
+      {/* Side Menu */}
+      <aside className="w-64 bg-gray-900 text-white">
+        <div className="p-6">
+          <h1 className="text-3xl font-bold text-blue-500">Admin Dashboard</h1>
         </div>
-      ))}
-    </section>
+        <nav className="mt-10 space-y-4">
+          <button
+            onClick={() => setActiveSection("overview")}
+            className={`block w-full text-left px-6 py-3 ${
+              activeSection === "overview" ? "bg-gray-800" : "hover:bg-gray-700"
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveSection("loans")}
+            className={`block w-full text-left px-6 py-3 ${
+              activeSection === "loans" ? "bg-gray-800" : "hover:bg-gray-700"
+            }`}
+          >
+            Loans
+          </button>
+          <button
+            onClick={() => setActiveSection("transactions")}
+            className={`block w-full text-left px-6 py-3 ${
+              activeSection === "transactions"
+                ? "bg-gray-800"
+                : "hover:bg-gray-700"
+            }`}
+          >
+            Transactions
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-6 bg-gray-100">
+        {/* Overview Section */}
+        {activeSection === "overview" && (
+          <section>
+            <h2 className="text-2xl font-bold mb-6">Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-600">
+                  Total Loans
+                </h3>
+                <p className="text-2xl font-bold text-blue-500">
+                  {loans.length}
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-600">
+                  Pending Loans
+                </h3>
+                <p className="text-2xl font-bold text-yellow-500">
+                  {pendingLoans.length}
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-600">
+                  Approved Loans
+                </h3>
+                <p className="text-2xl font-bold text-green-500">
+                  {approvedLoans.length}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Loans Section */}
+        {activeSection === "loans" && (
+          <section>
+            <h2 className="text-2xl font-bold mb-6">Loans</h2>
+            <div className="space-y-8">
+              <LoanTable loans={pendingLoans} title="Pending Loans" />
+              <LoanTable loans={approvedLoans} title="Approved Loans" />
+              <LoanTable loans={paidLoans} title="Paid Loans" />
+            </div>
+          </section>
+        )}
+
+        {/* Transactions Section */}
+        {activeSection === "transactions" && (
+          <section>
+            <h2 className="text-2xl font-bold mb-6">Transactions</h2>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <p>
+                Transaction data will go here. Add filters and tables as needed.
+              </p>
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
   );
 };
+
+const LoanTable = ({ loans, title }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <h3 className="text-lg font-bold text-gray-600 mb-4">{title}</h3>
+    {loans.length === 0 ? (
+      <p className="text-gray-500">No loans in this category.</p>
+    ) : (
+      <table className="w-full table-auto text-left">
+        <thead>
+          <tr className="text-gray-600 uppercase text-sm border-b">
+            <th className="px-4 py-2">User</th>
+            <th className="px-4 py-2">Amount</th>
+            <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loans.map((loan) => (
+            <tr key={loan._id} className="border-b hover:bg-gray-100">
+              <td className="px-4 py-2">{loan.user.name}</td>
+              <td className="px-4 py-2">${loan.amount}</td>
+              <td className="px-4 py-2">{loan.status}</td>
+              <td className="px-4 py-2">
+                {loan.status === "pending" && (
+                  <>
+                    <button className="text-green-500 hover:underline">
+                      Approve
+                    </button>{" "}
+                    |{" "}
+                    <button className="text-red-500 hover:underline">
+                      Reject
+                    </button>
+                  </>
+                )}
+                {loan.isPaid && <span className="text-blue-500">Paid</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+);
 
 export default AdminDashboard;
