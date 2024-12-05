@@ -17,6 +17,8 @@ import ResetPassword from "./pages/ResetPassword";
 const App = () => {
   return (
     <Router>
+      {/* Toaster Component */}
+      <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

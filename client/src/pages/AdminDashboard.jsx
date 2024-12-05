@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { CSVLink } from "react-csv";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [activeSection, setActiveSection] = useState("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,10 +39,66 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Segregate loans by status
-  const pendingLoans = loans.filter((loan) => loan.status === "pending");
-  const approvedLoans = loans.filter((loan) => loan.status === "approved");
-  const paidLoans = loans.filter((loan) => loan.isPaid);
+  const handleApproval = async (id, status) => {
+    try {
+      await axios.put(
+        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        { status },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      setLoans(
+        loans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
+      );
+      alert(
+        `Loan ${status === "approved" ? "approved" : "rejected"} successfully!`
+      );
+    } catch (error) {
+      console.error("Error updating loan:", error);
+    }
+  };
+
+  const handleExport = () => {
+    // Prepare data for CSV export
+    return loans.map(({ _id, user, amount, status, isPaid }) => ({
+      LoanID: _id,
+      UserName: user.name,
+      Mobile: user.mobile,
+      Amount: amount,
+      Status: status,
+      PaymentStatus: isPaid ? "Paid" : "In Progress",
+    }));
+  };
+
+  // Filters
+  const filteredLoans = loans.filter((loan) =>
+    filterStatus === "all" ? true : loan.status === filterStatus
+  );
+
+  const displayedLoans = filteredLoans.filter((loan) =>
+    loan.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Graph Data for Overview
+  const loanStatuses = ["pending", "approved", "paid"];
+  const loanStatusCounts = loanStatuses.map(
+    (status) =>
+      loans.filter(
+        (loan) => loan.status === status || (status === "paid" && loan.isPaid)
+      ).length
+  );
+
+  const chartData = {
+    labels: ["Pending", "Approved", "Paid"],
+    datasets: [
+      {
+        label: "Loan Status",
+        data: loanStatusCounts,
+        backgroundColor: ["#FBBF24", "#10B981", "#3B82F6"],
+      },
+    ],
+  };
 
   return (
     <div className="flex h-screen">
@@ -88,22 +152,7 @@ const AdminDashboard = () => {
                   {loans.length}
                 </p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-600">
-                  Pending Loans
-                </h3>
-                <p className="text-2xl font-bold text-yellow-500">
-                  {pendingLoans.length}
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-600">
-                  Approved Loans
-                </h3>
-                <p className="text-2xl font-bold text-green-500">
-                  {approvedLoans.length}
-                </p>
-              </div>
+              <Pie data={chartData} />
             </div>
           </section>
         )}
@@ -111,72 +160,36 @@ const AdminDashboard = () => {
         {/* Loans Section */}
         {activeSection === "loans" && (
           <section>
-            <h2 className="text-2xl font-bold mb-6">Loans</h2>
-            <div className="space-y-8">
-              <LoanTable loans={pendingLoans} title="Pending Loans" />
-              <LoanTable loans={approvedLoans} title="Approved Loans" />
-              <LoanTable loans={paidLoans} title="Paid Loans" />
+            <div className="flex justify-between mb-6">
+              <input
+                type="text"
+                placeholder="Search by user or loan ID..."
+                className="p-3 border rounded w-1/3"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <select
+                className="p-3 border rounded"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="paid">Paid</option>
+              </select>
             </div>
-          </section>
-        )}
-
-        {/* Transactions Section */}
-        {activeSection === "transactions" && (
-          <section>
-            <h2 className="text-2xl font-bold mb-6">Transactions</h2>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <p>
-                Transaction data will go here. Add filters and tables as needed.
-              </p>
-            </div>
+            <CSVLink
+              data={handleExport()}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Export CSV
+            </CSVLink>
           </section>
         )}
       </main>
     </div>
   );
 };
-
-const LoanTable = ({ loans, title }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md">
-    <h3 className="text-lg font-bold text-gray-600 mb-4">{title}</h3>
-    {loans.length === 0 ? (
-      <p className="text-gray-500">No loans in this category.</p>
-    ) : (
-      <table className="w-full table-auto text-left">
-        <thead>
-          <tr className="text-gray-600 uppercase text-sm border-b">
-            <th className="px-4 py-2">User</th>
-            <th className="px-4 py-2">Amount</th>
-            <th className="px-4 py-2">Status</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loans.map((loan) => (
-            <tr key={loan._id} className="border-b hover:bg-gray-100">
-              <td className="px-4 py-2">{loan.user.name}</td>
-              <td className="px-4 py-2">${loan.amount}</td>
-              <td className="px-4 py-2">{loan.status}</td>
-              <td className="px-4 py-2">
-                {loan.status === "pending" && (
-                  <>
-                    <button className="text-green-500 hover:underline">
-                      Approve
-                    </button>{" "}
-                    |{" "}
-                    <button className="text-red-500 hover:underline">
-                      Reject
-                    </button>
-                  </>
-                )}
-                {loan.isPaid && <span className="text-blue-500">Paid</span>}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )}
-  </div>
-);
 
 export default AdminDashboard;
