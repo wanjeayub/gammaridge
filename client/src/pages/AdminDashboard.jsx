@@ -8,6 +8,8 @@ import {
   Legend,
   BarElement,
   LineElement,
+  CategoryScale, // Import CategoryScale
+  LinearScale, // Import LinearScale (used in bar/line charts)
 } from "chart.js";
 import { Pie, Bar, Line } from "react-chartjs-2";
 import dayjs from "dayjs"; // For working with dates
@@ -15,7 +17,15 @@ import Select from "react-select"; // For searchable dropdowns
 import ReactPaginate from "react-paginate"; // For pagination
 
 // Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend, BarElement, LineElement);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  BarElement,
+  LineElement,
+  CategoryScale, // Register required scales
+  LinearScale
+);
 
 const AdminDashboard = () => {
   const [loans, setLoans] = useState([]);
@@ -173,6 +183,17 @@ const AdminDashboard = () => {
     ],
   };
 
+  const options = {
+    scales: {
+      x: {
+        type: "category", // Ensure this is set
+      },
+      y: {
+        type: "linear",
+      },
+    },
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Side Menu */}
@@ -287,7 +308,7 @@ const AdminDashboard = () => {
                     />
                   </Link>
                   <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
-                  {/* <p>User: {loan.user.name}</p> */}
+                  <p>User: {loan.user.name}</p>
                   <p>Full Loan: {loan.totalAmount}</p>
                   <p>Mobile Number 1: {loan.user.mobile}</p>
                   <p>Mobile Number 2: {loan.user.alternatemobile}</p>
