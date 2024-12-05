@@ -35,6 +35,7 @@ const UserDashboard = () => {
   }, []);
 
   const paidLoans = loans.filter((loan) => loan.isPaid);
+  const approvedLoans = loans.filter((loan) => loan.status === "approved");
   const pendingLoans = loans.filter((loan) => loan.status === "pending");
 
   const handleChange = (e) => {
@@ -135,8 +136,11 @@ const UserDashboard = () => {
   return (
     <div className="container mx-auto p-3 text-white">
       <div>
-        <h1 className="text-2xl font-bold">User Dashboard</h1>
-        <h1>Welcome back {user?.name}, we are glad you are here</h1>
+        <h1 className="text-3xl font-bold">User Dashboard</h1>
+        <h1 className="text-2xl ">
+          Welcome back <span className="text-[#b9283b]">{user?.name}</span>, we
+          are glad you are here
+        </h1>
       </div>
 
       <div>
@@ -208,6 +212,30 @@ const UserDashboard = () => {
             ))}
           </div>
         )}
+      </div>
+      <div>
+        <div>
+          {approvedLoans.map((loan) => (
+            <div key={loan._id}>
+              <p>
+                Amount: <span className="font-semibold">Ksh</span> {loan.amount}
+              </p>
+              <p>
+                Interest: <span className="font-semibold">Ksh</span>
+                {loan.interest}
+              </p>
+              <p>
+                Total Amount:
+                <span className="font-semibold"> Ksh</span> {loan.totalLoan}
+              </p>
+              <p>Status: {loan.status}</p>
+              <p>
+                Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
+              </p>
+              <p>Due date: {loan.dueDate}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {editLoanId && (
