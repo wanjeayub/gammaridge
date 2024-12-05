@@ -94,8 +94,8 @@ const approveLoan = async (req, res) => {
 // pay loan
 const payLoan = async (req, res) => {
   try {
-    const loanId = req.params.id;
-    const loan = await Loan.findById(loanId);
+    const id = req.params.id;
+    const loan = await Loan.findById(id);
 
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [user, setUser] = useState("");
-  const [editLoanId, setEditLoanId] = useState(null);
+  const [id, setid] = useState(null);
   const [newLoanData, setNewLoanData] = useState({ amount: "" });
 
   useEffect(() => {
@@ -70,9 +70,9 @@ const UserDashboard = () => {
     setNewLoanData({ amount: "" });
   };
 
-  const handleEditLoan = (loanId) => {
-    const loan = loans.find((loan) => loan._id === loanId);
-    setEditLoanId(loanId);
+  const handleEditLoan = (id) => {
+    const loan = loans.find((loan) => loan._id === id);
+    setid(id);
     setNewLoanData({ amount: loan.amount });
   };
 
@@ -93,10 +93,10 @@ const UserDashboard = () => {
     if (response.ok) {
       setLoans(
         loans.map((loan) =>
-          loan._id === editLoanId ? { ...loan, ...newLoanData } : loan
+          loan._id === id ? { ...loan, ...newLoanData } : loan
         )
       );
-      setEditLoanId(null);
+      setid(null);
       setNewLoanData({ amount: "" });
       alert("Loan updated successfully!");
     } else {
@@ -104,7 +104,7 @@ const UserDashboard = () => {
     }
   };
 
-  const handleDeleteLoan = async (loanId) => {
+  const handleDeleteLoan = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this loan?"
     );
@@ -123,7 +123,7 @@ const UserDashboard = () => {
       );
       const result = await response.json();
       if (response.ok) {
-        setLoans(loans.filter((loan) => loan._id !== loanId));
+        setLoans(loans.filter((loan) => loan._id !== id));
         alert("Loan deleted successfully!");
       } else {
         alert(result.message);
@@ -133,7 +133,7 @@ const UserDashboard = () => {
     }
   };
 
-  // const handlePayLoan = async (loanId) => {
+  // const handlePayLoan = async (id) => {
   //   try {
   //     const response = await fetch(
   //       `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
@@ -149,7 +149,7 @@ const UserDashboard = () => {
   //     if (response.ok) {
   //       setLoans(
   //         loans.map((loan) =>
-  //           loan._id === loanId ? { ...loan, isPaid: true } : loan
+  //           loan._id === id ? { ...loan, isPaid: true } : loan
   //         )
   //       );
   //       alert("Loan paid successfully!");
@@ -283,7 +283,7 @@ const UserDashboard = () => {
         )}
       </div>
 
-      {editLoanId && (
+      {id && (
         <div className="mt-8 p-4 bg-gray-600">
           <h2 className="text-xl">Edit Loan</h2>
           <form onSubmit={handleSubmitEdit} className="flex gap-3">
@@ -300,7 +300,7 @@ const UserDashboard = () => {
             </button>
             <button
               type="button"
-              onClick={() => setEditLoanId(null)}
+              onClick={() => setid(null)}
               className="bg-red-600 text-white py-2 px-4"
             >
               Cancel

@@ -217,7 +217,7 @@ const applyLoan = async (req, res) => {
 
 // Controller to edit an existing loan
 const editLoan = async (req, res) => {
-  const { editLoanId } = req.params; // Extract the loanId from the request parameters
+  const { id } = req.params; // Extract the id from the request parameters
   const { amount } = req.body; // Extract the new amount from the request body
 
   if (!amount || isNaN(amount) || amount <= 0) {
@@ -226,7 +226,7 @@ const editLoan = async (req, res) => {
 
   try {
     // Find the loan by ID
-    const loan = await Loan.findById(editLoanId);
+    const loan = await Loan.findById(id);
 
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
@@ -268,23 +268,23 @@ function calculateDueDate() {
 }
 
 const editMyLoan = async (req, res) => {
-  const { loanId } = req.params;
+  const { id } = req.params;
   const { amount } = req.body;
-  await Loan.findOneAndUpdate({ _id: req.params.loanId, status: "pending" });
+  await Loan.findOneAndUpdate({ _id: req.params.id, status: "pending" });
 
   res.status(200).send("Loan updated!");
 };
 
 const deleteMyLoan = async (req, res) => {
-  await Loan.findOneAndDelete({ _id: req.params.loanId, status: "pending" });
+  await Loan.findOneAndDelete({ _id: req.params.id, status: "pending" });
   res.status(200).send("Loan deleted!");
 };
 // new delete loan controller
 const deleteLoan = async (req, res) => {
-  const { loanId } = req.params;
+  const { id } = req.params;
 
   try {
-    const loan = await Loan.findById(loanId);
+    const loan = await Loan.findById(id);
 
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
@@ -294,7 +294,7 @@ const deleteLoan = async (req, res) => {
       return res.status(400).json({ message: "Cannot delete a paid loan" });
     }
 
-    await Loan.deleteOne({ _id: loanId });
+    await Loan.deleteOne({ _id: id });
     res.status(200).json({ message: "Loan deleted successfully" });
   } catch (err) {
     console.error(err);

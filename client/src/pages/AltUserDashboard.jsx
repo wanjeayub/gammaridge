@@ -4,7 +4,7 @@ const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
-  const [editingLoanId, setEditingLoanId] = useState(null);
+  const [editingid, setEditingid] = useState(null);
   const [newLoanAmount, setNewLoanAmount] = useState("");
 
   useEffect(() => {
@@ -23,18 +23,18 @@ const UserDashboard = () => {
     });
   };
 
-  const handleEditLoan = (loanId) => {
+  const handleEditLoan = (id) => {
     // Send loan update request to backend
-    fetch(`/api/edit-loan/${loanId}`, {
+    fetch(`/api/edit-loan/${id}`, {
       method: "POST",
       body: JSON.stringify({ amount: newLoanAmount }),
       headers: { "Content-Type": "application/json" },
     }).then(() => {
-      setEditingLoanId(null);
+      setEditingid(null);
       // Update loan amount in the UI
       setLoans(
         loans.map((loan) =>
-          loan.id === loanId ? { ...loan, amount: newLoanAmount } : loan
+          loan.id === id ? { ...loan, amount: newLoanAmount } : loan
         )
       );
     });
@@ -84,7 +84,7 @@ const UserDashboard = () => {
 
             {loan.status === "pending" && (
               <div>
-                {editingLoanId === loan.id ? (
+                {editingid === loan.id ? (
                   <>
                     <input
                       type="number"
@@ -99,7 +99,7 @@ const UserDashboard = () => {
                       Save
                     </button>
                     <button
-                      onClick={() => setEditingLoanId(null)}
+                      onClick={() => setEditingid(null)}
                       className="bg-red-500 text-white px-4 py-2 ml-2"
                     >
                       Cancel
@@ -107,7 +107,7 @@ const UserDashboard = () => {
                   </>
                 ) : (
                   <button
-                    onClick={() => setEditingLoanId(loan.id)}
+                    onClick={() => setEditingid(loan.id)}
                     className="bg-yellow-500 text-white px-4 py-2"
                   >
                     Edit Loan Amount

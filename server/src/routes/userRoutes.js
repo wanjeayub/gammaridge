@@ -27,8 +27,8 @@ router.post("/fpassword", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
 router.post("/loans/apply", protect, applyLoan);
-router.put("/loans/edit/:editLoanId", protect, editLoan);
-router.delete("/loans/delete/:loanId", protect, deleteLoan);
+router.put("/loans/edit/:id", protect, editLoan);
+router.delete("/loans/delete/:id", protect, deleteLoan);
 router.get("/user", protect, getUser);
 router.get("/user/edit-profile/:userid", protect, editProfile);
 router.get("/loans", protect, getUserLoans);
