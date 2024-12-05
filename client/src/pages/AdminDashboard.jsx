@@ -288,7 +288,9 @@ const AdminDashboard = () => {
                   </Link>
                   <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
                   <p>User: {loan.user.name}</p>
-                  <p>Amount: {loan.amount}</p>
+                  <p>Full Loan: {loan.totalAmount}</p>
+                  <p>Mobile Number 1: {loan.user.mobile}</p>
+                  <p>Mobile Number 2: {loan.user.alternatemobile}</p>
                   <p>Status: {loan.status}</p>
                   <div className="flex gap-2 mt-2">
                     {loan.status === "approved" && !loan.isPaid && (
