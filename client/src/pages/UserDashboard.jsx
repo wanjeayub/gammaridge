@@ -36,7 +36,9 @@ const UserDashboard = () => {
   }, []);
 
   const paidLoans = loans.filter((loan) => loan.isPaid);
-  const approvedLoans = loans.filter((loan) => loan.status === "approved");
+  const approvedLoans = loans.filter(
+    (loan) => loan.status === "approved" && !loan.isPaid // Filter only approved and unpaid loans
+  );
   const pendingLoans = loans.filter((loan) => loan.status === "pending");
 
   const handleChange = (e) => {
@@ -244,9 +246,9 @@ const UserDashboard = () => {
           </div>
         )}
 
-        {approvedLoans.length > 0 && !approvedLoans.isPaid && (
+        {approvedLoans.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl">Approved Loans</h2>
+            <h2 className="text-xl">Approved Unpaid Loans</h2>
             <div className="flex flex-col gap-4">
               {approvedLoans.map((loan) => (
                 <div
