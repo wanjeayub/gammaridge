@@ -113,10 +113,10 @@ const AdminDashboard = () => {
                     Alt Mobile: {loan.user.alternatemobile}
                   </p>
                   <p className="text-sm text-gray-400">
-                    Loan Amount: ${loan.totalLoan}
+                    Loan Amount: Ksh:{loan.totalLoan}
                   </p>
                   <p className="text-sm text-gray-400">
-                    Principal Amount: ${loan.amount}
+                    Principal Amount: Ksh: {loan.amount}
                   </p>
                   <p className="text-sm text-gray-400">Status: {loan.status}</p>
                   <p className="text-sm text-gray-400">
