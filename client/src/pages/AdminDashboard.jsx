@@ -279,6 +279,13 @@ const AdminDashboard = () => {
                   key={loan._id}
                   className="bg-white p-4 rounded-lg shadow-md mb-4"
                 >
+                  <Link to={loan.user.photoURLFront} target="_blank">
+                    <img
+                      src={loan.user.photoURLFront}
+                      alt="ID Front"
+                      className="w-full h-40 object-cover mb-4 rounded"
+                    />
+                  </Link>
                   <h3 className="text-lg font-semibold">Loan ID: {loan._id}</h3>
                   <p>User: {loan.user.name}</p>
                   <p>Amount: {loan.amount}</p>
