@@ -169,8 +169,9 @@ const UserDashboard = () => {
       <div>
         <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
         <h1 className="text-2xl">
-          Welcome back <span className="text-[#b9283b]">{user?.name}</span>, we
-          are glad you are here
+          Welcome back{" "}
+          <span className="text-[#b9283b] capitalize">{user?.name}</span>, we
+          are glad you are here.
         </h1>
       </div>
 
