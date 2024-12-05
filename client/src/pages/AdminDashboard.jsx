@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import { CSVLink } from "react-csv"; // For CSV export
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -106,7 +105,7 @@ const AdminDashboard = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Side Menu */}
-      <aside className="w-64 bg-gray-900 text-white">
+      <aside className="w-64 bg-gray-900 text-white h-full flex-shrink-0">
         <div className="p-6">
           <h1 className="text-3xl font-bold text-blue-500">Admin Dashboard</h1>
         </div>
@@ -141,7 +140,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 h-screen overflow-hidden">
         {/* Status Message */}
         {statusMessage && (
           <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded">
@@ -169,8 +168,8 @@ const AdminDashboard = () => {
 
         {/* Loans Section */}
         {activeSection === "loans" && (
-          <section>
-            <div className="flex justify-between mb-6">
+          <section className="h-full">
+            <div className="flex justify-between mb-4">
               <input
                 type="text"
                 placeholder="Search by user or loan ID..."
@@ -195,7 +194,7 @@ const AdminDashboard = () => {
             >
               Export CSV
             </CSVLink>
-            <div className="mt-4">
+            <div className="mt-4 overflow-y-auto max-h-[75vh]">
               {displayedLoans.map((loan) => (
                 <div
                   key={loan._id}
