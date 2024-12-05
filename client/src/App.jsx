@@ -27,7 +27,7 @@ const App = () => {
         <Route path="/adminogin" element={<AdminLogin />} />
         <Route path="/docs" element={<UploadFiles />} />
         <Route path="/dashboard" element={<UserDashboard />} />
-        <Route path="/admin" element={<TestPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

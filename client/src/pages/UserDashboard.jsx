@@ -79,7 +79,7 @@ const UserDashboard = () => {
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
     const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/edit/${editLoanId}`,
+      `https://gammaridge-server.vercel.app/api/users/loans/edit/${id}`,
       {
         method: "PUT",
         headers: {
@@ -112,7 +112,7 @@ const UserDashboard = () => {
 
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/users/loans/delete/${loanId}`,
+        `https://gammaridge-server.vercel.app/api/users/loans/delete/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -136,7 +136,7 @@ const UserDashboard = () => {
   // const handlePayLoan = async (loanId) => {
   //   try {
   //     const response = await fetch(
-  //       `https://gammaridge-server.vercel.app/api/users/loans/pay/${loanId}`,
+  //       `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
   //       {
   //         method: "POST",
   //         headers: {
@@ -165,7 +165,7 @@ const UserDashboard = () => {
   return (
     <div className="container mx-auto p-3 text-white">
       <div>
-        <h1 className="text-3xl font-bold">User Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
         <h1 className="text-2xl">
           Welcome back <span className="text-[#b9283b]">{user?.name}</span>, we
           are glad you are here
@@ -177,7 +177,9 @@ const UserDashboard = () => {
 
         {loans.length === 0 || pendingLoans.length === 0 ? (
           <div>
-            <p>You have no pending loans</p>
+            <p>
+              You have <span>{pendingLoans.length}</span> pending loans
+            </p>
             <div className="flex flex-col gap-4">
               <h2 className="text-xl">Apply for a new loan</h2>
               <form onSubmit={handleSubmit} className="max-w-md gap-3 flex">
