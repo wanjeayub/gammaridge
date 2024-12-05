@@ -269,7 +269,7 @@ const AdminDashboard = () => {
                       onClick={() => openModal(loan.user.photoURLFront)}
                     />
                   </div>
-                  <div className="w-3/4">
+                  <div className="w-3/4 p-3">
                     <h3 className="text-lg font-semibold">
                       Loan ID: {loan._id}
                     </h3>
