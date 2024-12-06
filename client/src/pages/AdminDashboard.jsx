@@ -274,8 +274,8 @@ const AdminDashboard = () => {
                       Loan ID: {loan._id}
                     </h3>
                     <p>User: {loan.user.name}</p>
-                    <p>Amount: {loan.totalAmount}</p>
-                    <p>Amount: {loan.amount}</p>
+                    <p>Total Loan Amount: {loan.totalLoan}</p>
+                    <p>Principal Amount: {loan.amount}</p>
                     <p>Mobile: {loan.user.mobile}</p>
                     <p>Alternate Mobile: {loan.user.alternatemobile}</p>
                     <p>Status: {loan.status}</p>
