@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import EditUserProfile from "./EditUserProfile";
 
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
