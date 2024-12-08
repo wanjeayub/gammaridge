@@ -182,7 +182,7 @@ const UserDashboard = () => {
           are glad you are here.
         </h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 mt-4"
+          className="bg-blue-600 text-white px-4 py-2 mt-4 w-[100px]"
           onClick={() => setEditingProfile(true)}
         >
           Edit Profile
