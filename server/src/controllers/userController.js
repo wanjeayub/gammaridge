@@ -329,6 +329,5 @@ module.exports = {
   deleteLoan,
   tryLoan,
   getUser,
-  editProfile,
   getUserLoans,
 };

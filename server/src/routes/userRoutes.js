@@ -33,7 +33,6 @@ router.delete("/loans/delete/:id", protect, deleteLoan);
 router.get("/user", protect, getUser);
 // update user profile
 router.put("/update", protect, updateUserProfile);
-router.get("/user/update/:userid", protect, editProfile);
 router.get("/loans", protect, getUserLoans);
 
 module.exports = router;
