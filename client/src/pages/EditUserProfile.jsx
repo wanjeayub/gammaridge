@@ -11,7 +11,8 @@ const EditUserProfile = ({ user, onSave }) => {
     email: user?.email || "",
     password: "",
     mobile: user?.mobile || "",
-    photo: user?.photo || "",
+    alternatemobile: user?.alternatemobile || "",
+    photoURLFront: user?.photoURLFront || "",
   });
   const [uploading, setUploading] = useState(false);
 
@@ -28,7 +29,7 @@ const EditUserProfile = ({ user, onSave }) => {
         const storageRef = ref(storage, `user_photos/${file.name}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
-        setFormData({ ...formData, photo: downloadURL });
+        setFormData({ ...formData, photoURLFront: downloadURL });
         alert("Photo uploaded successfully!");
       } catch (error) {
         console.error("Error uploading photo:", error);
@@ -118,7 +119,17 @@ const EditUserProfile = ({ user, onSave }) => {
         />
       </div>
       <div className="mb-3">
-        <label className="block mb-1">Photo</label>
+        <label className="block mb-1">Alternate Mobile</label>
+        <input
+          type="text"
+          name="mobile"
+          value={formData.alternatemobile}
+          onChange={handleChange}
+          className="w-full p-2 border bg-gray-600 text-white"
+        />
+      </div>
+      <div className="mb-3">
+        <label className="block mb-1">Front ID Photo</label>
         <input
           type="file"
           name="photo"

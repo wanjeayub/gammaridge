@@ -137,9 +137,6 @@ const getUser = async (req, res) => {
   }
 };
 
-// edit user profile
-const editProfile = () => {};
-
 // try loan
 const tryLoan = async (req, res) => {
   res.status(200).json({ message: "am tired of trying" });
@@ -270,13 +267,15 @@ function calculateDueDate() {
 // update user profile
 const updateUserProfile = async (req, res) => {
   try {
-    const { name, email, password, mobile, photo } = req.body;
+    const { name, email, password, mobile, alternatemobile, photoURLFront } =
+      req.body;
 
     const updatedData = {
       name,
       email,
       mobile,
-      photo, // Save photo URL from Firebase
+      alternatemobile,
+      photoURLFront, // Save photo URL from Firebase
       ...(password && { password: bcrypt.hashSync(password, 10) }),
     };
 
