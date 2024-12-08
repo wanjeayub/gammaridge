@@ -192,7 +192,7 @@ const AdminDashboard = () => {
             <img
               src={modalImage}
               alt="Loan Document"
-              className="w-full h-auto rounded"
+              className="w-[500px] h-auto rounded"
             />
           </div>
         </div>
