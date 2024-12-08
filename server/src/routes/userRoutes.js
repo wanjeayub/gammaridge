@@ -11,6 +11,7 @@ const {
   editLoan,
   deleteLoan,
   getUser,
+  updateUserProfile,
 } = require("../controllers/userController.js");
 const { protect } = require("../middleware/authMiddleware.js");
 
@@ -30,7 +31,9 @@ router.post("/loans/apply", protect, applyLoan);
 router.put("/loans/edit/:id", protect, editLoan);
 router.delete("/loans/delete/:id", protect, deleteLoan);
 router.get("/user", protect, getUser);
-router.get("/user/edit-profile/:userid", protect, editProfile);
+// update user profile
+router.put("/update", protect, updateUserProfile);
+router.get("/user/update/:userid", protect, editProfile);
 router.get("/loans", protect, getUserLoans);
 
 module.exports = router;

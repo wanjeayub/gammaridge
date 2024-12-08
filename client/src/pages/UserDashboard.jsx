@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
+  const [editingProfile, setEditingProfile] = useState(false);
   const [user, setUser] = useState("");
   const [id, setid] = useState(null);
   const [newLoanData, setNewLoanData] = useState({ amount: "" });
@@ -164,154 +165,182 @@ const UserDashboard = () => {
     }
   };
 
+  // edit pprofile
+  const handleSaveProfile = (updatedUser) => {
+    setUser(updatedUser); // Update user state with new data
+    setEditingProfile(false);
+  };
+
   return (
     <div className="container mx-auto p-3 text-white">
-      <div>
+      {/* heading and salutations */}
+      <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
         <h1 className="text-2xl">
           Welcome back{" "}
           <span className="text-[#b9283b] capitalize">{user?.name}</span>, we
           are glad you are here.
         </h1>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 mt-4"
+          onClick={() => setEditingProfile(true)}
+        >
+          Edit Profile
+        </button>
       </div>
 
-      <div>
-        <h2 className="text-xl mt-8">My Loans</h2>
-
-        {loans.length === 0 || pendingLoans.length === 0 ? (
+      {/* Main dashboard content */}
+      {editingProfile ? (
+        <EditUserProfile user={user} onSave={handleSaveProfile} />
+      ) : (
+        // Existing dashboard code...
+        <div>
           <div>
-            <p className="mb-3">
-              You have <span>{pendingLoans.length}</span> pending loans
-            </p>
-            <div className="flex flex-col gap-4">
-              <h2 className="text-xl">Apply for a new loan</h2>
-              <form
-                onSubmit={handleSubmit}
-                className="max-w-md gap-3 flex flex-col"
-              >
+            <h2 className="text-xl mt-8">My Loans</h2>
+
+            {loans.length === 0 || pendingLoans.length === 0 ? (
+              <div>
+                <p className="mb-3">
+                  You have <span>{pendingLoans.length}</span> pending loans
+                </p>
+                <div className="flex flex-col gap-4">
+                  <h2 className="text-xl">Apply for a new loan</h2>
+                  <form
+                    onSubmit={handleSubmit}
+                    className="max-w-md gap-3 flex flex-col"
+                  >
+                    <input
+                      name="amount"
+                      value={newLoanData.amount}
+                      onChange={handleChange}
+                      placeholder="Amount"
+                      required
+                      className="border p-2 w-full bg-gray-600 text-white"
+                    />
+                    <button
+                      type="submit"
+                      className="bg-[#b9283b] text-white py-2 px-4 w-full"
+                    >
+                      Apply
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ) : (
+              <div className="flex p-4 flex-col">
+                {pendingLoans.map((loan) => (
+                  <div
+                    key={loan._id}
+                    className="mb-2 border p-3 flex flex-col bg-slate-500"
+                  >
+                    <p>
+                      Amount: <span className="font-semibold">Ksh</span>{" "}
+                      {loan.amount}
+                    </p>
+                    <p>
+                      Interest: <span className="font-semibold">Ksh</span>{" "}
+                      {loan.interest}
+                    </p>
+                    <p>
+                      Total Amount:
+                      <span className="font-semibold"> Ksh</span>{" "}
+                      {loan.totalLoan}
+                    </p>
+                    <p>Status: {loan.status}</p>
+                    <p>
+                      Payment Status:{" "}
+                      {loan.isPaid ? "Fully Paid" : "In Progress"}
+                    </p>
+                    <p>Due date: {loan.dueDate}</p>
+
+                    <div>
+                      <button
+                        onClick={() => handleEditLoan(loan._id)}
+                        className="bg-[#2d2197] text-white py-2 px-4"
+                      >
+                        Edit Loan
+                      </button>
+                      <button
+                        onClick={() => handleDeleteLoan(loan._id)}
+                        className="bg-red-600 text-white py-2 px-4"
+                      >
+                        Delete Loan
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {approvedLoans.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl">Approved Unpaid Loans</h2>
+                <div className="flex flex-col gap-4">
+                  {approvedLoans.map((loan) => (
+                    <div
+                      key={loan._id}
+                      className="mb-2 border p-3 flex flex-col bg-slate-500"
+                    >
+                      <p>
+                        Amount: <span className="font-semibold">Ksh</span>{" "}
+                        {loan.amount}
+                      </p>
+                      <p>
+                        Interest: <span className="font-semibold">Ksh</span>{" "}
+                        {loan.interest}
+                      </p>
+                      <p>
+                        Total Amount:
+                        <span className="font-semibold"> Ksh</span>{" "}
+                        {loan.totalLoan}
+                      </p>
+                      <p>Status: {loan.status}</p>
+                      <p>
+                        Payment Status:{" "}
+                        {loan.isPaid ? "Fully Paid" : "In Progress"}
+                      </p>
+                      <button
+                        onClick={() => handlePayLoan(loan._id)}
+                        className="bg-green-600 text-white py-2 px-4 mt-2"
+                        disabled={loan.isPaid}
+                      >
+                        {loan.isPaid ? "Paid" : "Pay Now"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {id && (
+            <div className="mt-8 p-4 bg-gray-600">
+              <h2 className="text-xl">Edit Loan</h2>
+              <form onSubmit={handleSubmitEdit} className="flex gap-3">
                 <input
                   name="amount"
                   value={newLoanData.amount}
-                  onChange={handleChange}
-                  placeholder="Amount"
+                  onChange={handleEditChange}
+                  placeholder="New Amount"
                   required
                   className="border p-2 w-full bg-gray-600 text-white"
                 />
                 <button
                   type="submit"
-                  className="bg-[#b9283b] text-white py-2 px-4 w-full"
+                  className="bg-[#2d2197] text-white py-2 px-4"
                 >
-                  Apply
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setid(null)}
+                  className="bg-red-600 text-white py-2 px-4"
+                >
+                  Cancel
                 </button>
               </form>
             </div>
-          </div>
-        ) : (
-          <div className="flex p-4 flex-col">
-            {pendingLoans.map((loan) => (
-              <div
-                key={loan._id}
-                className="mb-2 border p-3 flex flex-col bg-slate-500"
-              >
-                <p>
-                  Amount: <span className="font-semibold">Ksh</span>{" "}
-                  {loan.amount}
-                </p>
-                <p>
-                  Interest: <span className="font-semibold">Ksh</span>{" "}
-                  {loan.interest}
-                </p>
-                <p>
-                  Total Amount:
-                  <span className="font-semibold"> Ksh</span> {loan.totalLoan}
-                </p>
-                <p>Status: {loan.status}</p>
-                <p>
-                  Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
-                </p>
-                <p>Due date: {loan.dueDate}</p>
-
-                <div>
-                  <button
-                    onClick={() => handleEditLoan(loan._id)}
-                    className="bg-[#2d2197] text-white py-2 px-4"
-                  >
-                    Edit Loan
-                  </button>
-                  <button
-                    onClick={() => handleDeleteLoan(loan._id)}
-                    className="bg-red-600 text-white py-2 px-4"
-                  >
-                    Delete Loan
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {approvedLoans.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl">Approved Unpaid Loans</h2>
-            <div className="flex flex-col gap-4">
-              {approvedLoans.map((loan) => (
-                <div
-                  key={loan._id}
-                  className="mb-2 border p-3 flex flex-col bg-slate-500"
-                >
-                  <p>
-                    Amount: <span className="font-semibold">Ksh</span>{" "}
-                    {loan.amount}
-                  </p>
-                  <p>
-                    Interest: <span className="font-semibold">Ksh</span>{" "}
-                    {loan.interest}
-                  </p>
-                  <p>
-                    Total Amount:
-                    <span className="font-semibold"> Ksh</span> {loan.totalLoan}
-                  </p>
-                  <p>Status: {loan.status}</p>
-                  <p>
-                    Payment Status: {loan.isPaid ? "Fully Paid" : "In Progress"}
-                  </p>
-                  <button
-                    onClick={() => handlePayLoan(loan._id)}
-                    className="bg-green-600 text-white py-2 px-4 mt-2"
-                    disabled={loan.isPaid}
-                  >
-                    {loan.isPaid ? "Paid" : "Pay Now"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {id && (
-        <div className="mt-8 p-4 bg-gray-600">
-          <h2 className="text-xl">Edit Loan</h2>
-          <form onSubmit={handleSubmitEdit} className="flex gap-3">
-            <input
-              name="amount"
-              value={newLoanData.amount}
-              onChange={handleEditChange}
-              placeholder="New Amount"
-              required
-              className="border p-2 w-full bg-gray-600 text-white"
-            />
-            <button type="submit" className="bg-[#2d2197] text-white py-2 px-4">
-              Save Changes
-            </button>
-            <button
-              type="button"
-              onClick={() => setid(null)}
-              className="bg-red-600 text-white py-2 px-4"
-            >
-              Cancel
-            </button>
-          </form>
+          )}
         </div>
       )}
     </div>

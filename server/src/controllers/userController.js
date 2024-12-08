@@ -267,18 +267,29 @@ function calculateDueDate() {
   return currentDate.toISOString(); // Return the ISO string of the date
 }
 
-const editMyLoan = async (req, res) => {
-  const { id } = req.params;
-  const { amount } = req.body;
-  await Loan.findOneAndUpdate({ _id: req.params.id, status: "pending" });
+// update user profile
+const updateUserProfile = async (req, res) => {
+  try {
+    const { name, email, password, mobile, photo } = req.body;
 
-  res.status(200).send("Loan updated!");
+    const updatedData = {
+      name,
+      email,
+      mobile,
+      photo, // Save photo URL from Firebase
+      ...(password && { password: bcrypt.hashSync(password, 10) }),
+    };
+
+    const user = await User.findByIdAndUpdate(req.user.id, updatedData, {
+      new: true,
+    });
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating profile" });
+  }
 };
 
-const deleteMyLoan = async (req, res) => {
-  await Loan.findOneAndDelete({ _id: req.params.id, status: "pending" });
-  res.status(200).send("Loan deleted!");
-};
 // new delete loan controller
 const deleteLoan = async (req, res) => {
   const { id } = req.params;
@@ -314,6 +325,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   applyLoan,
+  updateUserProfile,
   editLoan,
   deleteLoan,
   tryLoan,
