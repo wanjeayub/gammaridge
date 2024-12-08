@@ -326,8 +326,24 @@ const AdminDashboard = () => {
               marginPagesDisplayed={2}
               pageRangeDisplayed={5}
               onPageChange={(data) => setPageNumber(data.selected)}
-              containerClassName={"pagination"}
-              activeClassName={"active"}
+              containerClassName={
+                "flex justify-center items-center space-x-2 mt-6"
+              } // Horizontal alignment
+              pageClassName={
+                "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
+              } // Style for page items
+              activeClassName={
+                "bg-blue-500 text-white font-bold" // Highlight the active page
+              }
+              previousClassName={
+                "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
+              }
+              nextClassName={
+                "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
+              }
+              breakClassName={
+                "inline-block bg-gray-200 rounded-md px-3 py-1 cursor-default"
+              }
             />
           </section>
         )}
