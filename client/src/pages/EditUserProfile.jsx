@@ -104,7 +104,7 @@ const EditUserProfile = ({ user, onSave }) => {
           onChange={handleChange}
           className="w-full p-2 border bg-gray-600 text-white"
         />
-        <small className="text-gray-400">
+        <small className="text-red-400">
           Leave blank to keep current password
         </small>
       </div>
