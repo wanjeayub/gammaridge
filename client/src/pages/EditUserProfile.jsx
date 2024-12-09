@@ -137,9 +137,9 @@ const EditUserProfile = ({ user, onSave }) => {
           className="w-full p-2 border bg-gray-600 text-white"
         />
         {uploading && <p className="text-gray-400">Uploading photo...</p>}
-        {formData.photo && (
+        {formData.photoURLFront && (
           <img
-            src={formData.photo}
+            src={formData.photoURLFront}
             alt="Profile Preview"
             className="mt-2 w-20 h-20 rounded-full"
           />
