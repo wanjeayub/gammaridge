@@ -172,6 +172,15 @@ const UserDashboard = () => {
     setEditingProfile(false);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className="container mx-auto p-3 text-white">
       {/* heading and salutations */}
@@ -252,7 +261,7 @@ const UserDashboard = () => {
                       Payment Status:{" "}
                       {loan.isPaid ? "Fully Paid" : "In Progress"}
                     </p>
-                    <p>Due date: {loan.dueDate.toLocaleDateString()}</p>
+                    <p>Due date: {formatDate(loan.dueDate)}</p>
 
                     <div>
                       <button
