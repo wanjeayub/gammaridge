@@ -176,7 +176,7 @@ function calculateDueDate() {
   // Set the date to the 1st of the next month
   currentDate.setMonth(currentDate.getMonth() + 1);
   currentDate.setDate(3); // Set the day to the 3rd of the month
-  return currentDate.toISOString();
+  return currentDate.toLocaleDateString();
 }
 // Apply for Loan
 const applyLoan = async (req, res) => {
@@ -185,11 +185,22 @@ const applyLoan = async (req, res) => {
   const interest = 0.2 * myAmount;
   const totalLoan = parseFloat(myAmount + interest);
 
-  const dueDate = new Date(
+  // converting the due date
+  const isoDate = new Date(
     new Date().getFullYear(),
     new Date().getMonth() + 1,
     3
   );
+
+  const date = new Date(isoDate);
+
+  // Format to only show the date
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  const dueDate = date.toLocaleDateString("en-US", options);
 
   const unpaidLoan = await Loan.findOne({ user: req.user._id, isPaid: false });
 
