@@ -252,7 +252,7 @@ const UserDashboard = () => {
                       Payment Status:{" "}
                       {loan.isPaid ? "Fully Paid" : "In Progress"}
                     </p>
-                    <p>Due date: {loan.dueDate}</p>
+                    <p>Due date: {loan.dueDate.toLocaleDateString()}</p>
 
                     <div>
                       <button
