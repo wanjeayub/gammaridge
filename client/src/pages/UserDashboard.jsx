@@ -5,7 +5,7 @@ const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [editingProfile, setEditingProfile] = useState(false);
   const [user, setUser] = useState("");
-  const [id, setid] = useState(null);
+  const [id, setId] = useState(null);
   const [newLoanData, setNewLoanData] = useState({ amount: "" });
 
   useEffect(() => {
@@ -37,17 +37,7 @@ const UserDashboard = () => {
     fetchUser();
   }, []);
 
-  const paidLoans = loans.filter((loan) => loan.isPaid);
-  const approvedLoans = loans.filter(
-    (loan) => loan.status === "approved" && !loan.isPaid // Filter only approved and unpaid loans
-  );
-  const pendingLoans = loans.filter((loan) => loan.status === "pending");
-
   const handleChange = (e) => {
-    setNewLoanData({ ...newLoanData, [e.target.name]: e.target.value });
-  };
-
-  const handleEditChange = (e) => {
     setNewLoanData({ ...newLoanData, [e.target.name]: e.target.value });
   };
 
@@ -65,294 +55,68 @@ const UserDashboard = () => {
       }
     );
     const data = await response.json();
-    if (!response.ok) {
-      alert(data.message);
-      setNewLoanData({ amount: "" });
-      return;
-    }
-    setLoans([...loans, data]);
-    setNewLoanData({ amount: "" });
-  };
-
-  const handleEditLoan = (id) => {
-    const loan = loans.find((loan) => loan._id === id);
-    setid(id);
-    setNewLoanData({ amount: loan.amount });
-  };
-
-  const handleSubmitEdit = async (e) => {
-    e.preventDefault();
-    const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/edit/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(newLoanData),
-      }
-    );
-    const data = await response.json();
     if (response.ok) {
-      setLoans(
-        loans.map((loan) =>
-          loan._id === id ? { ...loan, ...newLoanData } : loan
-        )
-      );
-      setid(null);
+      setLoans([...loans, data]);
       setNewLoanData({ amount: "" });
-      alert("Loan updated successfully!");
     } else {
       alert(data.message);
     }
-  };
-
-  const handleDeleteLoan = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this loan?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/users/loans/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const result = await response.json();
-      if (response.ok) {
-        setLoans(loans.filter((loan) => loan._id !== id));
-        alert("Loan deleted successfully!");
-      } else {
-        alert(result.message);
-      }
-    } catch (error) {
-      console.error("Error deleting loan:", error);
-    }
-  };
-
-  const handlePayLoan = async (id) => {
-    try {
-      const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setLoans(
-          loans.map((loan) =>
-            loan._id === id ? { ...loan, isPaid: false } : loan
-          )
-        );
-        alert("Loan paid successfully!");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      console.error("Error paying loan:", error);
-      alert("Failed to process payment. Please try again.");
-    }
-  };
-
-  // edit pprofile
-  const handleSaveProfile = (updatedUser) => {
-    setUser(updatedUser); // Update user state with new data
-    setEditingProfile(false);
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
 
+  const LoanCard = ({ loan }) => (
+    <div className="border rounded-lg p-4 bg-gray-100">
+      <p className="text-sm text-gray-700">
+        <span className="font-medium">Amount:</span> Ksh {loan.amount}
+      </p>
+      <p className="text-sm text-gray-700">
+        <span className="font-medium">Interest:</span> Ksh {loan.interest}
+      </p>
+      <p className="text-sm text-gray-700">
+        <span className="font-medium">Total:</span> Ksh {loan.totalLoan}
+      </p>
+      <p className="text-sm text-gray-700">
+        <span className="font-medium">Status:</span> {loan.status}
+      </p>
+      <p className="text-sm text-gray-700">
+        <span className="font-medium">Due:</span> {formatDate(loan.dueDate)}
+      </p>
+    </div>
+  );
+
   return (
-    <div className="container mx-auto p-3 text-white">
-      {/* heading and salutations */}
-      <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
-        <h1 className="text-2xl">
-          Welcome back{" "}
-          <span className="text-[#b9283b] capitalize">{user?.name}</span>, we
-          are glad you are here.
-        </h1>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 mt-4 w-[100px]"
-          onClick={() => setEditingProfile(true)}
-        >
-          Edit Profile
-        </button>
-      </div>
-
-      {/* Main dashboard content */}
-      {editingProfile ? (
-        <EditUserProfile user={user} onSave={handleSaveProfile} />
-      ) : (
-        // Existing dashboard code...
-        <div>
-          <div>
-            <h2 className="text-xl mt-8">My Loans</h2>
-
-            {loans.length === 0 || pendingLoans.length === 0 ? (
-              <div>
-                <p className="mb-3">
-                  You have <span>{pendingLoans.length}</span> pending loans
-                </p>
-                <div className="flex flex-col gap-4">
-                  <h2 className="text-xl">Apply for a new loan</h2>
-                  <form
-                    onSubmit={handleSubmit}
-                    className="max-w-md gap-3 flex flex-col"
-                  >
-                    <input
-                      name="amount"
-                      value={newLoanData.amount}
-                      onChange={handleChange}
-                      placeholder="Amount"
-                      required
-                      className="border p-2 w-full bg-gray-600 text-white"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-[#b9283b] text-white py-2 px-4 w-full"
-                    >
-                      Apply
-                    </button>
-                  </form>
-                </div>
-              </div>
-            ) : (
-              <div className="flex p-4 flex-col">
-                {pendingLoans.map((loan) => (
-                  <div
-                    key={loan._id}
-                    className="mb-2 border p-3 flex flex-col bg-slate-500"
-                  >
-                    <p>
-                      Amount: <span className="font-semibold">Ksh</span>{" "}
-                      {loan.amount}
-                    </p>
-                    <p>
-                      Interest: <span className="font-semibold">Ksh</span>{" "}
-                      {loan.interest}
-                    </p>
-                    <p>
-                      Total Amount:
-                      <span className="font-semibold"> Ksh</span>{" "}
-                      {loan.totalLoan}
-                    </p>
-                    <p>Status: {loan.status}</p>
-                    <p>
-                      Payment Status:{" "}
-                      {loan.isPaid ? "Fully Paid" : "In Progress"}
-                    </p>
-                    <p>Due date: {formatDate(loan.dueDate)}</p>
-
-                    <div>
-                      <button
-                        onClick={() => handleEditLoan(loan._id)}
-                        className="bg-[#2d2197] text-white py-2 px-4"
-                      >
-                        Edit Loan
-                      </button>
-                      <button
-                        onClick={() => handleDeleteLoan(loan._id)}
-                        className="bg-red-600 text-white py-2 px-4"
-                      >
-                        Delete Loan
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {approvedLoans.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl">Approved Unpaid Loans</h2>
-                <div className="flex flex-col gap-4">
-                  {approvedLoans.map((loan) => (
-                    <div
-                      key={loan._id}
-                      className="mb-2 border p-3 flex flex-col bg-slate-500"
-                    >
-                      <p>
-                        Amount: <span className="font-semibold">Ksh</span>{" "}
-                        {loan.amount}
-                      </p>
-                      <p>
-                        Interest: <span className="font-semibold">Ksh</span>{" "}
-                        {loan.interest}
-                      </p>
-                      <p>
-                        Total Amount:
-                        <span className="font-semibold"> Ksh</span>{" "}
-                        {loan.totalLoan}
-                      </p>
-                      <p>Status: {loan.status}</p>
-                      <p>
-                        Payment Status:{" "}
-                        {loan.isPaid ? "Fully Paid" : "In Progress"}
-                      </p>
-                      <button
-                        onClick={() => handlePayLoan(loan._id)}
-                        className="bg-green-600 text-white py-2 px-4 mt-2"
-                        disabled={loan.isPaid}
-                      >
-                        {loan.isPaid ? "Paid" : "Pay Now"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {id && (
-            <div className="mt-8 p-4 bg-gray-600">
-              <h2 className="text-xl">Edit Loan</h2>
-              <form onSubmit={handleSubmitEdit} className="flex gap-3">
-                <input
-                  name="amount"
-                  value={newLoanData.amount}
-                  onChange={handleEditChange}
-                  placeholder="New Amount"
-                  required
-                  className="border p-2 w-full bg-gray-600 text-white"
-                />
-                <button
-                  type="submit"
-                  className="bg-[#2d2197] text-white py-2 px-4"
-                >
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setid(null)}
-                  className="bg-red-600 text-white py-2 px-4"
-                >
-                  Cancel
-                </button>
-              </form>
+    <div className="container mx-auto p-4 text-gray-900">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold">User Dashboard</h1>
+        <p className="text-lg text-gray-600">
+          Welcome back, <span className="font-medium">{user?.name}</span>!
+        </p>
+      </header>
+      <main>
+        {editingProfile ? (
+          <EditUserProfile
+            user={user}
+            onSave={() => setEditingProfile(false)}
+          />
+        ) : (
+          <section>
+            <h2 className="text-xl font-bold mb-4">My Loans</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {loans.map((loan) => (
+                <LoanCard key={loan._id} loan={loan} />
+              ))}
             </div>
-          )}
-        </div>
-      )}
+          </section>
+        )}
+      </main>
     </div>
   );
 };
