@@ -3,7 +3,7 @@ import app from "../firebase/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const EditUserProfile = ({ user, onSave }) => {
-  // Initialize Firebase storage
+  // Firebase storage initialization
   const storage = getStorage(app);
 
   const [formData, setFormData] = useState({
@@ -14,23 +14,23 @@ const EditUserProfile = ({ user, onSave }) => {
     alternatemobile: user?.alternatemobile || "",
     photoURLFront: user?.photoURLFront || "",
   });
-  const [uploading, setUploading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  // Handle file upload
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setUploading(true);
       try {
-        const storageRef = ref(
-          storage,
-          `user_photos/${Date.now()}_${file.name}`
-        );
+        const storageRef = ref(storage, `user_photos/${file.name}`);
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
         setFormData({ ...formData, photoURLFront: downloadURL });
@@ -44,9 +44,10 @@ const EditUserProfile = ({ user, onSave }) => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
+    setSaving(true);
     try {
       const response = await fetch(
         "https://gammaridge-server.vercel.app/api/users/update",
@@ -70,107 +71,97 @@ const EditUserProfile = ({ user, onSave }) => {
       console.error("Error updating profile:", error);
       alert("Failed to update profile. Please try again.");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-6 bg-gray-800 rounded-lg shadow-lg text-white"
+      className="p-6 bg-gray-500 rounded-lg shadow-lg max-w-md mx-auto text-white"
     >
-      <h2 className="text-2xl mb-6 font-semibold text-center">Edit Profile</h2>
-
+      <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
       <div className="mb-4">
-        <label className="block mb-2 font-medium">Name</label>
+        <label className="block font-semibold mb-2">Name</label>
         <input
           type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          placeholder="Enter your name"
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-800 text-white"
           required
         />
       </div>
-
       <div className="mb-4">
-        <label className="block mb-2 font-medium">Email</label>
+        <label className="block font-semibold mb-2">Email</label>
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="Enter your email"
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-800 text-white"
           required
         />
       </div>
-
       <div className="mb-4">
-        <label className="block mb-2 font-medium">Password</label>
+        <label className="block font-semibold mb-2">Password</label>
         <input
           type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-800 text-white"
           placeholder="Leave blank to keep current password"
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
         />
       </div>
-
       <div className="mb-4">
-        <label className="block mb-2 font-medium">Mobile</label>
+        <label className="block font-semibold mb-2">Mobile</label>
         <input
           type="text"
           name="mobile"
           value={formData.mobile}
           onChange={handleChange}
-          placeholder="Enter your mobile number"
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-800 text-white"
         />
       </div>
-
       <div className="mb-4">
-        <label className="block mb-2 font-medium">Alternate Mobile</label>
+        <label className="block font-semibold mb-2">Alternate Mobile</label>
         <input
           type="text"
           name="alternatemobile"
           value={formData.alternatemobile}
           onChange={handleChange}
-          placeholder="Enter alternate mobile number"
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+          className="w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-800 text-white"
         />
       </div>
-
-      <div className="mb-4">
-        <label className="block mb-2 font-medium">Front ID Photo</label>
+      <div className="mb-6">
+        <label className="block font-semibold mb-2">Front ID Photo</label>
         <input
           type="file"
-          name="photo"
           onChange={handleFileChange}
-          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
+          className="w-full text-gray-200"
         />
-        {uploading && <p className="mt-2 text-green-400">Uploading photo...</p>}
+        {uploading && (
+          <p className="text-orange-300 mt-2">Uploading photo...</p>
+        )}
         {formData.photoURLFront && (
-          <img
-            src={formData.photoURLFront}
-            alt="Uploaded Profile Preview"
-            className="mt-4 w-24 h-24 rounded-full object-cover mx-auto"
-          />
+          <div className="mt-4">
+            <img
+              src={formData.photoURLFront}
+              alt="Profile Preview"
+              className="w-20 h-20 rounded-full mx-auto border border-gray-500"
+            />
+          </div>
         )}
       </div>
-
       <button
         type="submit"
-        className={`w-full py-3 rounded text-white font-semibold ${
-          submitting
-            ? "bg-green-400 cursor-not-allowed"
-            : "bg-green-600 hover:bg-green-500"
+        className={`w-full p-3 rounded bg-green-500 text-white font-semibold ${
+          saving && "opacity-50 cursor-not-allowed"
         }`}
-        disabled={submitting}
+        disabled={saving}
       >
-        {submitting ? "Saving..." : "Save Changes"}
+        {saving ? "Saving Changes..." : "Save Changes"}
       </button>
     </form>
   );

@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import EditUserProfile from "./EditUserProfile";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
+import Modal from "react-modal";
+import ProgressBar from "@ramonak/react-progress-bar";
 
 const UserDashboard = () => {
   const [loans, setLoans] = useState([]);
   const [editingProfile, setEditingProfile] = useState(false);
   const [user, setUser] = useState("");
-  const [id, setid] = useState(null);
+  const [id, setId] = useState(null);
   const [newLoanData, setNewLoanData] = useState({ amount: "" });
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchLoans = async () => {
@@ -37,17 +44,7 @@ const UserDashboard = () => {
     fetchUser();
   }, []);
 
-  const paidLoans = loans.filter((loan) => loan.isPaid);
-  const approvedLoans = loans.filter(
-    (loan) => loan.status === "approved" && !loan.isPaid // Filter only approved and unpaid loans
-  );
-  const pendingLoans = loans.filter((loan) => loan.status === "pending");
-
   const handleChange = (e) => {
-    setNewLoanData({ ...newLoanData, [e.target.name]: e.target.value });
-  };
-
-  const handleEditChange = (e) => {
     setNewLoanData({ ...newLoanData, [e.target.name]: e.target.value });
   };
 
@@ -66,293 +63,177 @@ const UserDashboard = () => {
     );
     const data = await response.json();
     if (!response.ok) {
-      alert(data.message);
+      toast.error(data.message);
       setNewLoanData({ amount: "" });
       return;
     }
     setLoans([...loans, data]);
     setNewLoanData({ amount: "" });
+    toast.success("Loan application submitted successfully!");
   };
 
-  const handleEditLoan = (id) => {
-    const loan = loans.find((loan) => loan._id === id);
-    setid(id);
-    setNewLoanData({ amount: loan.amount });
+  const handleDeleteLoan = (id) => {
+    setId(id);
+    setModalIsOpen(true);
   };
 
-  const handleSubmitEdit = async (e) => {
-    e.preventDefault();
+  const confirmDeleteLoan = async () => {
+    setModalIsOpen(false);
     const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/edit/${id}`,
+      `https://gammaridge-server.vercel.app/api/users/loans/delete/${id}`,
       {
-        method: "PUT",
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(newLoanData),
       }
     );
-    const data = await response.json();
+    const result = await response.json();
     if (response.ok) {
-      setLoans(
-        loans.map((loan) =>
-          loan._id === id ? { ...loan, ...newLoanData } : loan
-        )
-      );
-      setid(null);
-      setNewLoanData({ amount: "" });
-      alert("Loan updated successfully!");
+      setLoans(loans.filter((loan) => loan._id !== id));
+      toast.success("Loan deleted successfully!");
     } else {
-      alert(data.message);
+      toast.error(result.message);
     }
   };
 
-  const handleDeleteLoan = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this loan?"
-    );
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/users/loans/delete/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const result = await response.json();
-      if (response.ok) {
-        setLoans(loans.filter((loan) => loan._id !== id));
-        alert("Loan deleted successfully!");
-      } else {
-        alert(result.message);
-      }
-    } catch (error) {
-      console.error("Error deleting loan:", error);
-    }
-  };
-
-  const handlePayLoan = async (id) => {
-    try {
-      const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/users/loans/pay/${id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setLoans(
-          loans.map((loan) =>
-            loan._id === id ? { ...loan, isPaid: false } : loan
-          )
-        );
-        alert("Loan paid successfully!");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      console.error("Error paying loan:", error);
-      alert("Failed to process payment. Please try again.");
-    }
-  };
-
-  // edit pprofile
-  const handleSaveProfile = (updatedUser) => {
-    setUser(updatedUser); // Update user state with new data
-    setEditingProfile(false);
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const cancelDeleteLoan = () => {
+    setModalIsOpen(false);
   };
 
   return (
-    <div className="container mx-auto p-3 text-white">
-      {/* heading and salutations */}
-      <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
-        <h1 className="text-2xl">
-          Welcome back{" "}
-          <span className="text-[#b9283b] capitalize">{user?.name}</span>, we
-          are glad you are here.
-        </h1>
+    <div className="max-w-6xl mx-auto p-6 text-gray-800">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <header className="flex flex-col items-center justify-between md:flex-row gap-6">
+        <div>
+          <h1 className="text-4xl font-bold text-white">User Dashboard</h1>
+          <p className="text-xl mt-2 text-white">
+            Welcome back{" "}
+            <span className="text-purple-300 capitalize">{user?.name}</span>!
+          </p>
+        </div>
         <button
-          className="bg-blue-600 text-white px-4 py-2 mt-4 w-[100px]"
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
           onClick={() => setEditingProfile(true)}
         >
           Edit Profile
         </button>
-      </div>
+      </header>
 
-      {/* Main dashboard content */}
       {editingProfile ? (
-        <EditUserProfile user={user} onSave={handleSaveProfile} />
+        <EditUserProfile user={user} onSave={() => setEditingProfile(false)} />
       ) : (
-        // Existing dashboard code...
-        <div>
-          <div>
-            <h2 className="text-xl mt-8">My Loans</h2>
-
-            {loans.length === 0 || pendingLoans.length === 0 ? (
-              <div>
-                <p className="mb-3">
-                  You have <span>{pendingLoans.length}</span> pending loans
-                </p>
-                <div className="flex flex-col gap-4">
-                  <h2 className="text-xl">Apply for a new loan</h2>
-                  <form
-                    onSubmit={handleSubmit}
-                    className="max-w-md gap-3 flex flex-col"
-                  >
-                    <input
-                      name="amount"
-                      value={newLoanData.amount}
-                      onChange={handleChange}
-                      placeholder="Amount"
-                      required
-                      className="border p-2 w-full bg-gray-600 text-white"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-[#b9283b] text-white py-2 px-4 w-full"
-                    >
-                      Apply
-                    </button>
-                  </form>
-                </div>
-              </div>
+        <main className="mt-8">
+          {/* Loans Section */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold text-purple-700">My Loans</h2>
+            {loans.length === 0 ? (
+              <p className="mt-4 text-gray-700">
+                You don’t have any loans. Apply for one below!
+              </p>
             ) : (
-              <div className="flex p-4 flex-col">
-                {pendingLoans.map((loan) => (
+              <div className="mt-4 grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {loans.map((loan) => (
                   <div
                     key={loan._id}
-                    className="mb-2 border p-3 flex flex-col bg-slate-500"
+                    className="bg-purple-50 border border-purple-200 p-4 rounded-lg shadow-md hover:shadow-lg transition"
                   >
                     <p>
-                      Amount: <span className="font-semibold">Ksh</span>{" "}
-                      {loan.amount}
+                      <span className="font-medium text-gray-800">Amount:</span>{" "}
+                      Ksh {loan.amount}
                     </p>
                     <p>
-                      Interest: <span className="font-semibold">Ksh</span>{" "}
-                      {loan.interest}
+                      <span className="font-medium text-gray-800">Status:</span>{" "}
+                      {loan.status}
                     </p>
-                    <p>
-                      Total Amount:
-                      <span className="font-semibold"> Ksh</span>{" "}
-                      {loan.totalLoan}
-                    </p>
-                    <p>Status: {loan.status}</p>
-                    <p>
-                      Payment Status:{" "}
-                      {loan.isPaid ? "Fully Paid" : "In Progress"}
-                    </p>
-                    <p>Due date: {formatDate(loan.dueDate)}</p>
-
-                    <div>
+                    <div className="mt-4">
+                      <ProgressBar
+                        completed={loan.isPaid ? 100 : 60} // Example progress
+                        bgColor="#7e57c2"
+                        labelColor="#ffffff"
+                        height="15px"
+                        labelAlignment="center"
+                      />
+                    </div>
+                    <div className="flex mt-4 space-x-3">
                       <button
-                        onClick={() => handleEditLoan(loan._id)}
-                        className="bg-[#2d2197] text-white py-2 px-4"
-                      >
-                        Edit Loan
-                      </button>
-                      <button
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                         onClick={() => handleDeleteLoan(loan._id)}
-                        className="bg-red-600 text-white py-2 px-4"
                       >
-                        Delete Loan
+                        Delete
                       </button>
+                      <button
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                        data-tooltip-id="pay-tooltip"
+                        data-tooltip-content="Mark as paid"
+                      >
+                        Pay
+                      </button>
+                      <Tooltip id="pay-tooltip" />
                     </div>
                   </div>
                 ))}
               </div>
             )}
+          </section>
 
-            {approvedLoans.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl">Approved Unpaid Loans</h2>
-                <div className="flex flex-col gap-4">
-                  {approvedLoans.map((loan) => (
-                    <div
-                      key={loan._id}
-                      className="mb-2 border p-3 flex flex-col bg-slate-500"
-                    >
-                      <p>
-                        Amount: <span className="font-semibold">Ksh</span>{" "}
-                        {loan.amount}
-                      </p>
-                      <p>
-                        Interest: <span className="font-semibold">Ksh</span>{" "}
-                        {loan.interest}
-                      </p>
-                      <p>
-                        Total Amount:
-                        <span className="font-semibold"> Ksh</span>{" "}
-                        {loan.totalLoan}
-                      </p>
-                      <p>Status: {loan.status}</p>
-                      <p>
-                        Payment Status:{" "}
-                        {loan.isPaid ? "Fully Paid" : "In Progress"}
-                      </p>
-                      <button
-                        onClick={() => handlePayLoan(loan._id)}
-                        className="bg-green-600 text-white py-2 px-4 mt-2"
-                        disabled={loan.isPaid}
-                      >
-                        {loan.isPaid ? "Paid" : "Pay Now"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {id && (
-            <div className="mt-8 p-4 bg-gray-600">
-              <h2 className="text-xl">Edit Loan</h2>
-              <form onSubmit={handleSubmitEdit} className="flex gap-3">
-                <input
-                  name="amount"
-                  value={newLoanData.amount}
-                  onChange={handleEditChange}
-                  placeholder="New Amount"
-                  required
-                  className="border p-2 w-full bg-gray-600 text-white"
-                />
-                <button
-                  type="submit"
-                  className="bg-[#2d2197] text-white py-2 px-4"
-                >
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setid(null)}
-                  className="bg-red-600 text-white py-2 px-4"
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+          {/* Apply for Loan Section */}
+          <section>
+            <h2 className="text-2xl font-semibold text-purple-700">
+              Apply for a New Loan
+            </h2>
+            <form
+              onSubmit={handleSubmit}
+              className="mt-4 flex flex-col gap-4 max-w-lg"
+            >
+              <input
+                type="number"
+                name="amount"
+                placeholder="Loan Amount"
+                value={newLoanData.amount}
+                onChange={handleChange}
+                className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-purple-300"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Apply
+              </button>
+            </form>
+          </section>
+        </main>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={cancelDeleteLoan}
+        className="bg-slate-800 p-8 rounded-lg shadow-md max-w-md mx-auto mt-20"
+        overlayClassName="bg-black bg-opacity-50 fixed inset-0"
+      >
+        <h2 className="text-lg font-semibold text-white">Confirm Deletion</h2>
+        <p className="text-white mt-4">
+          Are you sure you want to delete this loan? This action cannot be
+          undone.
+        </p>
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            onClick={cancelDeleteLoan}
+            className="px-4 py-2 bg-gray-600 text-gray-200 rounded-lg hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDeleteLoan}
+            className="px-4 py-2 bg-red-500 text-gray-200 rounded-lg hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
