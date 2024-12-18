@@ -3,7 +3,7 @@ import app from "../firebase/firebase";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const EditUserProfile = ({ user, onSave }) => {
-  // initialize firebase
+  // Initialize Firebase storage
   const storage = getStorage(app);
 
   const [formData, setFormData] = useState({
@@ -15,6 +15,7 @@ const EditUserProfile = ({ user, onSave }) => {
     photoURLFront: user?.photoURLFront || "",
   });
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,14 +27,17 @@ const EditUserProfile = ({ user, onSave }) => {
     if (file) {
       setUploading(true);
       try {
-        const storageRef = ref(storage, `user_photos/${file.name}`);
+        const storageRef = ref(
+          storage,
+          `user_photos/${Date.now()}_${file.name}`
+        );
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
         setFormData({ ...formData, photoURLFront: downloadURL });
         alert("Photo uploaded successfully!");
       } catch (error) {
         console.error("Error uploading photo:", error);
-        alert("Failed to upload photo.");
+        alert("Failed to upload photo. Please try again.");
       } finally {
         setUploading(false);
       }
@@ -42,6 +46,7 @@ const EditUserProfile = ({ user, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const response = await fetch(
         "https://gammaridge-server.vercel.app/api/users/update",
@@ -63,93 +68,109 @@ const EditUserProfile = ({ user, onSave }) => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-gray-700 rounded text-white"
+      className="p-6 bg-gray-800 rounded-lg shadow-lg text-white"
     >
-      <h2 className="text-xl mb-4">Edit Profile</h2>
-      <div className="mb-3">
-        <label className="block mb-1">Name</label>
+      <h2 className="text-2xl mb-6 font-semibold text-center">Edit Profile</h2>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Name</label>
         <input
           type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          placeholder="Enter your name"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
           required
         />
       </div>
-      <div className="mb-3">
-        <label className="block mb-1">Email</label>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Email</label>
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          placeholder="Enter your email"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
           required
         />
       </div>
-      <div className="mb-3">
-        <label className="block mb-1">Password</label>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Password</label>
         <input
           type="password"
           name="password"
           value={formData.password}
           onChange={handleChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          placeholder="Leave blank to keep current password"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
         />
-        <small className="text-red-400">
-          Leave blank to keep current password
-        </small>
       </div>
-      <div className="mb-3">
-        <label className="block mb-1">Mobile</label>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Mobile</label>
         <input
           type="text"
           name="mobile"
           value={formData.mobile}
           onChange={handleChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          placeholder="Enter your mobile number"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
         />
       </div>
-      <div className="mb-3">
-        <label className="block mb-1">Alternate Mobile</label>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Alternate Mobile</label>
         <input
           type="text"
-          name="mobile"
+          name="alternatemobile"
           value={formData.alternatemobile}
           onChange={handleChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          placeholder="Enter alternate mobile number"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
         />
       </div>
-      <div className="mb-3">
-        <label className="block mb-1">Front ID Photo</label>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-medium">Front ID Photo</label>
         <input
           type="file"
           name="photo"
           onChange={handleFileChange}
-          className="w-full p-2 border bg-gray-600 text-white"
+          className="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-green-500"
         />
-        {uploading && <p className="text-gray-400">Uploading photo...</p>}
+        {uploading && <p className="mt-2 text-green-400">Uploading photo...</p>}
         {formData.photoURLFront && (
           <img
             src={formData.photoURLFront}
-            alt="Profile Preview"
-            className="mt-2 w-20 h-20 rounded-full"
+            alt="Uploaded Profile Preview"
+            className="mt-4 w-24 h-24 rounded-full object-cover mx-auto"
           />
         )}
       </div>
+
       <button
         type="submit"
-        className="bg-green-600 px-4 py-2 text-white rounded"
+        className={`w-full py-3 rounded text-white font-semibold ${
+          submitting
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-600 hover:bg-green-500"
+        }`}
+        disabled={submitting}
       >
-        Save Changes
+        {submitting ? "Saving..." : "Save Changes"}
       </button>
     </form>
   );
