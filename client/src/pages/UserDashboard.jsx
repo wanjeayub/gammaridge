@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import EditUserProfile from "./EditUserProfile";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,6 +9,7 @@ import Modal from "react-modal";
 import ProgressBar from "@ramonak/react-progress-bar";
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
   const [loans, setLoans] = useState([]);
   const [editingProfile, setEditingProfile] = useState(false);
   const [user, setUser] = useState("");
@@ -102,6 +104,12 @@ const UserDashboard = () => {
     setModalIsOpen(false);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.info("You have been logged out.");
+    navigate("/login"); // Redirect to login or another route
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 text-gray-800">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -113,12 +121,20 @@ const UserDashboard = () => {
             <span className="text-purple-300 capitalize">{user?.name}</span>!
           </p>
         </div>
-        <button
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
-          onClick={() => setEditingProfile(true)}
-        >
-          Edit Profile
-        </button>
+        <div className="flex space-x-4">
+          <button
+            className="px-4 py-2 bg-[#b9283b] text-white rounded-lg hover:bg-[#aa3645]"
+            onClick={() => setEditingProfile(true)}
+          >
+            Edit Profile
+          </button>
+          <button
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {editingProfile ? (
@@ -127,7 +143,7 @@ const UserDashboard = () => {
         <main className="mt-8">
           {/* Loans Section */}
           <section className="mb-12">
-            <h2 className="text-2xl font-semibold text-purple-700">My Loans</h2>
+            <h2 className="text-2xl font-semibold text-[#d12f45]">My Loans</h2>
             {loans.length === 0 ? (
               <p className="mt-4 text-gray-700">
                 You don’t have any loans. Apply for one below!
@@ -180,7 +196,7 @@ const UserDashboard = () => {
 
           {/* Apply for Loan Section */}
           <section>
-            <h2 className="text-2xl font-semibold text-purple-700">
+            <h2 className="text-2xl font-semibold text-[#d12f45]">
               Apply for a New Loan
             </h2>
             <form
@@ -198,7 +214,7 @@ const UserDashboard = () => {
               />
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                className="w-full px-4 py-2 bg-[#d12f45] text-white rounded-lg hover:bg-[#da4357]"
               >
                 Apply
               </button>
