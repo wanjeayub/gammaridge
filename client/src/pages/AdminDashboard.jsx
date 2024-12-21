@@ -105,7 +105,7 @@ const AdminDashboard = () => {
       }
 
       await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
         { isPaid: true },
         { headers: { Authorization: `Bearer ${token}` } }
       );
