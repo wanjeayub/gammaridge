@@ -76,6 +76,10 @@ const RegisterForm = () => {
       return;
     }
 
+    if (name.split(" ").length < 2) {
+      alert("use atleast two names");
+    }
+
     // Validate that mobile numbers are different
     if (mobile === alternatemobile) {
       alert("Mobile numbers cannot be the same.");
