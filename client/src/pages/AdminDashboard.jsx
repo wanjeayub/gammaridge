@@ -64,21 +64,28 @@ const AdminDashboard = () => {
   }, []);
 
   // Update Loan Status
-  const updateLoanStatus = async (id, updatedFields, message) => {
+  // Update Loan Status for Approval
+  const approveLoan = async (id, status) => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        setStatusMessage("User not authenticated. Please log in.");
+        return;
+      }
+
       await axios.put(
         `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
-        updatedFields,
+        { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setLoans((prevLoans) =>
-        prevLoans.map((loan) =>
-          loan._id === id ? { ...loan, ...updatedFields } : loan
-        )
+        prevLoans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
       );
-      setStatusMessage(message);
+
+      setStatusMessage(
+        `Loan ${status === "approved" ? "approved" : "rejected"} successfully.`
+      );
 
       // Clear status message after a delay
       setTimeout(() => setStatusMessage(""), 3000);
@@ -88,12 +95,36 @@ const AdminDashboard = () => {
     }
   };
 
-  // Handlers
-  const handleApproval = (id, status) =>
-    updateLoanStatus(id, { status }, `Loan ${status} successfully.`);
+  // Update Loan Status for Marking as Paid
+  const markLoanAsPaid = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setStatusMessage("User not authenticated. Please log in.");
+        return;
+      }
 
-  const handleMarkPaid = (id) =>
-    updateLoanStatus(id, { isPaid: true }, "Loan marked as paid successfully.");
+      await axios.put(
+        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        { isPaid: true },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setLoans((prevLoans) =>
+        prevLoans.map((loan) =>
+          loan._id === id ? { ...loan, isPaid: true } : loan
+        )
+      );
+
+      setStatusMessage("Loan marked as paid successfully.");
+
+      // Clear status message after a delay
+      setTimeout(() => setStatusMessage(""), 3000);
+    } catch (error) {
+      setStatusMessage("Error marking loan as paid. Please try again.");
+      console.error(error);
+    }
+  };
 
   const filteredLoans = loans.filter((loan) => {
     const matchesStatus =
@@ -112,7 +143,7 @@ const AdminDashboard = () => {
     (pageNumber + 1) * PER_PAGE
   );
 
-  const loanStatuses = ["pending", "approved", "paid"];
+  const loanStatuses = ["pending", "approved", "rejected"];
   const loanStatusCounts = loanStatuses.map(
     (status) =>
       loans.filter(
@@ -277,13 +308,13 @@ const AdminDashboard = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         className="bg-green-500 text-white px-4 py-2 rounded"
-                        onClick={() => handleApproval(loan._id, "approved")}
+                        onClick={() => approveLoan(loan._id, "approved")}
                       >
                         Approve
                       </button>
                       <button
                         className="bg-red-500 text-white px-4 py-2 rounded"
-                        onClick={() => handleApproval(loan._id, "rejected")}
+                        onClick={() => approveLoan(loan._id, "rejected")}
                       >
                         Reject
                       </button>
@@ -294,7 +325,7 @@ const AdminDashboard = () => {
                   {loan.status === "approved" && !loan.isPaid && (
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                      onClick={() => handleMarkPaid(loan._id)}
+                      onClick={() => markLoanAsPaid(loan._id)}
                     >
                       Mark as Paid
                     </button>

@@ -179,13 +179,13 @@ const UserDashboard = () => {
                       >
                         Delete
                       </button>
-                      <button
+                      {/* <button
                         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                         data-tooltip-id="pay-tooltip"
                         data-tooltip-content="Mark as paid"
                       >
                         Pay
-                      </button>
+                      </button> */}
                       <Tooltip id="pay-tooltip" />
                     </div>
                   </div>
