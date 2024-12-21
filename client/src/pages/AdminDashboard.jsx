@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { CSVLink } from "react-csv";
+import { Pie, Bar } from "react-chartjs-2";
+import dayjs from "dayjs";
+import ReactPaginate from "react-paginate";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,9 +13,6 @@ import {
   CategoryScale,
   LinearScale,
 } from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";
-import dayjs from "dayjs";
-import ReactPaginate from "react-paginate";
 
 // Register Chart.js components
 ChartJS.register(
@@ -36,7 +35,7 @@ const AdminDashboard = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
-  const perPage = 10; // Fixed value, no need for useState
+  const PER_PAGE = 10; // Defined as a constant
 
   // Fetch Data
   useEffect(() => {
@@ -80,6 +79,9 @@ const AdminDashboard = () => {
         )
       );
       setStatusMessage(message);
+
+      // Clear status message after a delay
+      setTimeout(() => setStatusMessage(""), 3000);
     } catch (error) {
       setStatusMessage("Error updating loan. Please try again.");
       console.error(error);
@@ -89,20 +91,10 @@ const AdminDashboard = () => {
   // Handlers
   const handleApproval = (id, status) =>
     updateLoanStatus(id, { status }, `Loan ${status} successfully.`);
+
   const handleMarkPaid = (id) =>
     updateLoanStatus(id, { isPaid: true }, "Loan marked as paid successfully.");
 
-  const handleExport = () =>
-    loans.map(({ _id, user, amount, status, isPaid }) => ({
-      LoanID: _id,
-      UserName: user.name,
-      Mobile: user.mobile,
-      Amount: amount,
-      Status: status,
-      PaymentStatus: isPaid ? "Paid" : "In Progress",
-    }));
-
-  // Filter and Paginate Loans
   const filteredLoans = loans.filter((loan) => {
     const matchesStatus =
       filterStatus === "all" ||
@@ -114,13 +106,12 @@ const AdminDashboard = () => {
     return matchesStatus && matchesQuery;
   });
 
-  const pageCount = Math.ceil(filteredLoans.length / perPage);
+  const pageCount = Math.ceil(filteredLoans.length / PER_PAGE);
   const loansPerPage = filteredLoans.slice(
-    pageNumber * perPage,
-    (pageNumber + 1) * perPage
+    pageNumber * PER_PAGE,
+    (pageNumber + 1) * PER_PAGE
   );
 
-  // Chart Data
   const loanStatuses = ["pending", "approved", "paid"];
   const loanStatusCounts = loanStatuses.map(
     (status) =>
@@ -328,13 +319,11 @@ const AdminDashboard = () => {
               onPageChange={(data) => setPageNumber(data.selected)}
               containerClassName={
                 "flex justify-center items-center space-x-2 mt-6"
-              } // Horizontal alignment
+              }
               pageClassName={
                 "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
-              } // Style for page items
-              activeClassName={
-                "bg-blue-500 text-white font-bold" // Highlight the active page
               }
+              activeClassName={"bg-blue-500 text-white font-bold"}
               previousClassName={
                 "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
               }
