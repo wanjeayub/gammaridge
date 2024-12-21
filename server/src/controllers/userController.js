@@ -311,8 +311,10 @@ const deleteLoan = async (req, res) => {
       return res.status(404).json({ message: "Loan not found" });
     }
 
-    if (loan.isPaid) {
-      return res.status(400).json({ message: "Cannot delete a paid loan" });
+    if (loan.isPaid || loan.status === "approved") {
+      return res
+        .status(400)
+        .json({ message: "Cannot delete a paid or approved loan" });
     }
 
     await Loan.deleteOne({ _id: id });

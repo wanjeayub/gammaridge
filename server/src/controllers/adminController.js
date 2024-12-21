@@ -94,19 +94,17 @@ const approveLoan = async (req, res) => {
 // pay loan
 const payLoan = async (req, res) => {
   try {
-    const id = req.params.id;
-    const loan = await Loan.findById(id);
-
+    const loan = await Loan.findByIdAndUpdate(
+      req.params.id,
+      { isPaid: true },
+      { new: true }
+    );
     if (!loan) {
       return res.status(404).json({ message: "Loan not found" });
     }
-
-    loan.isPaid = true;
-    await loan.save();
-
-    res.status(200).json({ message: "Loan marked as paid", loan });
+    res.json(loan);
   } catch (error) {
-    res.status(500).json({ message: "Error updating loan status", error });
+    res.status(500).json({ message: error.message });
   }
 };
 
