@@ -7,7 +7,6 @@ const {
   getUserLoans,
   resetPassword,
   forgotPassword,
-  editProfile,
   editLoan,
   deleteLoan,
   getUser,
@@ -23,8 +22,10 @@ router.get("/testing", (req, res) => {
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+
 // reset options
 router.post("/fpassword", forgotPassword);
+router.post("/pword-update", forgotPassword);
 router.post("/rpassword/:token", resetPassword);
 
 router.post("/loans/apply", protect, applyLoan);

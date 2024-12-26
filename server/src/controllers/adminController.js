@@ -161,61 +161,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// SPECIAL LOANS - This feature is shelved for now
-
-// add special loan
-const applySpecialLoan = async (req, res) => {
-  const { fullname, principal } = req.body;
-  const myPrincipal = parseFloat(principal);
-  const interest = 0.2 * myPrincipal;
-  const totalLoan = parseFloat(myPrincipal + interest);
-
-  const myLoan = await specialLoan.create({
-    fullname,
-    principal: myPrincipal,
-    interest,
-    totalLoan,
-  });
-
-  res.status(201).json(myLoan);
-};
-
-// Get special Loans
-const getSpecialLoans = async (req, res) => {
-  const myLoans = await specialLoan.find();
-  res.status(200).json(myLoans);
-};
-
-// edit special loan
-const editSpecialLoan = async (req, res) => {
-  const { principal } = req.body;
-  const myPrincipal = parseFloat(principal);
-  const interest = 0.2 * myPrincipal;
-  const totalLoan = parseFloat(interest + myPrincipal);
-  try {
-    const sloan = await specialLoan.findByIdAndUpdate(
-      req.params.id,
-      { principal: myPrincipal, interest, totalLoan },
-      { new: true }
-    );
-    if (!sloan) return res.status(404).json({ message: "Loan not found" });
-    res.status(200).json(sloan);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-// delete special loan
-const deleteSpecialLoan = async (req, res) => {
-  try {
-    const loan = await specialLoan.findByIdAndDelete(req.params.id);
-    if (!loan) return res.status(404).json({ message: "Loan not found" });
-    res.status(200).json({ message: "Loan deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
 module.exports = {
   getLoans,
   getAllUsers,
@@ -228,8 +173,4 @@ module.exports = {
   getApprovedLoans,
   getRejectedLoans,
   getPaidLoans,
-  applySpecialLoan,
-  getSpecialLoans,
-  editSpecialLoan,
-  deleteSpecialLoan,
 };

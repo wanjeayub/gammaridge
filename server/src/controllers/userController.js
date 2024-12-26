@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel.js");
 const Loan = require("../models/loanModel.js");
+const bcrypt = require("bcryptjs");
 
 // Generate JWT
 const generateToken = (id) => {
@@ -65,42 +66,35 @@ const loginUser = async (req, res) => {
 
 // forgot password
 const forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = User.findOne({ email });
+  const { email, newPassword } = req.body;
 
-  console.log(email);
-
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
+  // Validate input
+  if (!email || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: "Email and new password are required." });
   }
 
-  const resetToken = jwt.sign({ id: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
-  });
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
 
-  // Send reset email using Nodemailer
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Password Reset Request",
-    text: `Please use the following link to reset your password: https://gammaridge-server.vercel.app/reset-password/${resetToken}`,
-  };
-
-  transporter.sendMail(mailOptions, (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ message: "Error sending email" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
-    res.json({ message: "Password reset email sent" });
-  });
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
 };
 
 // reset password
