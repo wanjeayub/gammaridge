@@ -1,12 +1,10 @@
-import React, { useState, useNavigate } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
-
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +19,7 @@ const ForgotPassword = () => {
       );
 
       setMessage(response.data.message);
-      navigate("/login");
+      window.location.href = "/login";
     } catch (error) {
       setMessage(
         error.response?.data?.message || "An error occurred. Please try again."
