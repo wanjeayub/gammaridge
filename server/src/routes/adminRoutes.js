@@ -4,10 +4,6 @@ const {
   getLoans,
   registerAdmin,
   loginAdmin,
-  applySpecialLoan,
-  getSpecialLoans,
-  editSpecialLoan,
-  deleteSpecialLoan,
   payLoan,
   getPendingLoans,
   getApprovedLoans,
@@ -35,11 +31,5 @@ router.get("/loans/pending", adminProtect, getPendingLoans);
 router.get("/loans/approved", adminProtect, getApprovedLoans);
 router.get("/loans/rejected", adminProtect, getRejectedLoans);
 router.get("/loans/paid", adminProtect, getPaidLoans);
-
-// special loans
-router.post("/sloan", adminProtect, applySpecialLoan);
-router.get("/sloans", adminProtect, getSpecialLoans);
-router.put("/sloans/:id", adminProtect, editSpecialLoan);
-router.delete("/sloans/:id", adminProtect, deleteSpecialLoan);
 
 module.exports = router;
