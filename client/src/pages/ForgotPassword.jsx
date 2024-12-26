@@ -1,64 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useNavigate } from "react";
 import axios from "axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
 
     try {
       const response = await axios.post(
-        "https://gammaridge-server.vercel.app/api/users/forgot-password",
-        { email },
+        "https://gammaridge-server.vercel.app/api/users/pword-update",
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          email,
+          newPassword,
         }
       );
 
-      setMessage("Password reset email sent successfully. Check your inbox.");
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Something went wrong. Please try again."
+      setMessage(response.data.message);
+      navigate("/login");
+    } catch (error) {
+      setMessage(
+        error.response?.data?.message || "An error occurred. Please try again."
       );
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-700">
-      <div className="bg-gray-300 p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              className="bg-gray-600 text-white px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-[#b9283b]"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-[#b9283b] rounded-md text-white py-2 px-4 w-full"
-          >
-            Send Reset Email
-          </button>
-        </form>
-        {message && (
-          <p className="text-green-500 mt-4 text-center">{message}</p>
-        )}
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Update Password</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-gray-700">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700">New Password</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          Update Password
+        </button>
+      </form>
+      {message && <p className="mt-4 text-red-600">{message}</p>}
     </div>
   );
 };

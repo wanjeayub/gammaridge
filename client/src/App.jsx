@@ -27,7 +27,7 @@ const App = () => {
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/pword-update" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/edit" element={<EditAdminPage />} />
       </Routes>

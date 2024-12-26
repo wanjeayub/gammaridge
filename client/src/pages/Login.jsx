@@ -77,7 +77,7 @@ const Login = () => {
                 <span className="text-[#b9283b]"> register</span>
               </Link>
             </p>
-            <Link to="/forgot-password">
+            <Link to="/pword-update">
               <p>Forgot password? </p>
             </Link>
           </div>
