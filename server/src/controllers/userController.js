@@ -84,10 +84,10 @@ const forgotPassword = async (req, res) => {
     }
 
     // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update password
-    user.password = hashedPassword;
+    user.password = newPassword;
     await user.save();
 
     res.status(200).json({ message: "Password updated successfully." });

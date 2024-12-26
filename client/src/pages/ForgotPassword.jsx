@@ -29,10 +29,10 @@ const ForgotPassword = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Update Password</h1>
+      <h1 className="text-2xl font-bold mb-4 text-white">Update Password</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-gray-700">Email</label>
+          <label className="block text-gray-300">Email</label>
           <input
             type="email"
             value={email}
@@ -42,7 +42,7 @@ const ForgotPassword = () => {
           />
         </div>
         <div>
-          <label className="block text-gray-700">New Password</label>
+          <label className="block text-gray-300">New Password</label>
           <input
             type="password"
             value={newPassword}
