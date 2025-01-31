@@ -85,8 +85,7 @@ const Navbar = ({ user, onLogout }) => {
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-2xl font-bold dark:text-blue-200">
           <Link to="/" aria-label="Go to homepage">
-            <span className="text-blue-600">Gamma</span>
-            <span>ridge</span>
+            <span className="text-blue-600">Gammaridge</span>
           </Link>
         </div>
 
