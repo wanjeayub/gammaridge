@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const Loan = require("../models/Loan"); // Loan model
-const User = require("../models/User"); // User model
-const authMiddleware = require("../middleware/authMiddleware");
+const Loan = require("../models/Loan.js"); // Loan model
+const User = require("../models/User.js"); // User model
+const authMiddleware = require("../middleware/authMiddleware.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
