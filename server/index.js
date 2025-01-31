@@ -37,7 +37,7 @@ connectDB();
 
 // test
 app.use("/", (req, res) => {
-  res.status(200).json("all working okay");
+  res.status(200).json("system upgrade successfull");
 });
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
