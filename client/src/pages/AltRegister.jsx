@@ -76,10 +76,6 @@ const RegisterForm = () => {
       return;
     }
 
-    if (name.split(" ").length < 2) {
-      alert("use atleast two names");
-    }
-
     // Validate that mobile numbers are different
     if (mobile === alternatemobile) {
       alert("Mobile numbers cannot be the same.");
@@ -101,37 +97,30 @@ const RegisterForm = () => {
       const IDback = await imageCompression(photoBack, options);
 
       // Upload photoFront to Firebase
-      const photoRef1 = ref(storage, `users/${Date.now()}-${IDfront.name}`);
+      const photoRef1 = ref(storage, `jandm/${Date.now()}-${IDfront.name}`);
       const snapshot1 = await uploadBytes(photoRef1, IDfront);
       const photoURLFront = await getDownloadURL(snapshot1.ref);
 
       // Upload photoFront to Firebase
-      const photoRef2 = ref(storage, `users/${Date.now()}-${IDback.name}`);
+      const photoRef2 = ref(storage, `jandm/${Date.now()}-${IDback.name}`);
       const snapshot2 = await uploadBytes(photoRef2, IDback);
       const photoURLBack = await getDownloadURL(snapshot2.ref);
 
-      // log the recieved urls
-      // console.log(photoURLFront);
-      // console.log(photoURLBack);
-
       // Save data to backend (MongoDB)
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-            mobile,
-            alternatemobile,
-            photoURLFront,
-            photoURLBack,
-            terms,
-          }),
-        }
-      );
+      const response = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          mobile,
+          alternatemobile,
+          photoURLFront,
+          photoURLBack,
+          terms,
+        }),
+      });
 
       const result = await response.json();
 
@@ -248,7 +237,14 @@ const RegisterForm = () => {
                 checked={formData.terms}
                 onChange={handleChange}
               />
-              <span className="ml-2">I agree to the terms and conditions</span>
+              <span className="ml-2">
+                I agree to the{" "}
+                <Link to={"/terms"}>
+                  <span className="text-blue-400 hover:underline">
+                    terms and conditions
+                  </span>
+                </Link>
+              </span>
             </label>
           </div>
 

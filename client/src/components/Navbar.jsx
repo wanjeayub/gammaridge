@@ -1,112 +1,128 @@
+import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MdOutlineMenuOpen } from "react-icons/md";
-import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import { FaBars, FaTimes, FaUser } from "react-icons/fa";
 
-function Navbar() {
-  const [user, setUser] = useState(null);
+const Navbar = ({ user, onLogout }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+
   const navigate = useNavigate();
 
-  // Fetch user data
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(
-          "https://gammaridge-server.vercel.app/api/users/user",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data);
-        } else {
-          setUser(null); // Handle invalid token or unauthorized user
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        setUser(null);
-      }
-    };
-
-    fetchUser();
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
   }, []);
 
-  // Logout functionality
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUser(null); // Update user state to reflect logged-out status
-    navigate("/login"); // Redirect to login page
-  };
+  const handleLogout = useCallback(() => {
+    onLogout();
+    toast.success("Logged out successfully!");
+    navigate("/");
+  }, [onLogout, navigate]);
+
+  const navLinks = (
+    <>
+      <Link
+        to="/"
+        className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+      >
+        Home
+      </Link>
+      <Link
+        to="/about"
+        className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+      >
+        About
+      </Link>
+      <Link
+        to="/services"
+        className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+      >
+        Services
+      </Link>
+    </>
+  );
+
+  const dashboardLink = user ? (
+    <Link
+      to={user.role === "admin" ? "/admin" : "/dashboard"}
+      className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+    >
+      Dashboard
+    </Link>
+  ) : null;
+
+  const userActions = user ? (
+    <div className="relative">
+      <button
+        onClick={() => setIsUserDropdownOpen((prev) => !prev)}
+        className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+      >
+        <FaUser />
+        <span>{user.fullName || user.name}</span>
+      </button>
+      {isUserDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <Link
+      to="/login"
+      className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition-all"
+    >
+      Login
+    </Link>
+  );
 
   return (
-    <div className="shadow-lg sticky top-0 z-50 bg-[#2d2d2d]">
-      <div className="flex items-center justify-between p-3 max-w-6xl mx-auto">
-        {/* Logo */}
-        <div className="text-xl">
-          <Link to="/">
-            <span className="text-[#eeeeee] font-bold">Gamma</span>
-            <span className="text-[#b9283b] font-bold">ridge</span>
+    <header className="bg-white dark:bg-gray-800 shadow-lg p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="text-2xl font-bold dark:text-blue-200">
+          <Link to="/" aria-label="Go to homepage">
+            <span className="text-blue-600">J&H </span>
+            <span>Enterprises</span>
           </Link>
         </div>
 
-        {/* Navigation Links and User Section */}
-        <div className="flex items-center gap-3">
-          {/* Menu Icon for Mobile */}
-          <MdOutlineMenuOpen className="text-3xl text-white hover:text-[#b9283b] md:hidden" />
+        <nav className="hidden md:flex items-center space-x-6">
+          {navLinks}
+          {dashboardLink}
+        </nav>
 
-          {/* Other Services Link */}
-          <Link to="/services">
-            <span className="hover:underline font-semibold hidden md:flex text-[#eeeeee]">
-              Other Services
-            </span>
-          </Link>
-
-          {/* Conditional Rendering: Login/Register or User Info */}
-          {!user ? (
-            <>
-              <Link to="/login">
-                <span className="text-[#255C99] font-semibold border-[#255C99] rounded-md border-2 px-3 py-2 hover:bg-slate-200">
-                  Login
-                </span>
-              </Link>
-              <Link to="/register">
-                <span className="text-white font-semibold bg-[#6D1321] rounded-md px-3 py-2 hover:opacity-80 border-2 border-[#6D1321]">
-                  Register
-                </span>
-              </Link>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              {/* User Profile Image */}
-              <Link to="/dashboard">
-                <img
-                  src={
-                    user.profileImage ||
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                  }
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full border-2 border-[#eeeeee] cursor-pointer"
-                />
-              </Link>
-              {/* User Name */}
-              <Link to="/dashboard">
-                <span className="text-white hover:underline">{user.name}</span>
-              </Link>
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="text-[#eeeeee] bg-[#6D1321] hover:opacity-80 px-3 py-2 rounded-md font-semibold border-2 border-[#6D1321]"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+        <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
+            {userActions}
+          </div>
+          <button
+            onClick={toggleMobileMenu}
+            aria-label="Toggle mobile menu"
+            aria-expanded={isMobileMenuOpen}
+            className="md:hidden p-2 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+          >
+            {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
         </div>
       </div>
-    </div>
+
+      {isMobileMenuOpen && (
+        <nav className="md:hidden mt-4 bg-white dark:bg-gray-800">
+          <div className="flex flex-col space-y-2">
+            {navLinks}
+            {dashboardLink}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+              <div className="flex flex-col space-y-2 px-4">{userActions}</div>
+            </div>
+          </div>
+        </nav>
+      )}
+    </header>
   );
-}
+};
 
 export default Navbar;

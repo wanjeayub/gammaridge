@@ -15,7 +15,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        "https://gammaridge-server.vercel.app/api/users/reset-password",
+        "/api/users/reset-password",
         { token, newPassword },
         {
           headers: {

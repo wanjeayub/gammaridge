@@ -16,10 +16,7 @@ const AdminDashboard = () => {
 
         const headers = { Authorization: `Bearer ${token}` };
 
-        const loansResponse = await axios.get(
-          "https://gammaridge-server.vercel.app/api/admin/loans",
-          { headers }
-        );
+        const loansResponse = await axios.get("/api/admin/loans", { headers });
 
         setLoans(loansResponse.data);
       } catch (err) {
@@ -31,7 +28,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleApproval = async (id, status) => {
-    await fetch(`https://gammaridge-server.vercel.app/api/admin/loan/${id}`, {
+    await fetch(`/api/admin/loan/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -45,17 +42,14 @@ const AdminDashboard = () => {
   };
 
   const handlePay = async (id) => {
-    await fetch(
-      `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ isPaid: true }),
-      }
-    );
+    await fetch(`/api/admin/loan/repay/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ isPaid: true }),
+    });
     setLoans(
       loans.map((loan) => (loan._id === id ? { ...loan, isPaid: true } : loan))
     );

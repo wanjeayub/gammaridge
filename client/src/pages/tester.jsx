@@ -38,10 +38,7 @@ const AdminDashboard = () => {
         }
 
         const headers = { Authorization: `Bearer ${token}` };
-        const loansResponse = await axios.get(
-          "https://gammaridge-server.vercel.app/api/admin/loans",
-          { headers }
-        );
+        const loansResponse = await axios.get("/api/admin/loans", { headers });
 
         setLoans(loansResponse.data);
         setStatusMessage("Loans fetched successfully.");
@@ -58,7 +55,7 @@ const AdminDashboard = () => {
   const handleApproval = async (id, status) => {
     try {
       await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        `/api/admin/loan/${id}`,
         { status },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -80,7 +77,7 @@ const AdminDashboard = () => {
   const handleMarkPaid = async (id) => {
     try {
       await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+        `/api/admin/loan/${id}`,
         { isPaid: true },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },

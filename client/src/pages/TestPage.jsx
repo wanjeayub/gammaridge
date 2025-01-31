@@ -18,10 +18,7 @@ const TestPage = () => {
           Authorization: `Bearer ${token}`,
         };
 
-        const loansResponse = await axios.get(
-          "https://gammaridge-server.vercel.app/api/admin/loans",
-          { headers }
-        );
+        const loansResponse = await axios.get("/api/admin/loans", { headers });
 
         setLoans(loansResponse.data);
       } catch (err) {
@@ -34,7 +31,7 @@ const TestPage = () => {
 
   const handleApproval = async (id, status) => {
     await axios.put(
-      `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
+      `/api/admin/loan/${id}`,
       { status },
       {
         headers: {
@@ -50,7 +47,7 @@ const TestPage = () => {
 
   const handlePay = async (id) => {
     await axios.put(
-      `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
+      `/api/admin/loan/repay/${id}`,
       { isPaid: true },
       {
         headers: {

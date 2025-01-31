@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Pie, Bar } from "react-chartjs-2";
-import dayjs from "dayjs";
-import ReactPaginate from "react-paginate";
+import { CSVLink } from "react-csv";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -13,6 +11,9 @@ import {
   CategoryScale,
   LinearScale,
 } from "chart.js";
+import { Pie, Bar } from "react-chartjs-2";
+import dayjs from "dayjs";
+import ReactPaginate from "react-paginate";
 
 // Register Chart.js components
 ChartJS.register(
@@ -35,7 +36,7 @@ const AdminDashboard = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
-  const PER_PAGE = 10; // Defined as a constant
+  const perPage = 10; // Fixed value, no need for useState
 
   // Fetch Data
   useEffect(() => {
@@ -47,10 +48,9 @@ const AdminDashboard = () => {
           return;
         }
 
-        const { data } = await axios.get(
-          "https://gammaridge-server.vercel.app/api/admin/loans",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const { data } = await axios.get("/api/admin/loans", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setLoans(data);
         setStatusMessage("Loans fetched successfully.");
@@ -64,68 +64,42 @@ const AdminDashboard = () => {
   }, []);
 
   // Update Loan Status
-  // Update Loan Status for Approval
-  const approveLoan = async (id, status) => {
+  const updateLoanStatus = async (id, updatedFields, message) => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        setStatusMessage("User not authenticated. Please log in.");
-        return;
-      }
-
-      await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/${id}`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.put(`/api/admin/loan/${id}`, updatedFields, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setLoans((prevLoans) =>
-        prevLoans.map((loan) => (loan._id === id ? { ...loan, status } : loan))
+        prevLoans.map((loan) =>
+          loan._id === id ? { ...loan, ...updatedFields } : loan
+        )
       );
-
-      setStatusMessage(
-        `Loan ${status === "approved" ? "approved" : "rejected"} successfully.`
-      );
-
-      // Clear status message after a delay
-      setTimeout(() => setStatusMessage(""), 3000);
+      setStatusMessage(message);
     } catch (error) {
       setStatusMessage("Error updating loan. Please try again.");
       console.error(error);
     }
   };
 
-  // Update Loan Status for Marking as Paid
-  const markLoanAsPaid = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setStatusMessage("User not authenticated. Please log in.");
-        return;
-      }
+  // Handlers
+  const handleApproval = (id, status) =>
+    updateLoanStatus(id, { status }, `Loan ${status} successfully.`);
+  const handleMarkPaid = (id) =>
+    updateLoanStatus(id, { isPaid: true }, "Loan marked as paid successfully.");
 
-      await axios.put(
-        `https://gammaridge-server.vercel.app/api/admin/loan/repay/${id}`,
-        { isPaid: true },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  const handleExport = () =>
+    loans.map(({ _id, user, amount, status, isPaid }) => ({
+      LoanID: _id,
+      UserName: user.name,
+      Mobile: user.mobile,
+      Amount: amount,
+      Status: status,
+      PaymentStatus: isPaid ? "Paid" : "In Progress",
+    }));
 
-      setLoans((prevLoans) =>
-        prevLoans.map((loan) =>
-          loan._id === id ? { ...loan, isPaid: true } : loan
-        )
-      );
-
-      setStatusMessage("Loan marked as paid successfully.");
-
-      // Clear status message after a delay
-      setTimeout(() => setStatusMessage(""), 3000);
-    } catch (error) {
-      setStatusMessage("Error marking loan as paid. Please try again.");
-      console.error(error);
-    }
-  };
-
+  // Filter and Paginate Loans
   const filteredLoans = loans.filter((loan) => {
     const matchesStatus =
       filterStatus === "all" ||
@@ -137,13 +111,14 @@ const AdminDashboard = () => {
     return matchesStatus && matchesQuery;
   });
 
-  const pageCount = Math.ceil(filteredLoans.length / PER_PAGE);
+  const pageCount = Math.ceil(filteredLoans.length / perPage);
   const loansPerPage = filteredLoans.slice(
-    pageNumber * PER_PAGE,
-    (pageNumber + 1) * PER_PAGE
+    pageNumber * perPage,
+    (pageNumber + 1) * perPage
   );
 
-  const loanStatuses = ["pending", "approved", "rejected"];
+  // Chart Data
+  const loanStatuses = ["pending", "approved", "paid"];
   const loanStatusCounts = loanStatuses.map(
     (status) =>
       loans.filter(
@@ -308,13 +283,13 @@ const AdminDashboard = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         className="bg-green-500 text-white px-4 py-2 rounded"
-                        onClick={() => approveLoan(loan._id, "approved")}
+                        onClick={() => handleApproval(loan._id, "approved")}
                       >
                         Approve
                       </button>
                       <button
                         className="bg-red-500 text-white px-4 py-2 rounded"
-                        onClick={() => approveLoan(loan._id, "rejected")}
+                        onClick={() => handleApproval(loan._id, "rejected")}
                       >
                         Reject
                       </button>
@@ -325,7 +300,7 @@ const AdminDashboard = () => {
                   {loan.status === "approved" && !loan.isPaid && (
                     <button
                       className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-                      onClick={() => markLoanAsPaid(loan._id)}
+                      onClick={() => handleMarkPaid(loan._id)}
                     >
                       Mark as Paid
                     </button>
@@ -350,11 +325,13 @@ const AdminDashboard = () => {
               onPageChange={(data) => setPageNumber(data.selected)}
               containerClassName={
                 "flex justify-center items-center space-x-2 mt-6"
-              }
+              } // Horizontal alignment
               pageClassName={
                 "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
+              } // Style for page items
+              activeClassName={
+                "bg-blue-500 text-white font-bold" // Highlight the active page
               }
-              activeClassName={"bg-blue-500 text-white font-bold"}
               previousClassName={
                 "inline-block bg-gray-200 rounded-md px-3 py-1 hover:bg-gray-300 cursor-pointer"
               }

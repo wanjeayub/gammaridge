@@ -1,10 +1,10 @@
 import { useState } from "react";
-import app from "../firebase/firebase";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const EditUserProfile = ({ user, onSave }) => {
   // Firebase storage initialization
-  const storage = getStorage(app);
+  // const storage = getStorage(app);
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -49,17 +49,14 @@ const EditUserProfile = ({ user, onSave }) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/update",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("/api/users/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
+      });
       const data = await response.json();
       if (response.ok) {
         onSave(data); // Update parent component with new user data

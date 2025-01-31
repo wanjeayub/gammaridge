@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import EditUserProfile from "./EditUserProfile";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -9,7 +8,6 @@ import Modal from "react-modal";
 import ProgressBar from "@ramonak/react-progress-bar";
 
 const UserDashboard = () => {
-  const navigate = useNavigate();
   const [loans, setLoans] = useState([]);
   const [editingProfile, setEditingProfile] = useState(false);
   const [user, setUser] = useState("");
@@ -19,25 +17,19 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/loans",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch("/api/users/loans", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       const data = await response.json();
       setLoans(data);
     };
 
     const fetchUser = async () => {
-      const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/user",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
+      const response = await fetch("/api/users/user", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       const data = await response.json();
       setUser(data);
     };
@@ -52,17 +44,14 @@ const UserDashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch(
-      "https://gammaridge-server.vercel.app/api/users/loans/apply",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(newLoanData),
-      }
-    );
+    const response = await fetch("/api/users/loans/apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(newLoanData),
+    });
     const data = await response.json();
     if (!response.ok) {
       toast.error(data.message);
@@ -81,16 +70,13 @@ const UserDashboard = () => {
 
   const confirmDeleteLoan = async () => {
     setModalIsOpen(false);
-    const response = await fetch(
-      `https://gammaridge-server.vercel.app/api/users/loans/delete/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+    const response = await fetch(`/api/users/loans/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
     const result = await response.json();
     if (response.ok) {
       setLoans(loans.filter((loan) => loan._id !== id));
@@ -104,12 +90,6 @@ const UserDashboard = () => {
     setModalIsOpen(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    toast.info("You have been logged out.");
-    navigate("/login"); // Redirect to login or another route
-  };
-
   return (
     <div className="max-w-6xl mx-auto p-6 text-gray-800">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -121,20 +101,12 @@ const UserDashboard = () => {
             <span className="text-purple-300 capitalize">{user?.name}</span>!
           </p>
         </div>
-        <div className="flex space-x-4">
-          <button
-            className="px-4 py-2 bg-[#b9283b] text-white rounded-lg hover:bg-[#aa3645]"
-            onClick={() => setEditingProfile(true)}
-          >
-            Edit Profile
-          </button>
-          {/* <button
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            onClick={handleLogout}
-          >
-            Logout
-          </button> */}
-        </div>
+        <button
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500"
+          onClick={() => setEditingProfile(true)}
+        >
+          Edit Profile
+        </button>
       </header>
 
       {editingProfile ? (
@@ -143,7 +115,7 @@ const UserDashboard = () => {
         <main className="mt-8">
           {/* Loans Section */}
           <section className="mb-12">
-            <h2 className="text-2xl font-semibold text-[#d12f45]">My Loans</h2>
+            <h2 className="text-2xl font-semibold text-purple-700">My Loans</h2>
             {loans.length === 0 ? (
               <p className="mt-4 text-gray-700">
                 You don’t have any loans. Apply for one below!
@@ -179,13 +151,13 @@ const UserDashboard = () => {
                       >
                         Delete
                       </button>
-                      {/* <button
+                      <button
                         className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                         data-tooltip-id="pay-tooltip"
                         data-tooltip-content="Mark as paid"
                       >
                         Pay
-                      </button> */}
+                      </button>
                       <Tooltip id="pay-tooltip" />
                     </div>
                   </div>
@@ -196,7 +168,7 @@ const UserDashboard = () => {
 
           {/* Apply for Loan Section */}
           <section>
-            <h2 className="text-2xl font-semibold text-[#d12f45]">
+            <h2 className="text-2xl font-semibold text-purple-700">
               Apply for a New Loan
             </h2>
             <form
@@ -214,7 +186,7 @@ const UserDashboard = () => {
               />
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-[#d12f45] text-white rounded-lg hover:bg-[#da4357]"
+                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               >
                 Apply
               </button>
