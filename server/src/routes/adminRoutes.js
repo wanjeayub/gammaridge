@@ -1,35 +1,22 @@
+// routes/adminRoutes.js
 const express = require("express");
-const {
-  approveLoan,
-  getLoans,
-  registerAdmin,
-  loginAdmin,
-  payLoan,
-  getPendingLoans,
-  getApprovedLoans,
-  getRejectedLoans,
-  getPaidLoans,
-  editAdminDetails,
-  getAllUsers,
-} = require("../controllers/adminController.js");
-const { adminProtect, protect } = require("../middleware/authMiddleware.js");
+const adminController = require("../controllers/AdminController");
+const authMiddleware = require("../middleware/authMiddleware");
+const isAdmin = require("../middleware/authenticate");
 
 const router = express.Router();
 
-router.post("/register", registerAdmin);
-router.post("/login", loginAdmin);
-router.put("/edit", adminProtect, editAdminDetails);
+// Secure all routes with authentication and admin authorization
+router.use(authMiddleware, isAdmin);
 
-// Loan routes
-router.get("/loans", adminProtect, getLoans);
-router.put("/loan/:id", adminProtect, approveLoan);
-router.put("/loan/repay/:id", adminProtect, payLoan);
-router.get("/users", adminProtect, getAllUsers);
-
-// pending loans
-router.get("/loans/pending", adminProtect, getPendingLoans);
-router.get("/loans/approved", adminProtect, getApprovedLoans);
-router.get("/loans/rejected", adminProtect, getRejectedLoans);
-router.get("/loans/paid", adminProtect, getPaidLoans);
+router.get("/summary", adminController.getSummary);
+router.get("/loans", adminController.getLoans);
+router.get("/activity-logs", adminController.getActivityLogs);
+router.get("/loan-stats", adminController.getLoanStats);
+router.get("/users", adminController.getUsers);
+router.put("/toggle-user-status/:userId", adminController.toggleUserStatus);
+router.get("/notifications", adminController.getNotifications);
+router.put("/change-credentials", adminController.updateCredentials);
+router.delete("/delete/:id", adminController.deleteAllForUser);
 
 module.exports = router;

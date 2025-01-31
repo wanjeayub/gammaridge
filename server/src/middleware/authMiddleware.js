@@ -1,28 +1,16 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/userModel.js");
 
-const protect = async (req, res, next) => {
-  let token = req.headers.authorization?.split(" ")[1];
-  if (!token)
-    return res.status(401).json({ message: "Not authorized, no token" });
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password");
+    req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ message: "Not authorized" });
+    res.status(401).json({ error: "Invalid token" });
   }
 };
 
-const adminProtect = async (req, res, next) => {
-  protect(req, res, async () => {
-    if (req.user && req.user.role === "admin") {
-      next();
-    } else {
-      res.status(403).json({ message: "Admin access only" });
-    }
-  });
-};
-
-module.exports = { protect, adminProtect };
+module.exports = authMiddleware;

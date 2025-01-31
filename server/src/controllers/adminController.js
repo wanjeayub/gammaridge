@@ -1,176 +1,172 @@
-const Loan = require("../models/loanModel.js");
-const specialLoan = require("../models/specialLoan.js");
-const User = require("../models/userModel.js");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+// controllers/adminController.js
+const ActivityLog = require("../models/ActivityLogs.js");
+const LoanStat = require("../models/LoanStat.js");
+const Notification = require("../models/Notification.js");
+const User = require("../models/User.js");
+const Loan = require("../models/Loan.js");
 
-// Generate JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-};
-// Register Admin
-const registerAdmin = async (req, res) => {
-  const {
-    name,
-    email,
-    password,
-    mobile,
-    alternatemobile,
-    photoURLFront,
-    photoURLBack,
-    terms,
-  } = req.body;
-
+// Fetch summary data
+exports.getSummary = async (req, res) => {
   try {
-    const newAdmin = new User({
-      name,
-      email,
-      password,
-      mobile,
-      alternatemobile,
-      photoURLFront,
-      photoURLBack,
-      terms,
-      role: "admin", // Set role to admin
+    const totalBorrowed = await Loan.aggregate([
+      { $group: { _id: null, total: { $sum: "$loanAmount" } } },
+    ]);
+    // Total users registered (excluding admins)
+    const totalUsers = await User.countDocuments({ role: { $ne: "admin" } });
+    const totalInterest = await Loan.aggregate([
+      { $group: { _id: null, total: { $sum: "$interest" } } },
+    ]);
+
+    res.status(200).json({
+      totalBorrowed: totalBorrowed[0]?.total || 0,
+      totalUsers,
+      totalInterest: totalInterest[0]?.total || 0,
     });
-
-    // save admin
-    await newAdmin.save();
-    res.status(201).json({ message: "Admin registered successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error registering admin" });
-    console.log(error);
+    res.status(500).json({ message: "Failed to fetch summary data." });
   }
 };
 
-// Login admin
-const loginAdmin = async (req, res) => {
-  const { email, password } = req.body;
-  const admin = await User.findOne({ email });
-
-  if (admin && (await admin.matchPassword(password))) {
-    res.json({ _id: admin._id, token: generateToken(admin._id) });
-  } else {
-    res.status(400).json({ message: "Invalid email or password" });
-  }
-};
-// edit admin details
-const editAdminDetails = async (req, res) => {
-  const { name, email, password } = req.body;
-
+// Fetch all loans with filtering
+exports.getLoans = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const { filter } = req.query;
+    const now = new Date();
+    let query = {};
 
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (password) user.password = await bcrypt.hash(password, 10);
-
-    await user.save();
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Error updating admin details" });
-  }
-};
-
-// Get all loans
-const getLoans = async (req, res) => {
-  const loans = await Loan.find().populate(
-    "user",
-    "name mobile alternatemobile photoURLFront"
-  );
-  res.json(loans);
-};
-
-// Approve or reject loan
-const approveLoan = async (req, res) => {
-  const loan = await Loan.findById(req.params.id);
-  if (!loan) return res.status(404).json({ message: "Loan not found" });
-
-  loan.status = req.body.status;
-  await loan.save();
-  res.json(loan);
-};
-
-// pay loan
-const payLoan = async (req, res) => {
-  try {
-    const loan = await Loan.findByIdAndUpdate(
-      req.params.id,
-      { isPaid: true },
-      { new: true }
-    );
-    if (!loan) {
-      return res.status(404).json({ message: "Loan not found" });
+    switch (filter) {
+      case "day":
+        query.createdAt = { $gte: startOfDay(now), $lte: endOfDay(now) };
+        break;
+      case "week":
+        query.createdAt = { $gte: startOfWeek(now), $lte: endOfWeek(now) };
+        break;
+      case "month":
+        query.createdAt = { $gte: startOfMonth(now), $lte: endOfMonth(now) };
+        break;
+      default:
+        break;
     }
-    res.json(loan);
+
+    const loans = await Loan.find(query).populate("userId", "fullName");
+    res.status(200).json(loans);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to fetch loans." });
   }
 };
 
-// get pending loans
-const getPendingLoans = async (req, res) => {
+// Fetch activity logs
+exports.getActivityLogs = async (req, res) => {
   try {
-    const pendingLoans = await Loan.find({ status: "pending" });
-    res.status(200).json(pendingLoans);
+    const logs = await ActivityLog.find().populate("userId", "fullName");
+    res.status(200).json(logs);
   } catch (error) {
-    console.error("Error fetching pending loans:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Failed to fetch activity logs." });
   }
 };
 
-// get approved loans
-const getApprovedLoans = async (req, res) => {
+// Fetch loan statistics
+exports.getLoanStats = async (req, res) => {
   try {
-    const approvedLoans = await Loan.find({ status: "approved" });
-    res.status(200).json(approvedLoans);
+    const stats = await LoanStat.findOne();
+    res.status(200).json(stats || { approved: 0, pending: 0, fullyPaid: 0 });
   } catch (error) {
-    console.error("Error fetching pending loans:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-// get rejected loans
-const getRejectedLoans = async (req, res) => {
-  try {
-    const rejectedLoans = await Loan.find({ status: "rejected" });
-    res.status(200).json(rejectedLoans);
-  } catch (error) {
-    console.error("Error fetching pending loans:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Failed to fetch loan statistics." });
   }
 };
 
-// get paid loans
-const getPaidLoans = async (req, res) => {
+// Fetch all users
+exports.getUsers = async (req, res) => {
+  //  -removed from filter below isActive
   try {
-    const paidLoans = await Loan.find({ isPaid: true });
-    res.status(200).json(paidLoans);
+    const users = await User.find({});
+    res.status(200).json(users);
   } catch (error) {
-    console.error("Error fetching paid loans: ", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Failed to fetch users." });
   }
 };
 
-const getAllUsers = async (req, res) => {
+// Toggle user status (block/unblock)
+exports.toggleUserStatus = async (req, res) => {
   try {
-    const users = await User.find({}, "name mobile photoURLFront");
-    res.json(users);
-  } catch (err) {
-    console.error("Error retrieving users", err);
-    res.status(500).send("Error retrieving users");
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.status(200).json({ message: "User status updated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to toggle user status." });
   }
 };
 
-module.exports = {
-  getLoans,
-  getAllUsers,
-  approveLoan,
-  payLoan,
-  registerAdmin,
-  loginAdmin,
-  editAdminDetails,
-  getPendingLoans,
-  getApprovedLoans,
-  getRejectedLoans,
-  getPaidLoans,
+// Fetch notifications
+exports.getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find().sort({ timestamp: -1 });
+    res.status(200).json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch notifications." });
+  }
+};
+
+// Update admin credentials
+exports.updateCredentials = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const admin = await User.findOne({ role: "admin" });
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found." });
+    }
+
+    admin.username = username;
+    admin.password = password;
+    await admin.save();
+
+    res
+      .status(200)
+      .json({ message: "Admin credentials updated successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update admin credentials." });
+  }
+};
+
+// Delete User
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+  await User.findByIdAndDelete(id);
+  res.json({ message: "User deleted successfully" });
+};
+
+// exports.deleteAll
+exports.deleteAllForUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Delete all loans associated with the user
+    await Loan.deleteMany({ userId });
+
+    // Delete all activity logs associated with the user
+    await ActivityLog.deleteMany({ userId });
+
+    // Delete all notifications associated with the user
+    await Notification.deleteMany({ userId });
+
+    res
+      .status(200)
+      .json({ message: "User and all associated data deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "An error occurred while deleting the user and associated data.",
+    });
+  }
 };
