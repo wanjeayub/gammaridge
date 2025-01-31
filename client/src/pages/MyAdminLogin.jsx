@@ -34,7 +34,7 @@ const MyAdminLogin = () => {
     try {
       // Send login request to the backend
       const response = await fetch(
-        "https://gammaridgev2-server.vercel.app/api/admin/login",
+        "https://gammaridge-server.vercel.app/api/admin/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

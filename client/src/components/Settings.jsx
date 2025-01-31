@@ -41,7 +41,7 @@ const Settings = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://gammaridgev2-server.vercel.app/api/users/profile",
+          "https://gammaridge-server.vercel.app/api/users/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -84,7 +84,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://gammaridgev2-server.vercel.app/api/users/update-profile",
+        "https://gammaridge-server.vercel.app/api/users/update-profile",
         {
           method: "PUT",
           headers: {
@@ -124,7 +124,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://gammaridgev2-server.vercel.app/api/users/change-password",
+        "https://gammaridge-server.vercel.app/api/users/change-password",
         {
           method: "PUT",
           headers: {

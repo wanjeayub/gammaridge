@@ -29,7 +29,7 @@ const Loans = () => {
 
     try {
       const response = await fetch(
-        "https://gammaridgev2-server.vercel.app/api/loans/all",
+        "https://gammaridge-server.vercel.app/api/loans/all",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -115,7 +115,7 @@ const Loans = () => {
 
     try {
       const response = await fetch(
-        "https://gammaridgev2-server.vercel.app/api/loans/apply",
+        "https://gammaridge-server.vercel.app/api/loans/apply",
         {
           method: "POST",
           headers: {
@@ -166,7 +166,7 @@ const Loans = () => {
 
     try {
       const response = await fetch(
-        `https://gammaridgev2-server.vercel.app/api/loans/update/${editingLoanId}`,
+        `https://gammaridge-server.vercel.app/api/loans/update/${editingLoanId}`,
         {
           method: "PUT",
           headers: {
@@ -204,7 +204,7 @@ const Loans = () => {
 
     try {
       const response = await fetch(
-        `https://gammaridgev2-server.vercel.app/api/loans/delete/${loanId}`,
+        `https://gammaridge-server.vercel.app/api/loans/delete/${loanId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

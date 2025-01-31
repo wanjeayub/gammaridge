@@ -6,7 +6,7 @@ import {
   uploadBytesResumable,
   getStorage,
 } from "firebase/storage";
-import storage from "../firebase/firebase";
+import { storage } from "../firebase/firebase";
 
 const RegistrationForm = () => {
   const [idPhoto, setIdPhoto] = useState(null);
@@ -55,7 +55,7 @@ const RegistrationForm = () => {
   };
   const storeImage = async (file) => {
     return new Promise((resolve, reject) => {
-      const storage = getStorage(storage);
+      // const storage = getStorage(storage);
       const fileName = new Date().getTime() + file.name;
       const storageRef = ref(storage, fileName);
       const uploadTask = uploadBytesResumable(storageRef, file);
