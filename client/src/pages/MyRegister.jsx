@@ -129,7 +129,7 @@ const Register = () => {
       // Upload images to Firebase
       const uploadImage = async (file, path) => {
         try {
-          const storageRef = ref(storage, `jandh/${Date.now()}-${file.name}`);
+          const storageRef = ref(storage, `gamma/${Date.now()}-${file.name}`);
           const snapshot = await uploadBytes(storageRef, file);
           return getDownloadURL(snapshot.ref);
         } catch (uploadError) {
