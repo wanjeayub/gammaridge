@@ -36,7 +36,7 @@ const MyLogin = () => {
 
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/users/login",
+        "https://tester-server.vercel.app/api/users/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

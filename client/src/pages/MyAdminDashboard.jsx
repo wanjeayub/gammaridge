@@ -52,7 +52,7 @@ const AdminDashboard = () => {
   const fetchSummary = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/summary",
+        "https://tester-server.vercel.app/api/admin/summary",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
   const fetchLoans = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/loans",
+        "https://tester-server.vercel.app/api/admin/loans",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
   const fetchActivityLogs = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/activity-logs",
+        "https://tester-server.vercel.app/api/admin/activity-logs",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -103,7 +103,7 @@ const AdminDashboard = () => {
   const fetchLoanStats = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/loan-stats",
+        "https://tester-server.vercel.app/api/admin/loan-stats",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -120,7 +120,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/users",
+        "https://tester-server.vercel.app/api/admin/users",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
   const fetchNotifications = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/notifications",
+        "https://tester-server.vercel.app/api/admin/notifications",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
   const approveLoan = async (loanId) => {
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/admin/approve-loan/${loanId}`,
+        `https://tester-server.vercel.app/api/admin/approve-loan/${loanId}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -199,7 +199,7 @@ const AdminDashboard = () => {
 
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/admin/partial-payment/${selectedLoan._id}`,
+        `https://tester-server.vercel.app/api/admin/partial-payment/${selectedLoan._id}`,
         {
           method: "PUT",
           headers: {
@@ -237,7 +237,7 @@ const AdminDashboard = () => {
   const markLoanAsPaid = async () => {
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/admin/mark-paid/${selectedLoan._id}`,
+        `https://tester-server.vercel.app/api/admin/mark-paid/${selectedLoan._id}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -271,7 +271,7 @@ const AdminDashboard = () => {
 
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/admin/delete/${userToDelete}`,
+        `https://tester-server.vercel.app/api/admin/delete/${userToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -306,7 +306,7 @@ const AdminDashboard = () => {
   const toggleUserStatus = async (userId, isActive) => {
     try {
       const response = await fetch(
-        `https://gammaridge-server.vercel.app/api/admin/toggle-user-status/${userId}`,
+        `https://tester-server.vercel.app/api/admin/toggle-user-status/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -334,7 +334,7 @@ const AdminDashboard = () => {
   const updateCredentials = async () => {
     try {
       const response = await fetch(
-        "https://gammaridge-server.vercel.app/api/admin/update-credentials",
+        "https://tester-server.vercel.app/api/admin/update-credentials",
         {
           method: "PUT",
           headers: {

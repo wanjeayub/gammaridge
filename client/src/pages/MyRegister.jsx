@@ -167,7 +167,7 @@ const Register = () => {
       // Save data to backend (MongoDB)
       try {
         const response = await fetch(
-          "https://gammaridge-server.vercel.app/api/users/register",
+          "https://tester-server.vercel.app/api/users/register",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

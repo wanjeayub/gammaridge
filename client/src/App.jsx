@@ -43,7 +43,7 @@ const App = () => {
 
       try {
         const response = await fetch(
-          "https://gammaridge-server.vercel.app/api/users/profile",
+          "https://tester-server.vercel.app/api/users/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
