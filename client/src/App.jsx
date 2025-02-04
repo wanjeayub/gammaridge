@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
-import UserDashboard from "./pages/UserDashboard";
+// import UserDashboard from "./pages/UserDashboard";
 
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
@@ -18,7 +18,7 @@ import MyRegister from "./pages/MyRegister";
 import MyAdminLogin from "./pages/MyAdminLogin";
 import Loans from "./components/Loans";
 import Settings from "./components/Settings";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import MyAdminDashboard from "./pages/MyAdminDashboard";
 import EntRegister from "./enterprise-pages/Register";
 import EntClothing from "./enterprise-pages/Clothing";
@@ -76,6 +76,7 @@ const App = () => {
   return (
     <Router>
       <Navbar user={user} onLogout={logout} />
+      <Toaster />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<MyRegister />} />
