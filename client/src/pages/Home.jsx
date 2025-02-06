@@ -33,7 +33,7 @@ const Home = () => {
             transition={{ delay: 1, duration: 1 }}
             className="text-xl mb-8"
           >
-            Your One-Stop Solution for Finance, Fashion, and Freshness!
+            Your One-Stop Solution for Finance, Transport, and More!
           </motion.p>
           <motion.div
             initial={{ scale: 0 }}
@@ -48,16 +48,16 @@ const Home = () => {
               Get a Loan
             </Link>
             <Link
-              to="/entclothing"
+              to="/enttransport"
               className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-all"
             >
-              Buy Clothes
+              Light Transport
             </Link>
             <Link
-              to="/entfarm-produce"
+              to="/entgarbage"
               className="bg-transparent md:px-2 border-2 border-white text-white px-3 py-3 rounded-full font-semibold hover:bg-white hover:text-blue-600 transition-all"
             >
-              Buy Farm produce
+              Garbage Collection
             </Link>
           </motion.div>
         </div>
@@ -95,7 +95,7 @@ const Home = () => {
             </Link>
           </motion.div>
 
-          {/* Clothing Card */}
+          {/* Light Transport Card */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -106,24 +106,24 @@ const Home = () => {
             <div
               className="h-48 bg-cover bg-center rounded-t-lg mb-4"
               style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
+                backgroundImage: `url('https://images.unsplash.com/photo-1502877338535-766e1452684a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
               }}
             ></div>
             <h3 className="text-2xl font-bold text-blue-600 mb-4">
-              Fashion and Clothing
+              Light Transport
             </h3>
             <p className="text-gray-700 mb-4">
-              Update your wordrobe with best quality textile
+              Reliable and affordable light transport services.
             </p>
             <Link
-              to="/entclothing"
+              to="/enttransport"
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
             >
-              Request services
+              Book Now
             </Link>
           </motion.div>
 
-          {/* Farm Produce Card */}
+          {/* Garbage Collection Card */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -134,20 +134,48 @@ const Home = () => {
             <div
               className="h-48 bg-cover bg-center rounded-t-lg mb-4"
               style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
+                backgroundImage: `url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
               }}
             ></div>
             <h3 className="text-2xl font-bold text-blue-600 mb-4">
-              Farm Produce
+              Garbage Collection
             </h3>
             <p className="text-gray-700 mb-4">
-              Get fresh produce to your doorstep
+              Efficient and eco-friendly garbage collection services.
             </p>
             <Link
-              to="/entfarm-produce"
+              to="/entgarbage"
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
             >
-              Order Now
+              Schedule Now
+            </Link>
+          </motion.div>
+
+          {/* Phone Market Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            viewport={{ once: true }}
+            className="bg-white p-6 rounded-lg shadow-md text-center border border-gray-200"
+          >
+            <div
+              className="h-48 bg-cover bg-center rounded-t-lg mb-4"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2080&q=80')`,
+              }}
+            ></div>
+            <h3 className="text-2xl font-bold text-blue-600 mb-4">
+              Phone Market
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Explore the latest smartphones and accessories.
+            </p>
+            <Link
+              to="/entphone-market"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all"
+            >
+              Shop Now
             </Link>
           </motion.div>
         </div>
