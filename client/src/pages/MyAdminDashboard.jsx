@@ -657,41 +657,6 @@ const AdminDashboard = () => {
                 </tr>
               ))}
             </tbody>
-
-            {/* <tbody>
-              {users.map((user) => (
-                <tr key={user._id} className="border-b">
-                  <td className="px-4 py-2">
-                    <img
-                      src={user.profilePhoto}
-                      alt="Profile"
-                      className="w-12 h-12 rounded-full"
-                    />
-                  </td>
-                  <td className="px-4 py-2">{user.fullName}</td>
-                  <td className="px-4 py-2">{user.idNumber}</td>
-                  <td className="px-4 py-2">{user.mobileNumber}</td>
-                  <td className="px-4 py-2">
-                    <Link to={user.idFrontPhoto}>
-                      <img
-                        src={user.idFrontPhoto}
-                        alt="Profile"
-                        className="w-12 h-12 rounded-full"
-                      />
-                    </Link>
-                  </td>
-
-                  <td className="px-4 py-2 flex gap-2">
-                    <button
-                      onClick={() => openDeleteModal(user._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody> */}
           </table>
           {/* Image Modal */}
           {selectedImage && (
@@ -737,41 +702,6 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold mb-4">User Management</h2>
-        <table className="w-full table-auto">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2 text-left">Profile</th>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Id Number</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id} className="border-b">
-                <td className="px-4 py-2">{user.profilePhoto}</td>
-                <td className="px-4 py-2">{user.fullName}</td>
-                <td className="px-4 py-2">{user.idNumber}</td>
-                <td className="px-4 py-2">
-                  {user.isActive ? "Active" : "Blocked"}
-                </td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => toggleUserStatus(user._id, !user.isActive)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg"
-                  >
-                    {user.isActive ? "Block" : "Unblock"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div> */}
 
       {/* Notifications */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">

@@ -8,7 +8,6 @@ const Dashboard = ({ user, isLoading }) => {
   useEffect(() => {
     const checkTokenExpiry = async () => {
       const token = localStorage.getItem("token");
-
       if (!token) {
         // No token found, redirect to login
         toast.error(
@@ -17,12 +16,10 @@ const Dashboard = ({ user, isLoading }) => {
         navigate("/login");
         return;
       }
-
       try {
         // Decode the token to check its expiry (you may need a library like jwt-decode)
         const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode the token payload
         const currentTime = Date.now() / 1000; // Convert to seconds
-
         if (decodedToken.exp < currentTime) {
           // Token has expired
           localStorage.removeItem("token"); // Clear the expired token
@@ -52,7 +49,7 @@ const Dashboard = ({ user, isLoading }) => {
   // Show a loading spinner while the user data is being fetched
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
       </div>
     );
@@ -60,12 +57,12 @@ const Dashboard = ({ user, isLoading }) => {
 
   // Show the dashboard content if the user is logged in
   return (
-    <div className="min-h-screen bg-gray-100 ">
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">
+    <div className="min-h-screen bg-white flex flex-col items-center ">
+      <div className="max-w-4xl w-full p-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold text-center mb-6">
           Welcome to your dashboard, {user?.fullName}
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             to="/dashboard/loans"
             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all"
