@@ -27,7 +27,10 @@ function GarbageCollection() {
     try {
       // Simulate API request
       const response = await toast.promise(
-        axios.post("/api/request-cleanup", formData),
+        axios.post(
+          "https://tester-server.vercel.app/api/admin/request-cleanup",
+          formData
+        ),
         {
           loading: "Submitting request...",
           success: "Request submitted successfully!",
