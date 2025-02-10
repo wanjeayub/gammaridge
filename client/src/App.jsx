@@ -26,7 +26,8 @@ import EntFarmProduce from "./enterprise-pages/FarmProduce";
 
 import { useEffect, useState } from "react";
 import Dashboard from "./pages/MyDashboard";
-import GarbageCollection from "./pages/GarbageCollections";
+
+import UserCleanupRequest from "./pages/UserCleanUpRequest";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -101,7 +102,7 @@ const App = () => {
         {/* these pages are for feature testing */}
         <Route path="/entregister" element={<EntRegister />} />
         <Route path="/entclothing" element={<EntClothing />} />
-        <Route path="/entgarbage" element={<GarbageCollection />} />
+        <Route path="/entgarbage" element={<UserCleanupRequest />} />
         <Route path="/entfarm-produce" element={<EntFarmProduce />} />
       </Routes>
     </Router>

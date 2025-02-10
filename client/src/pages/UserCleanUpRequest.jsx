@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
+import { motion } from "framer-motion";
 
-function GarbageCollection() {
+function UserCleanupRequest() {
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
@@ -25,10 +25,10 @@ function GarbageCollection() {
     }
 
     try {
-      // Simulate API request
+      // Submit the request
       const response = await toast.promise(
         axios.post(
-          "https://tester-server.vercel.app/api/admin/request-cleanup",
+          "https://tester-server.vercel.app/api/users/request-cleanup",
           formData
         ),
         {
@@ -38,9 +38,6 @@ function GarbageCollection() {
         }
       );
 
-      // Log the response (for debugging)
-      console.log("API Response:", response.data);
-
       // Reset form
       setFormData({
         fullName: "",
@@ -48,7 +45,7 @@ function GarbageCollection() {
         location: "",
       });
     } catch (error) {
-      console.error("API Error:", error);
+      console.error("Error submitting request:", error);
     }
   };
 
@@ -61,14 +58,9 @@ function GarbageCollection() {
         transition={{ duration: 0.5 }}
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md"
       >
-        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
           Request Garbage Collection
         </h1>
-        <p className="text-sm text-gray-600 text-center mb-6">
-          Join thousands of happy customers who enjoy hassle-free, eco-friendly
-          garbage collection services. We make it easy for you to keep your
-          surroundings clean and green!
-        </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -123,16 +115,9 @@ function GarbageCollection() {
             </motion.button>
           </div>
         </form>
-        <p className="text-xs text-gray-500 text-center mt-6">
-          By submitting this form, you agree to our{" "}
-          <a href="#" className="text-indigo-600 hover:underline">
-            terms and conditions
-          </a>
-          .
-        </p>
       </motion.div>
     </div>
   );
 }
 
-export default GarbageCollection;
+export default UserCleanupRequest;
