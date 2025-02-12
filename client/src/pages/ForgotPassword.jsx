@@ -12,11 +12,14 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/users/forgot-password/verify-id", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idNumber }),
-      });
+      const response = await fetch(
+        "https://tester-server.vercel.app/api/users/forgot-password/verify-id",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idNumber }),
+        }
+      );
 
       const data = await response.json();
 
