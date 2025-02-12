@@ -24,9 +24,11 @@ const ForgotPassword = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("ID verified");
         // Store userId in localStorage
         localStorage.setItem("userId", data.userId);
+
+        toast.success("ID verified");
+
         // Redirect to Update Password page
         navigate("/update-password");
       } else {
