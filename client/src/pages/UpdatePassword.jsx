@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -8,13 +8,20 @@ const UpdatePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
 
-  // Retrieve userId from localStorage
-  const userId = localStorage.getItem("userId");
+  // Retrieve userId from location state
+  const { userId } = location.state || {};
+  console.log("Retrieved userId:", userId); // Debugging
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!userId) {
+      toast.error("User ID is missing. Please verify your ID again.");
+      return;
+    }
 
     // Validate password length
     if (newPassword.length < 8) {
@@ -32,7 +39,7 @@ const UpdatePassword = () => {
 
     try {
       const response = await fetch(
-        "https://tester-server.vercel.app/api/users/forgot-password/update-password",
+        "/api/users/forgot-password/update-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -44,8 +51,6 @@ const UpdatePassword = () => {
 
       if (response.ok) {
         toast.success("Password updated successfully");
-        // Clear userId from localStorage
-        localStorage.removeItem("userId");
         navigate("/login");
       } else {
         toast.error(data.message || "Failed to update password");
