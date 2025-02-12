@@ -41,7 +41,7 @@ const UpdatePassword = () => {
       const response = await fetch(
         "https://tester-server.vercel.app/api/users/forgot-password/update-password",
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, newPassword, confirmPassword }),
         }
