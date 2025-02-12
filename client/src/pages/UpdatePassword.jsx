@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -10,8 +10,8 @@ const UpdatePassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Retrieve userId from URL parameters
-  const { userId } = useParams();
+  // Retrieve userId from localStorage
+  const userId = localStorage.getItem("userId");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,19 +31,18 @@ const UpdatePassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://tester-server.vercel.app/api/forgot-password/update-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, newPassword, confirmPassword }),
-        }
-      );
+      const response = await fetch("/api/forgot-password/update-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, newPassword, confirmPassword }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         toast.success("Password updated successfully");
+        // Clear userId from localStorage
+        localStorage.removeItem("userId");
         navigate("/login");
       } else {
         toast.error(data.message || "Failed to update password");

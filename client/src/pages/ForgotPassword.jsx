@@ -12,21 +12,20 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://tester-server.vercel.app/api/forgot-password/verify-id",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idNumber }),
-        }
-      );
+      const response = await fetch("/api/forgot-password/verify-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idNumber }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         toast.success("ID verified");
-        // Redirect to Update Password page with userId as a URL parameter
-        navigate(`/update-password/${data.userId}`);
+        // Store userId in localStorage
+        localStorage.setItem("userId", data.userId);
+        // Redirect to Update Password page
+        navigate("/update-password");
       } else {
         toast.error(data.message || "ID verification failed");
       }

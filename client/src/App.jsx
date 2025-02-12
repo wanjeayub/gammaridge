@@ -93,7 +93,7 @@ const App = () => {
         <Route path="/admin" element={<MyAdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/update-password/:userId" element={<UpdatePassword />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/edit" element={<EditAdminPage />} />
         <Route path="/about" element={<About />} />
