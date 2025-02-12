@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -8,9 +8,10 @@ const UpdatePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
   const navigate = useNavigate();
-  const { userId } = location.state || {};
+
+  // Retrieve userId from URL parameters
+  const { userId } = useParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +32,7 @@ const UpdatePassword = () => {
 
     try {
       const response = await fetch(
-        "https://tester-server.vercel.app/api/users/forgot-password/update-password",
+        "https://tester-server.vercel.app/api/forgot-password/update-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

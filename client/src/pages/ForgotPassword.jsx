@@ -13,7 +13,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await fetch(
-        "https://tester-server.vercel.app/api/users/forgot-password/verify-id",
+        "https://tester-server.vercel.app/api/forgot-password/verify-id",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -25,7 +25,8 @@ const ForgotPassword = () => {
 
       if (response.ok) {
         toast.success("ID verified");
-        navigate("/update-password", { state: { userId: data.userId } });
+        // Redirect to Update Password page with userId as a URL parameter
+        navigate(`/update-password/${data.userId}`);
       } else {
         toast.error(data.message || "ID verification failed");
       }
@@ -39,10 +40,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Forgot Password?</h1>
-      <p className="mb-4 text-xl">
-        Enter the id Number you used to register the account
-      </p>
+      <h1 className="text-2xl font-bold mb-4">Forgot Password</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block">ID Number</label>
