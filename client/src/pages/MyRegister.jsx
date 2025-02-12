@@ -4,9 +4,9 @@ import { toast } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/firebase";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
 const Register = () => {
-  // const storage = getStorage(app);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const Register = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
   // Handle form field changes
   const handleChange = (e) => {
@@ -88,6 +89,12 @@ const Register = () => {
       !mobileRegex.test(alternateMobileNumber)
     ) {
       toast.error("Please enter a valid 10-digit mobile number.");
+      return false;
+    }
+
+    // Validate password length (6 or more characters)
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long.");
       return false;
     }
 
@@ -242,13 +249,22 @@ const Register = () => {
 
           <div className="mb-2">
             <label className="block">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <div className="mb-2">

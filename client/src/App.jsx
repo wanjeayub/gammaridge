@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import Dashboard from "./pages/MyDashboard";
 
 import UserCleanupRequest from "./pages/UserCleanUpRequest";
+import UpdatePassword from "./pages/UpdatePassword";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -92,6 +93,7 @@ const App = () => {
         <Route path="/admin" element={<MyAdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<UpdatePassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/edit" element={<EditAdminPage />} />
         <Route path="/about" element={<About />} />
