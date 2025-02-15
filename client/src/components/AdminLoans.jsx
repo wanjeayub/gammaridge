@@ -9,9 +9,6 @@ import {
   endOfMonth,
 } from "date-fns";
 
-// Pagination Constants
-const ITEMS_PER_PAGE = 10;
-
 const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
@@ -22,7 +19,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [validationError, setValidationError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Approve a loan
   const approveLoan = useCallback(
@@ -192,19 +188,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     filterLoansBySearch,
   ]);
 
-  // Paginate loans
-  const totalPages = Math.ceil(filteredLoans.length / ITEMS_PER_PAGE);
-  const paginatedLoans = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredLoans.slice(startIndex, endIndex);
-  }, [filteredLoans, currentPage]);
-
-  // Pagination handler
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
   return (
     <div>
       <h1>All Loans</h1>
@@ -258,7 +241,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           </tr>
         </thead>
         <tbody>
-          {paginatedLoans.map((loan) => (
+          {filteredLoans.map((loan) => (
             <tr key={loan._id}>
               <td>{loan.userId?.fullName}</td>
               <td>Ksh {loan.loanAmount}</td>
@@ -298,21 +281,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           ))}
         </tbody>
       </table>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center mt-4">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            onClick={() => handlePageChange(page)}
-            className={`mx-1 px-3 py-1 rounded-lg ${
-              page === currentPage ? "bg-gray-200" : "bg-gray-100"
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
 
       {/* Partial Payment Modal */}
       {isPartialPaymentModalOpen && (
