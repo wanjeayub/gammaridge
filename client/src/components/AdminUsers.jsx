@@ -107,6 +107,7 @@ const Users = ({ users, fetchUsers }) => {
             <th className="px-4 py-2 text-left">Name</th>
             <th className="px-4 py-2 text-left">ID Number</th>
             <th className="px-4 py-2 text-left">Mobile Number</th>
+            <th className="px-4 py-2 text-left">Alternate Mobile Number</th>
             <th className="px-4 py-2 text-left">ID Photo Front</th>
             <th className="px-4 py-2 text-left">Actions</th>
           </tr>
@@ -125,6 +126,7 @@ const Users = ({ users, fetchUsers }) => {
               <td className="px-4 py-2">{user.fullName}</td>
               <td className="px-4 py-2">{user.idNumber}</td>
               <td className="px-4 py-2">{user.mobileNumber}</td>
+              <td className="px-4 py-2">{user.alternateMobileNumber}</td>
               <td className="px-4 py-2">
                 <img
                   src={user.idFrontPhoto}
