@@ -1,15 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
 import { toast } from "react-hot-toast";
 
-// Pagination Constants
-const ITEMS_PER_PAGE = 10;
-
 const Users = ({ users, fetchUsers }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Open image modal
   const openImageModal = (imageUrl) => {
@@ -64,7 +60,9 @@ const Users = ({ users, fetchUsers }) => {
       (user) =>
         user.fullName?.toLowerCase().includes(query.toLowerCase()) ||
         user.idNumber?.toString().includes(query) ||
-        user.mobileNumber?.toString().includes(query)
+        user.mobileNumber?.toString().includes(query) ||
+        user.alternateMobileNumber?.toString().includes(query) ||
+        user.idNumber?.toString().includes(query)
     );
   }, []);
 
@@ -72,19 +70,6 @@ const Users = ({ users, fetchUsers }) => {
   const filteredUsers = useMemo(() => {
     return filterUsersBySearch(users, searchQuery);
   }, [users, searchQuery, filterUsersBySearch]);
-
-  // Paginate users
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredUsers.slice(startIndex, endIndex);
-  }, [filteredUsers, currentPage]);
-
-  // Pagination handler
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -107,12 +92,13 @@ const Users = ({ users, fetchUsers }) => {
             <th className="px-4 py-2 text-left">Name</th>
             <th className="px-4 py-2 text-left">ID Number</th>
             <th className="px-4 py-2 text-left">Mobile Number</th>
+            <th className="px-4 py-2 text-left">Alternate Mobile Number</th>
             <th className="px-4 py-2 text-left">ID Photo Front</th>
             <th className="px-4 py-2 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {paginatedUsers.map((user) => (
+          {filteredUsers.map((user) => (
             <tr key={user._id} className="border-b">
               <td className="px-4 py-2">
                 <img
@@ -125,6 +111,7 @@ const Users = ({ users, fetchUsers }) => {
               <td className="px-4 py-2">{user.fullName}</td>
               <td className="px-4 py-2">{user.idNumber}</td>
               <td className="px-4 py-2">{user.mobileNumber}</td>
+              <td className="px-4 py-2">{user.alternateMobileNumber}</td>
               <td className="px-4 py-2">
                 <img
                   src={user.idFrontPhoto}
@@ -145,21 +132,6 @@ const Users = ({ users, fetchUsers }) => {
           ))}
         </tbody>
       </table>
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center mt-4">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            onClick={() => handlePageChange(page)}
-            className={`mx-1 px-3 py-1 rounded-lg ${
-              page === currentPage ? "bg-gray-200" : "bg-gray-100"
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
 
       {/* Image Modal */}
       {selectedImage && (
