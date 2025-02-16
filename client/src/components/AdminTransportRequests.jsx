@@ -11,7 +11,10 @@ const AdminTransportRequests = () => {
     try {
       setLoading(true); // Start loading
       const response = await fetch(
-        "https://tester-server.vercel.app/api/transport/requests"
+        "https://tester-server.vercel.app/api/transport/requests",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
       );
 
       if (!response.ok) {
