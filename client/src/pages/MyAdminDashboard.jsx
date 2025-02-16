@@ -260,6 +260,11 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Transport Requests */}
+      <div>
+        <AdminTransportRequests />
+      </div>
+
       {/* Settings Tab */}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Settings</h2>
