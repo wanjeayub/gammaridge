@@ -3,13 +3,12 @@ import { toast } from "react-hot-toast";
 
 const AdminTransportRequests = () => {
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true); // Track loading state
-  const [error, setError] = useState(null); // Track any errors
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(null); // Add error state
 
   // Fetch all transport requests
   const fetchTransportRequests = async () => {
     try {
-      setLoading(true); // Start loading
       const response = await fetch(
         "https://tester-server.vercel.app/api/transport/requests",
         {
@@ -17,16 +16,22 @@ const AdminTransportRequests = () => {
         }
       );
 
+      // Handle 401 Unauthorized error
+      if (response.status === 401) {
+        toast.error("Unauthorized. Please log in again.");
+        return;
+      }
+
+      // Handle other errors
       if (!response.ok) {
-        throw new Error("Failed to fetch transport requests."); // Handle non-200 status codes
+        throw new Error("Failed to fetch transport requests.");
       }
 
       const data = await response.json();
       setRequests(data);
-      setError(null); // Clear any previous errors
     } catch (error) {
       console.error("Error fetching transport requests:", error);
-      setError(error.message || "An unexpected error occurred.");
+      setError("Failed to fetch transport requests. Please try again later.");
       toast.error("Failed to fetch transport requests.");
     } finally {
       setLoading(false); // Stop loading
@@ -52,7 +57,7 @@ const AdminTransportRequests = () => {
         toast.success("Transport request updated successfully.");
         fetchTransportRequests(); // Refresh the list
       } else {
-        toast.error("Failed to update transport request.");
+        throw new Error("Failed to update transport request.");
       }
     } catch (error) {
       console.error("Error updating transport request:", error);
@@ -70,20 +75,27 @@ const AdminTransportRequests = () => {
 
       {/* Loading State */}
       {loading && (
-        <p className="text-center text-gray-600">Loading requests...</p>
+        <div className="flex justify-center items-center p-6">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          <span className="ml-2">Loading...</span>
+        </div>
       )}
 
-      {/* Error State */}
-      {error && !loading && <p className="text-center text-red-600">{error}</p>}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          {error}
+        </div>
+      )}
 
-      {/* No Requests State */}
+      {/* No Requests Message */}
       {!loading && !error && requests.length === 0 && (
-        <p className="text-center text-gray-600">
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
           No transport requests found.
-        </p>
+        </div>
       )}
 
-      {/* Requests Table */}
+      {/* Table */}
       {!loading && !error && requests.length > 0 && (
         <table className="w-full table-auto">
           <thead>
