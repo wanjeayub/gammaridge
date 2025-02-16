@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function TransportRequest() {
   const [formData, setFormData] = useState({
@@ -8,6 +10,7 @@ export default function TransportRequest() {
     dateTime: "",
     contactInfo: "",
   });
+  const [loading, setLoading] = useState(false); // Track submission progress
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,6 +19,8 @@ export default function TransportRequest() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+
     try {
       const response = await fetch(
         "https://tester-server.vercel.app/api/transport/request",
@@ -25,8 +30,19 @@ export default function TransportRequest() {
           body: JSON.stringify(formData),
         }
       );
+
       if (response.ok) {
-        alert("Transport request submitted successfully!");
+        // Show success toast
+        toast.success("Transport request submitted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // Reset form
         setFormData({
           pickupLocation: "",
           destination: "",
@@ -35,10 +51,29 @@ export default function TransportRequest() {
           contactInfo: "",
         });
       } else {
-        alert("Failed to submit request. Please try again.");
+        // Show error toast
+        toast.error("Failed to submit request. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
       console.error("Error submitting request:", error);
+      // Show error toast
+      toast.error("An error occurred. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -113,12 +148,16 @@ export default function TransportRequest() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+            disabled={loading} // Disable button while loading
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
           >
-            Submit Request
+            {loading ? "Submitting..." : "Submit Request"}
           </button>
         </form>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 }
