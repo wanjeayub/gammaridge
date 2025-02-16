@@ -262,7 +262,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Transport Requests */}
-      <div>
+      <div className="mb-6">
         <AdminTransportRequests />
       </div>
 
