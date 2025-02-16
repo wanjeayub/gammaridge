@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom"; // For redirecting on 401 error
 
 function GarbageCollectionList() {
@@ -24,26 +23,37 @@ function GarbageCollectionList() {
       setLoading(true); // Start loading
       setError(null); // Clear previous errors
 
-      const response = await axios.get(
-        "https://tester-server.vercel.app/api/admin/requests",
+      // Construct query parameters
+      const params = new URLSearchParams({ sort, filter, search });
+
+      // Fetch data using Fetch API
+      const response = await fetch(
+        `https://tester-server.vercel.app/api/admin/requests?${params.toString()}`,
         {
-          params: { sort, filter, search },
           headers: {
             Authorization: `Bearer ${token}`, // Include token in the header
           },
         }
       );
-      setRequests(response.data);
-    } catch (error) {
-      console.error("Error fetching requests:", error);
-      if (error.response && error.response.status === 401) {
-        // Handle 401 Unauthorized error
+
+      // Handle 401 Unauthorized error
+      if (response.status === 401) {
         localStorage.removeItem("token"); // Clear invalid token
         navigate("/login"); // Redirect to login page
-      } else {
-        // Handle other errors
-        setError("Failed to fetch requests. Please try again later.");
+        return;
       }
+
+      // Handle other errors
+      if (!response.ok) {
+        throw new Error("Failed to fetch requests");
+      }
+
+      // Parse JSON response
+      const data = await response.json();
+      setRequests(data);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      setError("Failed to fetch requests. Please try again later.");
     } finally {
       setLoading(false); // Stop loading
     }
