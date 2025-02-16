@@ -29,6 +29,7 @@ import Dashboard from "./pages/MyDashboard";
 
 import UserCleanupRequest from "./pages/UserCleanUpRequest";
 import UpdatePassword from "./pages/UpdatePassword";
+import TransportRequest from "./pages/Transport";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -103,6 +104,7 @@ const App = () => {
         {/* fresh and new */}
         {/* these pages are for feature testing */}
         <Route path="/entregister" element={<EntRegister />} />
+        <Route path="/enttransport" element={<TransportRequest />} />
         <Route path="/entclothing" element={<EntClothing />} />
         <Route path="/entgarbage" element={<UserCleanupRequest />} />
         <Route path="/entfarm-produce" element={<EntFarmProduce />} />
