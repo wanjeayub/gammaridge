@@ -137,7 +137,7 @@ const AdminTransportRequests = () => {
                       onClick={() =>
                         updateRequestStatus(request._id, "Completed")
                       }
-                      className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600"
+                      className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600"
                     >
                       Mark as Completed
                     </button>
