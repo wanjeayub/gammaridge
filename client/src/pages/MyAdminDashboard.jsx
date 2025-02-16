@@ -262,7 +262,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Transport Requests */}
-      <div className="mt-6">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <AdminTransportRequests />
       </div>
 
