@@ -10,7 +10,7 @@ const AdminTransportRequests = () => {
   const fetchTransportRequests = async () => {
     try {
       const response = await fetch(
-        "https://tester-server.vercel.app/api/transport/requests",
+        "https://tester-server.vercel.app/api/transport//all-requests",
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
