@@ -28,7 +28,7 @@ function GarbageCollectionList() {
 
       // Fetch data using Fetch API
       const response = await fetch(
-        `https://tester-server.vercel.app/api/admin/requests?${params.toString()}`,
+        `https://tester-server.vercel.app/api/admin/requests`,
         {
           headers: {
             Authorization: `Bearer ${token}`, // Include token in the header
