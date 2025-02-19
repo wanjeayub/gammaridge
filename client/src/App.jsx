@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
-import api from "./api";
+import api from "./api/api";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import MyLogin from "./pages/MyLogin";
@@ -38,9 +38,7 @@ const App = () => {
       }
 
       try {
-        const response = await api.get(
-          "https://tester-server.vercel.app/api/users/profile"
-        );
+        const response = await api.get("/users/profile");
         setUser(response.data);
       } catch (error) {
         if (error.response && error.response.status === 401) {
