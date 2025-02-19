@@ -23,6 +23,7 @@ import EntClothing from "./enterprise-pages/Clothing";
 import EntFarmProduce from "./enterprise-pages/FarmProduce";
 import UserCleanupRequest from "./pages/UserCleanUpRequest";
 import TransportRequest from "./pages/Transport";
+import MyAdminLogin from "./pages/MyAdminLogin";
 
 const App = () => {
   const [user, setUser] = useState(null);
