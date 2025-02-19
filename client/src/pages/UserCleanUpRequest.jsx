@@ -28,7 +28,7 @@ function UserCleanupRequest() {
       // Submit the request
       const response = await toast.promise(
         axios.post(
-          "https://tester-server.vercel.app/api/users/request-cleanup",
+          "https://tester-server.vercel.app/api/garbage/requests/add",
           formData
         ),
         {
