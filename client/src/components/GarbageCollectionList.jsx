@@ -77,7 +77,7 @@ function GarbageCollectionList() {
       }
 
       const response = await fetch(
-        `https://tester-server.vercel.app/api/garbage/requests/${id}`,
+        `https://tester-server.vercel.app/api/garbage/request/mark-paid/${id}`,
         {
           method: "PATCH",
           headers: {
@@ -120,7 +120,7 @@ function GarbageCollectionList() {
       }
 
       const response = await fetch(
-        `https://tester-server.vercel.app/api/garbage/requests/${id}`,
+        `https://tester-server.vercel.app/api/garbage/request/delete/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -157,7 +157,7 @@ function GarbageCollectionList() {
       }
 
       const response = await fetch(
-        `https://tester-server.vercel.app/api/garbage/requests/${editingRequest._id}`,
+        `https://tester-server.vercel.app/api/garbage/request/edit/${editingRequest._id}`,
         {
           method: "PATCH",
           headers: {
