@@ -26,7 +26,7 @@ function GarbageCollectionList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/adminogin");
+        navigate("/login"); // Corrected navigation path
         return;
       }
 
@@ -72,7 +72,7 @@ function GarbageCollectionList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/adminogin");
+        navigate("/login");
         return;
       }
 
@@ -115,7 +115,7 @@ function GarbageCollectionList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/adminogin");
+        navigate("/login");
         return;
       }
 
@@ -152,8 +152,17 @@ function GarbageCollectionList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/adminogin");
+        navigate("/login");
         return;
+      }
+
+      // Validate required fields
+      if (
+        !editingRequest.plotCode ||
+        !editingRequest.fullName ||
+        !editingRequest.phoneNumber
+      ) {
+        throw new Error("Plot Code, Full Name, and Phone Number are required.");
       }
 
       const response = await fetch(
@@ -182,7 +191,9 @@ function GarbageCollectionList() {
       setEditingRequest(null); // Close the edit modal
     } catch (error) {
       console.error("Error updating request:", error);
-      setError("Failed to update request. Please try again later.");
+      setError(
+        error.message || "Failed to update request. Please try again later."
+      );
     }
   };
 
@@ -192,8 +203,17 @@ function GarbageCollectionList() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/adminogin");
+        navigate("/login");
         return;
+      }
+
+      // Validate required fields
+      if (
+        !newRequest.plotCode ||
+        !newRequest.fullName ||
+        !newRequest.phoneNumber
+      ) {
+        throw new Error("Plot Code, Full Name, and Phone Number are required.");
       }
 
       const response = await fetch(
@@ -232,7 +252,9 @@ function GarbageCollectionList() {
       });
     } catch (error) {
       console.error("Error adding request:", error);
-      setError("Failed to add request. Please try again later.");
+      setError(
+        error.message || "Failed to add request. Please try again later."
+      );
     }
   };
 
@@ -253,6 +275,17 @@ function GarbageCollectionList() {
       {/* Filters and Search */}
       <div className="mb-6 flex flex-wrap gap-4">
         <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="p-2 border border-gray-300 rounded-md mr-4"
+        >
+          <option value="desc">Latest First</option>
+          <option value="asc">Oldest First</option>
+          <option value="plotCodeAsc">Plot Code (Ascending)</option>
+          <option value="plotCodeDesc">Plot Code (Descending)</option>
+        </select>
+
+        <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="p-2 border border-gray-300 rounded-md"
@@ -261,15 +294,6 @@ function GarbageCollectionList() {
           <option value="today">Today</option>
           <option value="thisWeek">This Week</option>
           <option value="thisMonth">This Month</option>
-        </select>
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="p-2 border border-gray-300 rounded-md"
-        >
-          <option value="desc">Latest First</option>
-          <option value="asc">Oldest First</option>
         </select>
 
         <input
