@@ -31,6 +31,11 @@ const Users = ({ users, fetchUsers }) => {
 
   // Handle delete request
   const handleConfirmDelete = useCallback(async () => {
+    if (!userToDelete) {
+      toast.error("No user selected for deletion.");
+      return;
+    }
+
     try {
       const response = await fetch(
         `https://tester-server.vercel.app/api/admin/delete/${userToDelete}`,
@@ -41,28 +46,30 @@ const Users = ({ users, fetchUsers }) => {
           },
         }
       );
-      if (response.ok) {
-        toast.success("User deleted successfully.");
-        fetchUsers(); // Refresh users
-        closeDeleteModal();
-      } else {
-        toast.error("Failed to delete user.");
+
+      if (!response.ok) {
+        throw new Error("Failed to delete user.");
       }
+
+      toast.success("User deleted successfully.");
+      fetchUsers(); // Refresh users after deletion
+      closeDeleteModal();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to delete user.");
+      toast.error(error.message || "Failed to delete user.");
     }
   }, [userToDelete, fetchUsers]);
 
   // Filter users by search query
   const filterUsersBySearch = useCallback((users, query) => {
+    if (!query) return users; // Return all users if search query is empty
+
     return users.filter(
       (user) =>
         user.fullName?.toLowerCase().includes(query.toLowerCase()) ||
         user.idNumber?.toString().includes(query) ||
         user.mobileNumber?.toString().includes(query) ||
-        user.alternateMobileNumber?.toString().includes(query) ||
-        user.idNumber?.toString().includes(query)
+        user.alternateMobileNumber?.toString().includes(query)
     );
   }, []);
 
@@ -98,53 +105,71 @@ const Users = ({ users, fetchUsers }) => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
-            <tr key={user._id} className="border-b">
-              <td className="px-4 py-2">
-                <img
-                  src={user.profilePhoto}
-                  alt="Profile"
-                  className="w-12 h-12 rounded-full cursor-pointer"
-                  onClick={() => openImageModal(user.profilePhoto)}
-                />
-              </td>
-              <td className="px-4 py-2">{user.fullName}</td>
-              <td className="px-4 py-2">{user.idNumber}</td>
-              <td className="px-4 py-2">{user.mobileNumber}</td>
-              <td className="px-4 py-2">{user.alternateMobileNumber}</td>
-              <td className="px-4 py-2">
-                <img
-                  src={user.idFrontPhoto}
-                  alt="ID Front"
-                  className="w-12 h-12 rounded-full cursor-pointer"
-                  onClick={() => openImageModal(user.idFrontPhoto)}
-                />
-              </td>
-              <td className="px-4 py-2 flex gap-2">
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                  onClick={() => openDeleteModal(user._id)}
-                >
-                  Delete
-                </button>
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <tr key={user._id} className="border-b">
+                <td className="px-4 py-2">
+                  <img
+                    src={user.profilePhoto || "https://via.placeholder.com/150"}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-full cursor-pointer"
+                    onClick={() => openImageModal(user.profilePhoto)}
+                  />
+                </td>
+                <td className="px-4 py-2">{user.fullName || "N/A"}</td>
+                <td className="px-4 py-2">{user.idNumber || "N/A"}</td>
+                <td className="px-4 py-2">{user.mobileNumber || "N/A"}</td>
+                <td className="px-4 py-2">
+                  {user.alternateMobileNumber || "N/A"}
+                </td>
+                <td className="px-4 py-2">
+                  <img
+                    src={user.idFrontPhoto || "https://via.placeholder.com/150"}
+                    alt="ID Front"
+                    className="w-12 h-12 rounded-full cursor-pointer"
+                    onClick={() => openImageModal(user.idFrontPhoto)}
+                  />
+                </td>
+                <td className="px-4 py-2 flex gap-2">
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                    onClick={() => openDeleteModal(user._id)}
+                    aria-label="Delete user"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="px-4 py-2 text-center">
+                No users found.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
       {/* Image Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+          onClick={closeImageModal}
+        >
           <div className="relative bg-white p-4 rounded-lg shadow-lg">
             <img
               src={selectedImage}
               alt="Enlarged"
               className="w-96 h-auto rounded-lg"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/150"; // Fallback image
+              }}
             />
             <button
               onClick={closeImageModal}
               className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full"
+              aria-label="Close image modal"
             >
               ✕
             </button>
@@ -154,8 +179,14 @@ const Users = ({ users, fetchUsers }) => {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={closeDeleteModal}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-xl font-bold">Confirm Deletion</h3>
             <p className="mt-2">Are you sure you want to delete this user?</p>
             <div className="flex justify-end mt-4 gap-2">
