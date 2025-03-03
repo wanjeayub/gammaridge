@@ -7,18 +7,67 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
+  format,
 } from "date-fns";
 
 const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all"); // New state for status filter
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState("");
   const [isPartialPaymentModalOpen, setIsPartialPaymentModalOpen] =
     useState(false);
   const [isMarkPaidModalOpen, setIsMarkPaidModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [validationError, setValidationError] = useState("");
+
+  // Calculate summary data
+  const summaryData = useMemo(() => {
+    const totalLoans = loans.length;
+    const pendingLoans = loans.filter(
+      (loan) => loan.status === "pending"
+    ).length;
+    const approvedLoans = loans.filter(
+      (loan) => loan.status === "approved"
+    ).length;
+    const fullyPaidLoans = loans.filter(
+      (loan) => loan.status === "fully paid"
+    ).length;
+    const partiallyPaidLoans = loans.filter(
+      (loan) => loan.status === "partially paid"
+    ).length;
+    const totalUsers = new Set(loans.map((loan) => loan.userId?._id)).size; // Unique users
+    const totalLoanAmount = loans.reduce(
+      (sum, loan) => sum + loan.loanAmount,
+      0
+    );
+    const totalRepaymentAmount = loans.reduce(
+      (sum, loan) => sum + loan.totalRepayment,
+      0
+    );
+    const totalPaidAmount = loans.reduce(
+      (sum, loan) => sum + loan.paidAmount,
+      0
+    );
+    const totalRemainingBalance = loans.reduce(
+      (sum, loan) => sum + loan.remainingBalance,
+      0
+    );
+
+    return {
+      totalLoans,
+      pendingLoans,
+      approvedLoans,
+      fullyPaidLoans,
+      partiallyPaidLoans,
+      totalUsers,
+      totalLoanAmount,
+      totalRepaymentAmount,
+      totalPaidAmount,
+      totalRemainingBalance,
+    };
+  }, [loans]);
 
   // Approve a loan
   const approveLoan = useCallback(
@@ -172,10 +221,32 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     );
   }, []);
 
+  // Filter loans by month
+  const filterLoansByMonth = useCallback((loans, month) => {
+    if (!month) return loans;
+    return loans.filter((loan) => {
+      const loanDate = new Date(loan.createdAt);
+      return format(loanDate, "yyyy-MM") === month;
+    });
+  }, []);
+
+  // Get unique months from loans
+  const getAvailableMonths = useCallback((loans) => {
+    const months = new Set();
+    loans.forEach((loan) => {
+      const loanDate = new Date(loan.createdAt);
+      months.add(format(loanDate, "yyyy-MM"));
+    });
+    return Array.from(months).sort((a, b) => new Date(b) - new Date(a));
+  }, []);
+
   // Apply all filters
   const filteredLoans = useMemo(() => {
     return filterLoansBySearch(
-      filterLoansByStatus(filterLoansByDate(loans, dateFilter), statusFilter),
+      filterLoansByStatus(
+        filterLoansByDate(filterLoansByMonth(loans, selectedMonth), dateFilter),
+        statusFilter
+      ),
       searchQuery
     );
   }, [
@@ -183,48 +254,149 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     dateFilter,
     statusFilter,
     searchQuery,
+    selectedMonth,
     filterLoansByDate,
     filterLoansByStatus,
     filterLoansBySearch,
+    filterLoansByMonth,
   ]);
+
+  // Get available months
+  const availableMonths = useMemo(
+    () => getAvailableMonths(loans),
+    [loans, getAvailableMonths]
+  );
 
   return (
     <div>
-      <h1>All Loans</h1>
+      <h1 className="text-2xl font-bold mb-4">All Loans</h1>
 
-      {/* Search Input */}
-      <input
-        type="text"
-        placeholder="Search loans..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full md:w-1/2 px-3 py-2 border rounded-lg"
-      />
+      {/* Summary Tab */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        {/* Total Loans */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Total Loans</h3>
+          <p className="text-2xl font-bold text-blue-600">
+            {summaryData.totalLoans}
+          </p>
+        </div>
 
-      {/* Date Filter */}
-      <select
-        value={dateFilter}
-        onChange={(e) => setDateFilter(e.target.value)}
-        className="ml-4 px-3 py-2 border rounded-lg"
-      >
-        <option value="all">All Time</option>
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-      </select>
+        {/* Pending Loans */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Pending Loans</h3>
+          <p className="text-2xl font-bold text-yellow-600">
+            {summaryData.pendingLoans}
+          </p>
+        </div>
 
-      {/* Status Filter */}
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-        className="ml-4 px-3 py-2 border rounded-lg"
-      >
-        <option value="all">All Statuses</option>
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="partially paid">Partially Paid</option>
-        <option value="fully paid">Fully Paid</option>
-      </select>
+        {/* Approved Loans */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Approved Loans
+          </h3>
+          <p className="text-2xl font-bold text-green-600">
+            {summaryData.approvedLoans}
+          </p>
+        </div>
+
+        {/* Fully Paid Loans */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Fully Paid Loans
+          </h3>
+          <p className="text-2xl font-bold text-purple-600">
+            {summaryData.fullyPaidLoans}
+          </p>
+        </div>
+
+        {/* Partially Paid Loans */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Partially Paid Loans
+          </h3>
+          <p className="text-2xl font-bold text-orange-600">
+            {summaryData.partiallyPaidLoans}
+          </p>
+        </div>
+
+        {/* Total Users */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">Total Users</h3>
+          <p className="text-2xl font-bold text-indigo-600">
+            {summaryData.totalUsers}
+          </p>
+        </div>
+
+        {/* Total Loan Amount */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Total Loan Amount
+          </h3>
+          <p className="text-2xl font-bold text-red-600">
+            Ksh {summaryData.totalLoanAmount.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Total Repayment Amount */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700">
+            Total Repayment
+          </h3>
+          <p className="text-2xl font-bold text-teal-600">
+            Ksh {summaryData.totalRepaymentAmount.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      <div>
+        {/* Month Selection Dropdown */}
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="px-3 py-2 border rounded-lg mb-4 mr-4"
+        >
+          <option value="">All Months</option>
+          {availableMonths.map((month) => (
+            <option key={month} value={month}>
+              {format(new Date(month), "MMM yyyy")}
+            </option>
+          ))}
+        </select>
+
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="Search loans..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full md:w-1/2 px-3 py-2 border rounded-lg"
+        />
+
+        {/* Date Filter */}
+        <select
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="ml-4 px-3 py-2 border rounded-lg"
+        >
+          <option value="all">All Time</option>
+          <option value="day">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="ml-4 px-3 py-2 border rounded-lg"
+        >
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="partially paid">Partially Paid</option>
+          <option value="fully paid">Fully Paid</option>
+        </select>
+      </div>
 
       {/* Loan List */}
       <table className="w-full mt-4">
