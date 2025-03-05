@@ -1,11 +1,35 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
-const Users = ({ users, fetchUsers }) => {
+const Users = () => {
+  const [users, setUsers] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch users
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await fetch(
+        "https://tester-server.vercel.app/api/admin/users",
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch users.");
+      setUsers([]); // Reset users state on error
+    }
+  }, []);
+
+  // Call fetchUsers on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   // Open image modal
   const openImageModal = (imageUrl) => {
@@ -38,7 +62,7 @@ const Users = ({ users, fetchUsers }) => {
 
     try {
       const response = await fetch(
-        `https://tester-server.vercel.app/api/admin/delete/${userToDelete}`,
+        `https://tester-server.vercel.app/api/admin/users/delete/${userToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -48,14 +72,16 @@ const Users = ({ users, fetchUsers }) => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete user.");
+        const errorData = await response.json(); // Log the error response
+        console.error("Delete error:", errorData);
+        throw new Error(errorData.message || "Failed to delete user.");
       }
 
       toast.success("User deleted successfully.");
       fetchUsers(); // Refresh users after deletion
       closeDeleteModal();
     } catch (error) {
-      console.error(error);
+      console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
     }
   }, [userToDelete, fetchUsers]);

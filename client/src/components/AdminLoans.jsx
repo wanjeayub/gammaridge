@@ -97,6 +97,33 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     [fetchLoans, fetchLoanStats]
   );
 
+  // Extend repayment date
+  const extendRepaymentDate = useCallback(
+    async (loanId) => {
+      try {
+        const response = await fetch(
+          `https://tester-server.vercel.app/api/admin/extend-repayment/${loanId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (response.ok) {
+          toast.success("Repayment date extended successfully.");
+          fetchLoans(); // Refresh loans
+        } else {
+          toast.error("Failed to extend repayment date.");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to extend repayment date.");
+      }
+    },
+    [fetchLoans]
+  );
+
   // Open partial payment modal
   const openPartialPaymentModal = (loan) => {
     setSelectedLoan(loan);
@@ -399,7 +426,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       </div>
 
       {/* Loan List */}
-      <table className="w-full mt-4">
+      <table className="w-full mt-4 text-sm">
         <thead>
           <tr>
             <th>User</th>
@@ -408,19 +435,24 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
             <th>Total Repayment</th>
             <th>Paid Amount</th>
             <th>Remaining Balance</th>
+            <th>Repayment Date</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {filteredLoans.map((loan) => (
-            <tr key={loan._id}>
+            <tr key={loan._id} className="">
               <td>{loan.userId?.fullName}</td>
               <td>Ksh {loan.loanAmount}</td>
               <td>Ksh {loan.interest}</td>
               <td>Ksh {loan.totalRepayment}</td>
               <td>Ksh {loan.paidAmount}</td>
               <td>Ksh {loan.remainingBalance}</td>
+              <td>
+                {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
+              </td>{" "}
+              {/* Format the date */}
               <td>{loan.status}</td>
               <td>
                 {loan.status === "pending" && (
@@ -431,9 +463,10 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                     Approve
                   </button>
                 )}
+
                 {(loan.status === "approved" ||
                   loan.status === "partially paid") && (
-                  <>
+                  <div className="text-xs">
                     <button
                       onClick={() => openPartialPaymentModal(loan)}
                       className="bg-yellow-500 text-white px-3 py-1 rounded-lg mr-2"
@@ -442,11 +475,17 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                     </button>
                     <button
                       onClick={() => openMarkPaidModal(loan)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded-lg"
+                      className="bg-blue-500 text-white px-3 py-1 rounded-lg mr-2"
                     >
                       Mark Paid
                     </button>
-                  </>
+                    <button
+                      onClick={() => extendRepaymentDate(loan._id)}
+                      className="bg-purple-500 text-white px-3 py-1 rounded-lg mr-2"
+                    >
+                      Extend Repayment
+                    </button>
+                  </div>
                 )}
               </td>
             </tr>
