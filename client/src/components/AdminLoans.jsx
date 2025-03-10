@@ -97,6 +97,34 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     [fetchLoans, fetchLoanStats]
   );
 
+  // Reject loan offer
+  const rejectLoan = useCallback(
+    async (loanId) => {
+      try {
+        const response = await fetch(
+          `https://tester-server.vercel.app/api/admin/reject-loan/${loanId}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (response.ok) {
+          toast.success("Loan rejected successfully.");
+          fetchLoans(); // Refresh loans
+          fetchLoanStats(); // Refresh loan stats
+        } else {
+          toast.error("Failed to reject loan.");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to reject loan.");
+      }
+    },
+    [fetchLoans, fetchLoanStats]
+  );
+
   // Extend repayment date
   const extendRepaymentDate = useCallback(
     async (loanId) => {
@@ -456,12 +484,20 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
               <td>{loan.status}</td>
               <td>
                 {loan.status === "pending" && (
-                  <button
-                    onClick={() => approveLoan(loan._id)}
-                    className="bg-green-500 text-white px-3 py-1 rounded-lg mr-2"
-                  >
-                    Approve
-                  </button>
+                  <>
+                    <button
+                      onClick={() => approveLoan(loan._id)}
+                      className="bg-green-500 text-white px-3 py-1 rounded-lg mr-2"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => rejectLoan(loan._id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                    >
+                      Reject
+                    </button>
+                  </>
                 )}
 
                 {(loan.status === "approved" ||

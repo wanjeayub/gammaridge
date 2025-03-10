@@ -225,8 +225,8 @@ const Loans = () => {
 
   // Handle clicking the Edit button
   const handleEditClick = (loan) => {
-    if (loan.status !== "pending") {
-      toast.error("Only pending loans can be edited.");
+    if (loan.status !== "pending" && loan.status !== "rejected") {
+      toast.error("Only pending or rejected loans can be edited.");
       return;
     }
     setLoanAmount(loan.loanAmount);
@@ -261,6 +261,8 @@ const Loans = () => {
         return "text-orange-500";
       case "fully paid":
         return "text-green-500";
+      case "rejected":
+        return "text-gray-500";
       default:
         return "text-gray-500";
     }
@@ -376,7 +378,7 @@ const Loans = () => {
                 >
                   Status: {loan.status}
                 </p>
-                {loan.status === "pending" && (
+                {(loan.status === "pending" || loan.status === "rejected") && (
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => handleEditClick(loan)}
