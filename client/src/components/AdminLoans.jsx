@@ -11,15 +11,32 @@ import {
 } from "date-fns";
 
 const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
+  const getExtensionColor = (extensionCount) => {
+    switch (extensionCount) {
+      case 1:
+        return "bg-yellow-100"; // Light yellow for 1 extension
+      case 2:
+        return "bg-orange-100"; // Light orange for 2 extensions
+      case 3:
+        return "bg-red-100"; // Light red for 3 extensions
+      default:
+        return ""; // No color for 0 extensions
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [isPartialPaymentModalOpen, setIsPartialPaymentModalOpen] =
     useState(false);
   const [isMarkPaidModalOpen, setIsMarkPaidModalOpen] = useState(false);
+  const [isAssignCategoryModalOpen, setIsAssignCategoryModalOpen] =
+    useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [validationError, setValidationError] = useState("");
 
   // Calculate summary data
@@ -236,6 +253,51 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     }
   }, [selectedLoan, fetchLoans]);
 
+  // Open assign category modal
+  const openAssignCategoryModal = (loan) => {
+    setSelectedLoan(loan);
+    setIsAssignCategoryModalOpen(true);
+  };
+
+  // Close assign category modal
+  const closeAssignCategoryModal = () => {
+    setIsAssignCategoryModalOpen(false);
+    setSelectedCategory("");
+  };
+
+  // Assign category to loan
+  const assignCategory = useCallback(async () => {
+    if (!selectedCategory) {
+      toast.error("Please select a category.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://tester-server.vercel.app/api/admin/assign-category/${selectedLoan._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ category: selectedCategory }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Category assigned successfully.");
+        fetchLoans(); // Refresh loans
+        closeAssignCategoryModal();
+      } else {
+        toast.error("Failed to assign category.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to assign category.");
+    }
+  }, [selectedCategory, selectedLoan, fetchLoans]);
+
   // Filter loans by date
   const filterLoansByDate = useCallback((loans, filter) => {
     const now = new Date();
@@ -264,6 +326,12 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const filterLoansByStatus = useCallback((loans, status) => {
     if (status === "all") return loans;
     return loans.filter((loan) => loan.status === status);
+  }, []);
+
+  // Filter loans by category
+  const filterLoansByCategory = useCallback((loans, category) => {
+    if (category === "all") return loans;
+    return loans.filter((loan) => loan.category === category);
   }, []);
 
   // Filter loans by search query
@@ -299,7 +367,13 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const filteredLoans = useMemo(() => {
     return filterLoansBySearch(
       filterLoansByStatus(
-        filterLoansByDate(filterLoansByMonth(loans, selectedMonth), dateFilter),
+        filterLoansByDate(
+          filterLoansByMonth(
+            filterLoansByCategory(loans, categoryFilter),
+            selectedMonth
+          ),
+          dateFilter
+        ),
         statusFilter
       ),
       searchQuery
@@ -310,10 +384,12 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     statusFilter,
     searchQuery,
     selectedMonth,
+    categoryFilter,
     filterLoansByDate,
     filterLoansByStatus,
     filterLoansBySearch,
     filterLoansByMonth,
+    filterLoansByCategory,
   ]);
 
   // Get available months
@@ -451,6 +527,17 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           <option value="partially paid">Partially Paid</option>
           <option value="fully paid">Fully Paid</option>
         </select>
+
+        {/* Category Filter */}
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="ml-4 px-3 py-2 border rounded-lg"
+        >
+          <option value="all">All Categories</option>
+          <option value="permanent">Permanent</option>
+          <option value="casual">Casual</option>
+        </select>
       </div>
 
       {/* Loan List */}
@@ -465,12 +552,16 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
             <th>Remaining Balance</th>
             <th>Repayment Date</th>
             <th>Status</th>
+            <th>Category</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {filteredLoans.map((loan) => (
-            <tr key={loan._id} className="">
+            <tr
+              key={loan._id}
+              className={getExtensionColor(loan.extensionCount)} // Apply color based on extension count
+            >
               <td>{loan.userId?.fullName}</td>
               <td>Ksh {loan.loanAmount}</td>
               <td>Ksh {loan.interest}</td>
@@ -479,9 +570,14 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
               <td>Ksh {loan.remainingBalance}</td>
               <td>
                 {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
-              </td>{" "}
-              {/* Format the date */}
+                {loan.extensionCount > 0 && (
+                  <span className="ml-2 text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">
+                    Extended {loan.extensionCount} time(s)
+                  </span>
+                )}
+              </td>
               <td>{loan.status}</td>
+              <td>{loan.category}</td>
               <td>
                 {loan.status === "pending" && (
                   <>
@@ -515,11 +611,19 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                     >
                       Mark Paid
                     </button>
+                    {loan.extensionCount < 3 && (
+                      <button
+                        onClick={() => extendRepaymentDate(loan._id)}
+                        className="bg-purple-500 text-white px-3 py-1 rounded-lg mr-2"
+                      >
+                        Extend Repayment
+                      </button>
+                    )}
                     <button
-                      onClick={() => extendRepaymentDate(loan._id)}
-                      className="bg-purple-500 text-white px-3 py-1 rounded-lg mr-2"
+                      onClick={() => openAssignCategoryModal(loan)}
+                      className="bg-indigo-500 text-white px-3 py-1 rounded-lg mr-2"
                     >
-                      Extend Repayment
+                      Assign Category
                     </button>
                   </div>
                 )}
@@ -580,6 +684,38 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                 className="bg-blue-500 text-white px-3 py-1 rounded-lg"
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Category Modal */}
+      {isAssignCategoryModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-lg font-bold mb-4">Assign Category</h2>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+            >
+              <option value="">Select Category</option>
+              <option value="permanent">Permanent</option>
+              <option value="casual">Casual</option>
+            </select>
+            <div className="flex justify-end">
+              <button
+                onClick={closeAssignCategoryModal}
+                className="mr-2 bg-gray-300 px-3 py-1 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={assignCategory}
+                className="bg-indigo-500 text-white px-3 py-1 rounded-lg"
+              >
+                Submit
               </button>
             </div>
           </div>
