@@ -9,21 +9,10 @@ import {
   endOfMonth,
   format,
 } from "date-fns";
+import { FaCheck, FaTimes, FaEdit, FaCalendarAlt, FaTag } from "react-icons/fa";
+import { Tooltip } from "react-tooltip";
 
 const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
-  const getExtensionColor = (extensionCount) => {
-    switch (extensionCount) {
-      case 1:
-        return "bg-yellow-100"; // Light yellow for 1 extension
-      case 2:
-        return "bg-orange-100"; // Light orange for 2 extensions
-      case 3:
-        return "bg-red-100"; // Light red for 3 extensions
-      default:
-        return ""; // No color for 0 extensions
-    }
-  };
-
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -38,53 +27,137 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [expandedSection, setExpandedSection] = useState(null);
 
-  // Calculate summary data
-  const summaryData = useMemo(() => {
-    const totalLoans = loans.length;
-    const pendingLoans = loans.filter(
-      (loan) => loan.status === "pending"
-    ).length;
-    const approvedLoans = loans.filter(
-      (loan) => loan.status === "approved"
-    ).length;
-    const fullyPaidLoans = loans.filter(
-      (loan) => loan.status === "fully paid"
-    ).length;
-    const partiallyPaidLoans = loans.filter(
-      (loan) => loan.status === "partially paid"
-    ).length;
-    const totalUsers = new Set(loans.map((loan) => loan.userId?._id)).size; // Unique users
-    const totalLoanAmount = loans.reduce(
-      (sum, loan) => sum + loan.loanAmount,
-      0
-    );
-    const totalRepaymentAmount = loans.reduce(
-      (sum, loan) => sum + loan.totalRepayment,
-      0
-    );
-    const totalPaidAmount = loans.reduce(
-      (sum, loan) => sum + loan.paidAmount,
-      0
-    );
-    const totalRemainingBalance = loans.reduce(
-      (sum, loan) => sum + loan.remainingBalance,
-      0
-    );
-
-    return {
-      totalLoans,
-      pendingLoans,
-      approvedLoans,
-      fullyPaidLoans,
-      partiallyPaidLoans,
-      totalUsers,
-      totalLoanAmount,
-      totalRepaymentAmount,
-      totalPaidAmount,
-      totalRemainingBalance,
+  // Group loans by category and status
+  const groupLoans = (loans) => {
+    const grouped = {
+      permanent: {
+        pending: [],
+        approved: [],
+        partiallyPaid: [],
+        fullyPaid: [],
+      },
+      casual: {
+        pending: [],
+        approved: [],
+        partiallyPaid: [],
+        fullyPaid: [],
+      },
     };
-  }, [loans]);
+
+    loans.forEach((loan) => {
+      const category = loan.category === "permanent" ? "permanent" : "casual";
+      const status = loan.status.toLowerCase().replace(" ", ""); // Normalize status
+      if (grouped[category][status]) {
+        grouped[category][status].push(loan);
+      }
+    });
+
+    return grouped;
+  };
+
+  // Toggle collapsible sections
+  const toggleSection = (section) => {
+    setExpandedSection((prev) => (prev === section ? null : section));
+  };
+
+  // Filter loans by date
+  const filterLoansByDate = useCallback((loans, filter) => {
+    const now = new Date();
+    switch (filter) {
+      case "day":
+        return loans.filter((loan) => {
+          const loanDate = new Date(loan.createdAt);
+          return loanDate >= startOfDay(now) && loanDate <= endOfDay(now);
+        });
+      case "week":
+        return loans.filter((loan) => {
+          const loanDate = new Date(loan.createdAt);
+          return loanDate >= startOfWeek(now) && loanDate <= endOfWeek(now);
+        });
+      case "month":
+        return loans.filter((loan) => {
+          const loanDate = new Date(loan.createdAt);
+          return loanDate >= startOfMonth(now) && loanDate <= endOfMonth(now);
+        });
+      default:
+        return loans;
+    }
+  }, []);
+
+  // Filter loans by status
+  const filterLoansByStatus = useCallback((loans, status) => {
+    if (status === "all") return loans;
+    return loans.filter((loan) => loan.status === status);
+  }, []);
+
+  // Filter loans by category
+  const filterLoansByCategory = useCallback((loans, category) => {
+    if (category === "all") return loans;
+    return loans.filter((loan) => loan.category === category);
+  }, []);
+
+  // Filter loans by search query
+  const filterLoansBySearch = useCallback((loans, query) => {
+    return loans.filter(
+      (loan) =>
+        loan.userId?.fullName?.toLowerCase().includes(query.toLowerCase()) ||
+        loan.loanAmount.toString().includes(query) ||
+        loan.status.toLowerCase().includes(query.toLowerCase())
+    );
+  }, []);
+
+  // Filter loans by month
+  const filterLoansByMonth = useCallback((loans, month) => {
+    if (!month) return loans;
+    return loans.filter((loan) => {
+      const loanDate = new Date(loan.createdAt);
+      return format(loanDate, "yyyy-MM") === month;
+    });
+  }, []);
+
+  // Get unique months from loans
+  const getAvailableMonths = (loans) => {
+    const months = new Set();
+    loans.forEach((loan) => {
+      const loanDate = new Date(loan.createdAt);
+      months.add(format(loanDate, "yyyy-MM"));
+    });
+    return Array.from(months).sort((a, b) => new Date(b) - new Date(a));
+  };
+
+  // Apply all filters
+  const filteredLoans = useMemo(() => {
+    return filterLoansBySearch(
+      filterLoansByStatus(
+        filterLoansByDate(
+          filterLoansByMonth(
+            filterLoansByCategory(loans, categoryFilter),
+            selectedMonth
+          ),
+          dateFilter
+        ),
+        statusFilter
+      ),
+      searchQuery
+    );
+  }, [
+    loans,
+    dateFilter,
+    statusFilter,
+    searchQuery,
+    selectedMonth,
+    categoryFilter,
+    filterLoansByDate,
+    filterLoansByStatus,
+    filterLoansBySearch,
+    filterLoansByMonth,
+    filterLoansByCategory,
+  ]);
+
+  // Group filtered loans
+  const groupedLoans = groupLoans(filteredLoans);
 
   // Approve a loan
   const approveLoan = useCallback(
@@ -114,7 +187,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     [fetchLoans, fetchLoanStats]
   );
 
-  // Reject loan offer
+  // Reject a loan
   const rejectLoan = useCallback(
     async (loanId) => {
       try {
@@ -298,203 +371,151 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     }
   }, [selectedCategory, selectedLoan, fetchLoans]);
 
-  // Filter loans by date
-  const filterLoansByDate = useCallback((loans, filter) => {
-    const now = new Date();
-    switch (filter) {
-      case "day":
-        return loans.filter((loan) => {
-          const loanDate = new Date(loan.createdAt);
-          return loanDate >= startOfDay(now) && loanDate <= endOfDay(now);
-        });
-      case "week":
-        return loans.filter((loan) => {
-          const loanDate = new Date(loan.createdAt);
-          return loanDate >= startOfWeek(now) && loanDate <= endOfWeek(now);
-        });
-      case "month":
-        return loans.filter((loan) => {
-          const loanDate = new Date(loan.createdAt);
-          return loanDate >= startOfMonth(now) && loanDate <= endOfMonth(now);
-        });
-      default:
-        return loans;
-    }
-  }, []);
+  // Render collapsible tables for each category and status
+  const renderCategoryTable = (category, loansByStatus) => {
+    return (
+      <div key={category} className="mb-8">
+        <h2 className="text-xl font-bold mb-4 capitalize">{category} Loans</h2>
+        {Object.entries(loansByStatus).map(([status, loans]) => {
+          const sectionId = `${category}-${status}`;
+          const isExpanded = expandedSection === sectionId;
 
-  // Filter loans by status
-  const filterLoansByStatus = useCallback((loans, status) => {
-    if (status === "all") return loans;
-    return loans.filter((loan) => loan.status === status);
-  }, []);
-
-  // Filter loans by category
-  const filterLoansByCategory = useCallback((loans, category) => {
-    if (category === "all") return loans;
-    return loans.filter((loan) => loan.category === category);
-  }, []);
-
-  // Filter loans by search query
-  const filterLoansBySearch = useCallback((loans, query) => {
-    return loans.filter(
-      (loan) =>
-        loan.userId?.fullName?.toLowerCase().includes(query.toLowerCase()) ||
-        loan.loanAmount.toString().includes(query) ||
-        loan.status.toLowerCase().includes(query.toLowerCase())
+          return (
+            <div key={status} className="mb-4">
+              <div
+                className="flex justify-between items-center bg-gray-100 p-3 rounded-lg cursor-pointer"
+                onClick={() => toggleSection(sectionId)}
+              >
+                <h3 className="font-semibold capitalize">{status}</h3>
+                <span>{isExpanded ? "▲" : "▼"}</span>
+              </div>
+              {isExpanded && (
+                <table className="w-full striped-table sticky-header text-sm mt-2">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-3 text-left">User</th>
+                      <th className="px-4 py-3 text-left">Loan Amount</th>
+                      <th className="px-4 py-3 text-left">Interest</th>
+                      <th className="px-4 py-3 text-left">Total Repayment</th>
+                      <th className="px-4 py-3 text-left">Paid Amount</th>
+                      <th className="px-4 py-3 text-left">Remaining Balance</th>
+                      <th className="px-4 py-3 text-left">Repayment Date</th>
+                      <th className="px-4 py-3 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loans.map((loan) => (
+                      <tr
+                        key={loan._id}
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3">{loan.userId?.fullName}</td>
+                        <td className="px-4 py-3">Ksh {loan.loanAmount}</td>
+                        <td className="px-4 py-3">Ksh {loan.interest}</td>
+                        <td className="px-4 py-3">Ksh {loan.totalRepayment}</td>
+                        <td className="px-4 py-3">Ksh {loan.paidAmount}</td>
+                        <td className="px-4 py-3">
+                          Ksh {loan.remainingBalance}
+                        </td>
+                        <td className="px-4 py-3">
+                          {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex space-x-2">
+                            {loan.status === "pending" && (
+                              <>
+                                <button
+                                  data-tooltip-id="approve-tooltip"
+                                  data-tooltip-content="Approve this loan"
+                                  onClick={() => approveLoan(loan._id)}
+                                  className="bg-green-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaCheck className="mr-2" /> Approve
+                                </button>
+                                <button
+                                  data-tooltip-id="reject-tooltip"
+                                  data-tooltip-content="Reject this loan"
+                                  onClick={() => rejectLoan(loan._id)}
+                                  className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaTimes className="mr-2" /> Reject
+                                </button>
+                              </>
+                            )}
+                            {(loan.status === "approved" ||
+                              loan.status === "partially paid") && (
+                              <>
+                                <button
+                                  data-tooltip-id="partial-pay-tooltip"
+                                  data-tooltip-content="Record partial payment"
+                                  onClick={() => openPartialPaymentModal(loan)}
+                                  className="bg-yellow-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaEdit className="mr-2" /> Partial Pay
+                                </button>
+                                <button
+                                  data-tooltip-id="mark-paid-tooltip"
+                                  data-tooltip-content="Mark as fully paid"
+                                  onClick={() => openMarkPaidModal(loan)}
+                                  className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaCheck className="mr-2" /> Mark Paid
+                                </button>
+                                {loan.extensionCount < 3 && (
+                                  <button
+                                    data-tooltip-id="extend-tooltip"
+                                    data-tooltip-content="Extend repayment date"
+                                    onClick={() =>
+                                      extendRepaymentDate(loan._id)
+                                    }
+                                    className="bg-purple-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                  >
+                                    <FaCalendarAlt className="mr-2" /> Extend
+                                  </button>
+                                )}
+                                <button
+                                  data-tooltip-id="assign-category-tooltip"
+                                  data-tooltip-content="Assign category"
+                                  onClick={() => openAssignCategoryModal(loan)}
+                                  className="bg-indigo-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaTag className="mr-2" /> Assign
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+      </div>
     );
-  }, []);
-
-  // Filter loans by month
-  const filterLoansByMonth = useCallback((loans, month) => {
-    if (!month) return loans;
-    return loans.filter((loan) => {
-      const loanDate = new Date(loan.createdAt);
-      return format(loanDate, "yyyy-MM") === month;
-    });
-  }, []);
-
-  // Get unique months from loans
-  const getAvailableMonths = useCallback((loans) => {
-    const months = new Set();
-    loans.forEach((loan) => {
-      const loanDate = new Date(loan.createdAt);
-      months.add(format(loanDate, "yyyy-MM"));
-    });
-    return Array.from(months).sort((a, b) => new Date(b) - new Date(a));
-  }, []);
-
-  // Apply all filters
-  const filteredLoans = useMemo(() => {
-    return filterLoansBySearch(
-      filterLoansByStatus(
-        filterLoansByDate(
-          filterLoansByMonth(
-            filterLoansByCategory(loans, categoryFilter),
-            selectedMonth
-          ),
-          dateFilter
-        ),
-        statusFilter
-      ),
-      searchQuery
-    );
-  }, [
-    loans,
-    dateFilter,
-    statusFilter,
-    searchQuery,
-    selectedMonth,
-    categoryFilter,
-    filterLoansByDate,
-    filterLoansByStatus,
-    filterLoansBySearch,
-    filterLoansByMonth,
-    filterLoansByCategory,
-  ]);
-
-  // Get available months
-  const availableMonths = useMemo(
-    () => getAvailableMonths(loans),
-    [loans, getAvailableMonths]
-  );
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">All Loans</h1>
 
-      {/* Summary Tab */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-        {/* Total Loans */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Total Loans</h3>
-          <p className="text-2xl font-bold text-blue-600">
-            {summaryData.totalLoans}
-          </p>
-        </div>
-
-        {/* Pending Loans */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Pending Loans</h3>
-          <p className="text-2xl font-bold text-yellow-600">
-            {summaryData.pendingLoans}
-          </p>
-        </div>
-
-        {/* Approved Loans */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Approved Loans
-          </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {summaryData.approvedLoans}
-          </p>
-        </div>
-
-        {/* Fully Paid Loans */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Fully Paid Loans
-          </h3>
-          <p className="text-2xl font-bold text-purple-600">
-            {summaryData.fullyPaidLoans}
-          </p>
-        </div>
-
-        {/* Partially Paid Loans */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Partially Paid Loans
-          </h3>
-          <p className="text-2xl font-bold text-orange-600">
-            {summaryData.partiallyPaidLoans}
-          </p>
-        </div>
-
-        {/* Total Users */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Total Users</h3>
-          <p className="text-2xl font-bold text-indigo-600">
-            {summaryData.totalUsers}
-          </p>
-        </div>
-
-        {/* Total Loan Amount */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Total Loan Amount
-          </h3>
-          <p className="text-2xl font-bold text-red-600">
-            Ksh {summaryData.totalLoanAmount.toLocaleString()}
-          </p>
-        </div>
-
-        {/* Total Repayment Amount */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Total Repayment
-          </h3>
-          <p className="text-2xl font-bold text-teal-600">
-            Ksh {summaryData.totalRepaymentAmount.toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      <div>
-        {/* Month Selection Dropdown */}
+      {/* Filters and Search */}
+      <div className="mb-8">
         <select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
           className="px-3 py-2 border rounded-lg mb-4 mr-4"
         >
           <option value="">All Months</option>
-          {availableMonths.map((month) => (
+          {getAvailableMonths(loans).map((month) => (
             <option key={month} value={month}>
               {format(new Date(month), "MMM yyyy")}
             </option>
           ))}
         </select>
 
-        {/* Search Input */}
         <input
           type="text"
           placeholder="Search loans..."
@@ -503,7 +524,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           className="w-full md:w-1/2 px-3 py-2 border rounded-lg"
         />
 
-        {/* Date Filter */}
         <select
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
@@ -515,7 +535,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           <option value="month">This Month</option>
         </select>
 
-        {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -528,7 +547,6 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           <option value="fully paid">Fully Paid</option>
         </select>
 
-        {/* Category Filter */}
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
@@ -540,98 +558,10 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         </select>
       </div>
 
-      {/* Loan List */}
-      <table className="w-full mt-4 text-sm">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Loan Amount</th>
-            <th>Interest</th>
-            <th>Total Repayment</th>
-            <th>Paid Amount</th>
-            <th>Remaining Balance</th>
-            <th>Repayment Date</th>
-            <th>Status</th>
-            <th>Category</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredLoans.map((loan) => (
-            <tr
-              key={loan._id}
-              className={getExtensionColor(loan.extensionCount)} // Apply color based on extension count
-            >
-              <td>{loan.userId?.fullName}</td>
-              <td>Ksh {loan.loanAmount}</td>
-              <td>Ksh {loan.interest}</td>
-              <td>Ksh {loan.totalRepayment}</td>
-              <td>Ksh {loan.paidAmount}</td>
-              <td>Ksh {loan.remainingBalance}</td>
-              <td>
-                {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
-                {loan.extensionCount > 0 && (
-                  <span className="ml-2 text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">
-                    Extended {loan.extensionCount} time(s)
-                  </span>
-                )}
-              </td>
-              <td>{loan.status}</td>
-              <td>{loan.category}</td>
-              <td>
-                {loan.status === "pending" && (
-                  <>
-                    <button
-                      onClick={() => approveLoan(loan._id)}
-                      className="bg-green-500 text-white px-3 py-1 rounded-lg mr-2"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => rejectLoan(loan._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-
-                {(loan.status === "approved" ||
-                  loan.status === "partially paid") && (
-                  <div className="text-xs">
-                    <button
-                      onClick={() => openPartialPaymentModal(loan)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg mr-2"
-                    >
-                      Partial Pay
-                    </button>
-                    <button
-                      onClick={() => openMarkPaidModal(loan)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded-lg mr-2"
-                    >
-                      Mark Paid
-                    </button>
-                    {loan.extensionCount < 3 && (
-                      <button
-                        onClick={() => extendRepaymentDate(loan._id)}
-                        className="bg-purple-500 text-white px-3 py-1 rounded-lg mr-2"
-                      >
-                        Extend Repayment
-                      </button>
-                    )}
-                    <button
-                      onClick={() => openAssignCategoryModal(loan)}
-                      className="bg-indigo-500 text-white px-3 py-1 rounded-lg mr-2"
-                    >
-                      Assign Category
-                    </button>
-                  </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Collapsible Tables */}
+      {Object.entries(groupedLoans).map(([category, loansByStatus]) =>
+        renderCategoryTable(category, loansByStatus)
+      )}
 
       {/* Partial Payment Modal */}
       {isPartialPaymentModalOpen && (
@@ -721,6 +651,14 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           </div>
         </div>
       )}
+
+      {/* Tooltips */}
+      <Tooltip id="approve-tooltip" />
+      <Tooltip id="reject-tooltip" />
+      <Tooltip id="partial-pay-tooltip" />
+      <Tooltip id="mark-paid-tooltip" />
+      <Tooltip id="extend-tooltip" />
+      <Tooltip id="assign-category-tooltip" />
     </div>
   );
 };
