@@ -35,20 +35,28 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       permanent: {
         pending: [],
         approved: [],
-        partiallyPaid: [],
-        fullyPaid: [],
+        partiallyPaid: [], // Matches "partially paid" from backend
+        fullyPaid: [], // Matches "fully paid" from backend
       },
       casual: {
         pending: [],
         approved: [],
-        partiallyPaid: [],
-        fullyPaid: [],
+        partiallyPaid: [], // Matches "partially paid" from backend
+        fullyPaid: [], // Matches "fully paid" from backend
       },
     };
 
     loans.forEach((loan) => {
       const category = loan.category === "permanent" ? "permanent" : "casual";
-      const status = loan.status.toLowerCase().replace(" ", ""); // Normalize status
+      let status = loan.status.toLowerCase(); // Normalize to lowercase
+
+      // Map backend statuses to frontend keys
+      if (status === "partially paid") {
+        status = "partiallyPaid";
+      } else if (status === "fully paid") {
+        status = "fullyPaid";
+      }
+
       if (grouped[category][status]) {
         grouped[category][status].push(loan);
       }
