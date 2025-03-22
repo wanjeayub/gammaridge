@@ -415,7 +415,15 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                     {loans.map((loan) => (
                       <tr
                         key={loan._id}
-                        className="border-b border-gray-200 hover:bg-gray-50"
+                        className={`border-b border-gray-200 hover:bg-gray-50 ${
+                          loan.extensionCount === 0
+                            ? "bg-green-100" // Color for extensionCount = 0
+                            : loan.extensionCount === 1
+                            ? "bg-yellow-100" // Color for extensionCount = 1
+                            : loan.extensionCount === 2
+                            ? "bg-red-100" // Color for extensionCount = 2
+                            : "bg-red-400"
+                        }`}
                       >
                         <td className="px-4 py-3">{loan.userId?.fullName}</td>
                         <td className="px-4 py-3">Ksh {loan.loanAmount}</td>
@@ -469,7 +477,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                                 >
                                   <FaCheck className="mr-2" /> Mark Paid
                                 </button>
-                                {loan.extensionCount < 3 && (
+                                {loan.extensionCount < 3 ? (
                                   <button
                                     data-tooltip-id="extend-tooltip"
                                     data-tooltip-content="Extend repayment date"
@@ -477,6 +485,13 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                                       extendRepaymentDate(loan._id)
                                     }
                                     className="bg-purple-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                  >
+                                    <FaCalendarAlt className="mr-2" /> Extend
+                                  </button>
+                                ) : (
+                                  <button
+                                    disabled
+                                    className="bg-gray-400 text-white px-3 py-1 rounded-lg flex items-center cursor-not-allowed"
                                   >
                                     <FaCalendarAlt className="mr-2" /> Extend
                                   </button>
