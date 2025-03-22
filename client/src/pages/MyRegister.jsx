@@ -6,7 +6,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/firebase";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
-const Register = () => {
+const Register = ({ darkMode }) => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -205,11 +205,18 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div
+      className={`max-w-6xl mx-auto p-4 ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <div className="flex flex-col md:flex-row">
         <div className="md:w-[600px] md:block md:p-4 p-4">
           <h1 className="text-6xl justify-center mb-5 mt-2 font-bold">
-            Welcome to <span className="text-blue-600">Gammaridge!</span>
+            Welcome to{" "}
+            <span className={`${darkMode ? "text-blue-400" : "text-blue-600"}`}>
+              Gammaridge!
+            </span>
           </h1>
           <p className="mb-5 text-xl">
             We’re excited to have you here. Join our community to access quick,
@@ -232,7 +239,11 @@ const Register = () => {
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              className={`${
+                darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-blue-300 text-blue-950"
+              } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
             />
           </div>
 
@@ -243,7 +254,11 @@ const Register = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              className={`${
+                darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-blue-300 text-blue-950"
+              } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
             />
           </div>
 
@@ -255,14 +270,26 @@ const Register = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+                className={`${
+                  darkMode
+                    ? "bg-gray-700 text-white"
+                    : "bg-blue-300 text-blue-950"
+                } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? (
+                  <FaEyeSlash
+                    className={darkMode ? "text-white" : "text-gray-700"}
+                  />
+                ) : (
+                  <FaEye
+                    className={darkMode ? "text-white" : "text-gray-700"}
+                  />
+                )}
               </button>
             </div>
           </div>
@@ -274,7 +301,11 @@ const Register = () => {
               name="mobileNumber"
               value={formData.mobileNumber}
               onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              className={`${
+                darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-blue-300 text-blue-950"
+              } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
             />
           </div>
 
@@ -285,7 +316,11 @@ const Register = () => {
               name="alternateMobileNumber"
               value={formData.alternateMobileNumber}
               onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              className={`${
+                darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-blue-300 text-blue-950"
+              } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
             />
           </div>
 
@@ -296,7 +331,11 @@ const Register = () => {
               name="idNumber"
               value={formData.idNumber}
               onChange={handleChange}
-              className="bg-blue-300 text-blue-950 px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full"
+              className={`${
+                darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-blue-300 text-blue-950"
+              } px-3 py-2 rounded-md border focus:outline-none focus:ring-0 focus:border-blue-600 w-full`}
             />
           </div>
 
@@ -305,7 +344,9 @@ const Register = () => {
             <input
               type="file"
               onChange={(e) => handleFileChange(e, "profilePhoto")}
-              className="border p-2 w-full text-blue-950"
+              className={`border p-2 w-full ${
+                darkMode ? "bg-gray-700 text-white" : "bg-white text-blue-950"
+              }`}
             />
           </div>
 
@@ -314,7 +355,9 @@ const Register = () => {
             <input
               type="file"
               onChange={(e) => handleFileChange(e, "idFrontPhoto")}
-              className="border p-2 w-full text-blue-950"
+              className={`border p-2 w-full ${
+                darkMode ? "bg-gray-700 text-white" : "bg-white text-blue-950"
+              }`}
             />
           </div>
 
@@ -323,13 +366,17 @@ const Register = () => {
             <input
               type="file"
               onChange={(e) => handleFileChange(e, "idBackPhoto")}
-              className="border p-2 w-full text-blue-950"
+              className={`border p-2 w-full ${
+                darkMode ? "bg-gray-700 text-white" : "bg-white text-blue-950"
+              }`}
             />
           </div>
 
           <button
             type="submit"
-            className="bg-blue-600 w-full text-white p-2 rounded"
+            className={`${
+              darkMode ? "bg-blue-600" : "bg-blue-600"
+            } w-full text-white p-2 rounded`}
             disabled={loading}
           >
             {loading ? "Registering..." : "Register"}
@@ -338,7 +385,11 @@ const Register = () => {
           <div className="mt-3">
             Already have an account?{" "}
             <Link to={"/login"}>
-              <span className="text-blue-600">Login</span>
+              <span
+                className={`${darkMode ? "text-blue-400" : "text-blue-600"}`}
+              >
+                Login
+              </span>
             </Link>
           </div>
         </form>

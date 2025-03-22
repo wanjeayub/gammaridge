@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-const MyLogin = () => {
+const MyLogin = ({ darkMode }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -60,10 +60,18 @@ const MyLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
+    <div
+      className={`min-h-screen flex items-center justify-center ${
+        darkMode
+          ? "bg-gradient-to-r from-gray-800 to-gray-900"
+          : "bg-gradient-to-r from-blue-500 to-purple-600"
+      }`}
+    >
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-96"
+        className={`${
+          darkMode ? "bg-gray-700 text-white" : "bg-white text-gray-900"
+        } p-8 rounded-lg shadow-md w-96`}
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
@@ -77,7 +85,11 @@ const MyLogin = () => {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            className="w-full px-3 py-2 border rounded-lg"
+            className={`w-full px-3 py-2 border rounded-lg ${
+              darkMode
+                ? "bg-gray-600 text-white border-gray-500"
+                : "bg-white text-gray-900 border-gray-300"
+            }`}
           />
           {errors.email && (
             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -94,7 +106,11 @@ const MyLogin = () => {
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
-            className="w-full px-3 py-2 border rounded-lg"
+            className={`w-full px-3 py-2 border rounded-lg ${
+              darkMode
+                ? "bg-gray-600 text-white border-gray-500"
+                : "bg-white text-gray-900 border-gray-300"
+            }`}
           />
           {errors.password && (
             <p className="text-red-500 text-sm mt-1">{errors.password}</p>
@@ -105,7 +121,11 @@ const MyLogin = () => {
         <div className="mb-6 text-right">
           <Link
             to="/forgot-password"
-            className="text-blue-500 hover:underline text-sm"
+            className={`${
+              darkMode
+                ? "text-blue-400 hover:text-blue-300"
+                : "text-blue-500 hover:text-blue-600"
+            } hover:underline text-sm`}
           >
             Forgot Password?
           </Link>
@@ -114,7 +134,11 @@ const MyLogin = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-all"
+          className={`w-full ${
+            darkMode
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white py-2 rounded-lg transition-all`}
         >
           Login
         </button>
@@ -122,7 +146,14 @@ const MyLogin = () => {
         {/* Register Link */}
         <p className="mt-4 text-center">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-500 hover:underline">
+          <Link
+            to="/register"
+            className={`${
+              darkMode
+                ? "text-blue-400 hover:text-blue-300"
+                : "text-blue-500 hover:text-blue-600"
+            } hover:underline`}
+          >
             Register
           </Link>
         </p>

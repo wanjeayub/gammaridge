@@ -28,6 +28,11 @@ import MyAdminLogin from "./pages/MyAdminLogin";
 const App = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,17 +71,24 @@ const App = () => {
 
   return (
     <Router>
-      <Navbar user={user} onLogout={logout} />
+      <Navbar
+        user={user}
+        onLogout={logout}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+      />
       <Toaster />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<MyRegister />} />
-        <Route path="/login" element={<MyLogin />} />
+        <Route path="/" element={<Home darkMode={darkMode} />} />
+        <Route path="/register" element={<MyRegister darkMode={darkMode} />} />
+        <Route path="/login" element={<MyLogin darkMode={darkMode} />} />
         <Route path="/adminogin" element={<MyAdminLogin />} />
         <Route path="/docs" element={<UploadFiles />} />
         <Route
           path="/dashboard"
-          element={<Dashboard user={user} isLoading={isLoading} />}
+          element={
+            <Dashboard user={user} isLoading={isLoading} darkMode={darkMode} />
+          }
         />
         <Route path="/admin" element={<MyAdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
@@ -86,7 +98,10 @@ const App = () => {
         <Route path="/edit" element={<EditAdminPage />} />
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services />} />
-        <Route path="/dashboard/loans" element={<Loans />} />
+        <Route
+          path="/dashboard/loans"
+          element={<Loans darkMode={darkMode} />}
+        />
         <Route path="/dashboard/settings" element={<Settings />} />
         <Route path="/entregister" element={<EntRegister />} />
         <Route path="/enttransport" element={<TransportRequest />} />

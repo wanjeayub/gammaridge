@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { FaBars, FaTimes, FaUser } from "react-icons/fa";
+import { FaBars, FaTimes, FaUser, FaMoon, FaSun } from "react-icons/fa";
 
-const Navbar = ({ user, onLogout }) => {
+const Navbar = ({ user, onLogout, darkMode, toggleDarkMode }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
@@ -61,10 +61,10 @@ const Navbar = ({ user, onLogout }) => {
         <span>{user.fullName || user.name}</span>
       </button>
       {isUserDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2">
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 backdrop-blur-sm bg-opacity-90">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+            className="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all rounded-lg"
           >
             Logout
           </button>
@@ -81,7 +81,7 @@ const Navbar = ({ user, onLogout }) => {
   );
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-lg p-4">
+    <header className="bg-white dark:bg-gray-800 shadow-lg p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-2xl font-bold dark:text-blue-200">
           <Link to="/" aria-label="Go to homepage">
@@ -95,9 +95,25 @@ const Navbar = ({ user, onLogout }) => {
         </nav>
 
         <div className="flex items-center space-x-4">
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+            aria-label="Toggle dark mode"
+          >
+            {darkMode ? (
+              <FaSun className="text-xl text-yellow-400" />
+            ) : (
+              <FaMoon className="text-xl text-gray-700" />
+            )}
+          </button>
+
+          {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
             {userActions}
           </div>
+
+          {/* Mobile Menu Toggle */}
           <button
             onClick={toggleMobileMenu}
             aria-label="Toggle mobile menu"
@@ -109,6 +125,7 @@ const Navbar = ({ user, onLogout }) => {
         </div>
       </div>
 
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <nav className="md:hidden mt-4 bg-white dark:bg-gray-800">
           <div className="flex flex-col space-y-2">

@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { ImSpinner8 } from "react-icons/im";
 
-const Dashboard = ({ user, isLoading }) => {
+const Dashboard = ({ user, isLoading, darkMode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,33 +50,58 @@ const Dashboard = ({ user, isLoading }) => {
   // Show a loading spinner while the user data is being fetched
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          darkMode ? "bg-gray-900" : "bg-white"
+        }`}
+      >
+        <ImSpinner8 className="animate-spin text-4xl text-blue-600" />
       </div>
     );
   }
 
   // Show the dashboard content if the user is logged in
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center ">
-      <div className="max-w-4xl w-full p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Welcome to your dashboard, {user?.fullName}
-        </h1>
+    <div
+      className={`min-h-screen ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      <div className="max-w-4xl w-full p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">
+            Welcome to your dashboard, {user?.fullName}
+          </h1>
+        </div>
+
+        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             to="/dashboard/loans"
-            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all"
+            className={`p-6 rounded-lg shadow-md hover:shadow-lg transition-all ${
+              darkMode
+                ? "bg-gray-800 hover:bg-gray-700"
+                : "bg-white hover:bg-gray-50"
+            }`}
           >
             <h2 className="text-xl font-bold mb-2">Loans</h2>
-            <p>View and manage your loans.</p>
+            <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+              View and manage your loans.
+            </p>
           </Link>
           <Link
             to="/dashboard/settings"
-            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all"
+            className={`p-6 rounded-lg shadow-md hover:shadow-lg transition-all ${
+              darkMode
+                ? "bg-gray-800 hover:bg-gray-700"
+                : "bg-white hover:bg-gray-50"
+            }`}
           >
             <h2 className="text-xl font-bold mb-2">Settings</h2>
-            <p>Update your profile and preferences.</p>
+            <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+              Update your profile and preferences.
+            </p>
           </Link>
         </div>
       </div>

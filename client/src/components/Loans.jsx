@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import {
+  FaEdit,
+  FaTrash,
+  FaCalendarAlt,
+  FaMoneyCheckAlt,
+} from "react-icons/fa";
+import { ImSpinner8 } from "react-icons/im";
 
-const Loans = () => {
+const Loans = ({ darkMode }) => {
   const [loans, setLoans] = useState([]);
   const [loanAmount, setLoanAmount] = useState("");
   const [repaymentDate, setRepaymentDate] = useState("");
@@ -11,6 +18,16 @@ const Loans = () => {
   const [hasActiveLoan, setHasActiveLoan] = useState(false);
   const [editingLoanId, setEditingLoanId] = useState(null);
   const navigate = useNavigate();
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
 
   // Fetch loans on component mount
   useEffect(() => {
@@ -269,135 +286,218 @@ const Loans = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Loans</h1>
-      <button
-        onClick={handleBackToDashboard}
-        className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all mb-6"
-      >
-        Back to Dashboard
-      </button>
-      <form
-        onSubmit={editingLoanId ? handleEditLoan : handleApplyLoan}
-        className="mb-6"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="loanAmount"
-              className="block text-sm font-medium mb-2"
-            >
-              Loan Amount
-            </label>
-            <input
-              id="loanAmount"
-              type="number"
-              placeholder="Loan Amount"
-              value={loanAmount}
-              onChange={(e) => setLoanAmount(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
-              aria-describedby="loanAmountError"
-              disabled={isLoading || (hasActiveLoan && !editingLoanId)}
-            />
-            {errors.loanAmount && (
-              <p id="loanAmountError" className="text-red-500 text-sm mt-1">
-                {errors.loanAmount}
-              </p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="repaymentDate"
-              className="block text-sm font-medium mb-2"
-            >
-              Repayment Date
-            </label>
-            <input
-              id="repaymentDate"
-              type="date"
-              placeholder="Repayment Date"
-              value={repaymentDate}
-              onChange={(e) => setRepaymentDate(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
-              aria-describedby="repaymentDateError"
-              disabled={isLoading || (hasActiveLoan && !editingLoanId)}
-            />
-            {errors.repaymentDate && (
-              <p id="repaymentDateError" className="text-red-500 text-sm mt-1">
-                {errors.repaymentDate}
-              </p>
-            )}
-          </div>
+    <div
+      className={`min-h-screen ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Loans Dashboard</h1>
         </div>
+
+        {/* Back to Dashboard Button */}
         <button
-          type="submit"
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-400"
-          disabled={isLoading || (hasActiveLoan && !editingLoanId)}
+          onClick={handleBackToDashboard}
+          className={`${
+            darkMode ? "bg-gray-700" : "bg-gray-700"
+          } text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all mb-6`}
         >
-          {editingLoanId ? "Update Loan" : "Apply for Loan"}
+          Back to Dashboard
         </button>
-        {editingLoanId && (
-          <button
-            type="button"
-            onClick={handleCancelEdit}
-            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all ml-4"
-          >
-            Cancel Edit
-          </button>
-        )}
-        {hasActiveLoan && (
-          <p className="text-red-500 text-sm mt-2">
-            You already have an active loan. Please repay it before applying for
-            a new one.
-          </p>
-        )}
-      </form>
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Loan Summary</h2>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : loans.length === 0 ? (
-          <p>No loans found.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loans.map((loan) => (
-              <div
-                key={loan._id}
-                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all"
+
+        {/* Loan Application Form */}
+        <form
+          onSubmit={editingLoanId ? handleEditLoan : handleApplyLoan}
+          className={`p-6 rounded-lg shadow-md ${
+            darkMode ? "bg-gray-800" : "bg-white"
+          }`}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="loanAmount"
+                className={`block text-sm font-medium mb-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
               >
-                <p>Amount: Ksh {loan.loanAmount}</p>
-                <p>Total Repayment: Ksh {loan.totalRepayment}</p>
-                <p>Interest: Ksh {loan.interest}</p>
-                <p>
-                  Due Date: {new Date(loan.repaymentDate).toLocaleDateString()}
+                Loan Amount
+              </label>
+              <input
+                id="loanAmount"
+                type="number"
+                placeholder="Loan Amount"
+                value={loanAmount}
+                onChange={(e) => setLoanAmount(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white"
+                    : "bg-white border-gray-300"
+                }`}
+                aria-describedby="loanAmountError"
+                disabled={isLoading || (hasActiveLoan && !editingLoanId)}
+              />
+              {errors.loanAmount && (
+                <p id="loanAmountError" className="text-red-500 text-sm mt-1">
+                  {errors.loanAmount}
                 </p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="repaymentDate"
+                className={`block text-sm font-medium mb-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
+                Repayment Date
+              </label>
+              <input
+                id="repaymentDate"
+                type="date"
+                placeholder="Repayment Date"
+                value={repaymentDate}
+                onChange={(e) => setRepaymentDate(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white"
+                    : "bg-white border-gray-300"
+                }`}
+                aria-describedby="repaymentDateError"
+                disabled={isLoading || (hasActiveLoan && !editingLoanId)}
+              />
+              {errors.repaymentDate && (
                 <p
-                  className={`mt-2 font-semibold ${getStatusColor(
-                    loan.status
-                  )}`}
+                  id="repaymentDateError"
+                  className="text-red-500 text-sm mt-1"
                 >
-                  Status: {loan.status}
+                  {errors.repaymentDate}
                 </p>
-                {(loan.status === "pending" || loan.status === "rejected") && (
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() => handleEditClick(loan)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteLoan(loan._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-        )}
+          <button
+            type="submit"
+            className={`mt-4 ${
+              darkMode ? "bg-blue-600" : "bg-blue-600"
+            } text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all disabled:bg-gray-400`}
+            disabled={isLoading || (hasActiveLoan && !editingLoanId)}
+          >
+            {editingLoanId ? "Update Loan" : "Apply for Loan"}
+          </button>
+          {editingLoanId && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all ml-4"
+            >
+              Cancel Edit
+            </button>
+          )}
+          {hasActiveLoan && (
+            <p className="text-red-500 text-sm mt-2">
+              You already have an active loan. Please repay it before applying
+              for a new one.
+            </p>
+          )}
+        </form>
+
+        {/* Loan Summary */}
+        <div
+          className={`mt-6 p-6 rounded-lg shadow-md ${
+            darkMode ? "bg-gray-800" : "bg-white"
+          }`}
+        >
+          <h2 className="text-2xl font-bold mb-4">Loan Summary</h2>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-32">
+              <ImSpinner8 className="animate-spin text-4xl text-blue-600" />
+            </div>
+          ) : loans.length === 0 ? (
+            <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+              No loans found.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loans.map((loan) => (
+                <div
+                  key={loan._id}
+                  className={`p-6 rounded-lg shadow-sm hover:shadow-md transition-all ${
+                    darkMode ? "bg-gray-700" : "bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center space-x-4 mb-4">
+                    <FaMoneyCheckAlt className="text-2xl text-blue-600" />
+                    <h3
+                      className={`text-xl font-semibold ${
+                        darkMode ? "text-white" : "text-gray-800"
+                      }`}
+                    >
+                      Loan Details
+                    </h3>
+                  </div>
+                  <p
+                    className={`${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    <span className="font-medium">Amount:</span> Ksh{" "}
+                    {loan.loanAmount}
+                  </p>
+                  <p
+                    className={`${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    <span className="font-medium">Total Repayment:</span> Ksh{" "}
+                    {loan.totalRepayment}
+                  </p>
+                  <p
+                    className={`${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    <span className="font-medium">Interest:</span> Ksh{" "}
+                    {loan.interest}
+                  </p>
+                  <p
+                    className={`${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    <span className="font-medium">Due Date:</span>{" "}
+                    {formatDate(loan.repaymentDate)}
+                  </p>
+                  <p
+                    className={`mt-2 font-semibold ${getStatusColor(
+                      loan.status
+                    )}`}
+                  >
+                    Status: {loan.status}
+                  </p>
+                  {(loan.status === "pending" ||
+                    loan.status === "rejected") && (
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => handleEditClick(loan)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 flex items-center"
+                      >
+                        <FaEdit className="mr-2" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteLoan(loan._id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 flex items-center"
+                      >
+                        <FaTrash className="mr-2" /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
