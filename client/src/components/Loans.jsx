@@ -8,6 +8,7 @@ import {
   FaMoneyCheckAlt,
 } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
+import PaymentModal from "../components/PayModal"; // Adjust the import path as needed
 
 const Loans = ({ darkMode }) => {
   const [loans, setLoans] = useState([]);
@@ -17,6 +18,8 @@ const Loans = ({ darkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasActiveLoan, setHasActiveLoan] = useState(false);
   const [editingLoanId, setEditingLoanId] = useState(null);
+  const [selectedLoan, setSelectedLoan] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // Helper function to format date
@@ -269,6 +272,25 @@ const Loans = ({ darkMode }) => {
     }
   };
 
+  // Handle clicking the Pay Now button
+  const handlePayNowClick = (loan) => {
+    if (loan.status !== "approved") {
+      toast.error("Only approved loans can be paid.");
+      return;
+    }
+    setSelectedLoan(loan);
+    setIsPaymentModalOpen(true);
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (updatedLoan) => {
+    setLoans((prevLoans) =>
+      prevLoans.map((loan) =>
+        loan._id === updatedLoan._id ? updatedLoan : loan
+      )
+    );
+  };
+
   // Get status color based on loan status
   const getStatusColor = (status) => {
     switch (status) {
@@ -493,11 +515,28 @@ const Loans = ({ darkMode }) => {
                       </button>
                     </div>
                   )}
+                  {loan.status === "approved" && (
+                    <button
+                      onClick={() => handlePayNowClick(loan)}
+                      className="mt-4 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
+                    >
+                      Pay Now
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Payment Modal */}
+        {isPaymentModalOpen && (
+          <PaymentModal
+            loan={selectedLoan}
+            onClose={() => setIsPaymentModalOpen(false)}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
       </div>
     </div>
   );

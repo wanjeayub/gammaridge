@@ -8,6 +8,7 @@ import {
   startOfMonth,
   endOfMonth,
   format,
+  isAfter,
 } from "date-fns";
 import { FaCheck, FaTimes, FaEdit, FaCalendarAlt, FaTag } from "react-icons/fa";
 import { Tooltip } from "react-tooltip";
@@ -23,42 +24,46 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [isMarkPaidModalOpen, setIsMarkPaidModalOpen] = useState(false);
   const [isAssignCategoryModalOpen, setIsAssignCategoryModalOpen] =
     useState(false);
+  const [isMarkDefaultedModalOpen, setIsMarkDefaultedModalOpen] =
+    useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [defaultReason, setDefaultReason] = useState("");
   const [validationError, setValidationError] = useState("");
   const [expandedSection, setExpandedSection] = useState(null);
 
-  // Group loans by category and status
+  // Group loans by category and status, with defaulted loans separated
   const groupLoans = (loans) => {
     const grouped = {
       permanent: {
         pending: [],
         approved: [],
-        partiallyPaid: [], // Matches "partially paid" from backend
-        fullyPaid: [], // Matches "fully paid" from backend
+        partiallyPaid: [],
+        fullyPaid: [],
       },
       casual: {
         pending: [],
         approved: [],
-        partiallyPaid: [], // Matches "partially paid" from backend
-        fullyPaid: [], // Matches "fully paid" from backend
+        partiallyPaid: [],
+        fullyPaid: [],
       },
+      defaulted: [], // Separate array for all defaulted loans
     };
 
     loans.forEach((loan) => {
-      const category = loan.category === "permanent" ? "permanent" : "casual";
-      let status = loan.status.toLowerCase(); // Normalize to lowercase
+      if (loan.status.toLowerCase() === "defaulted") {
+        grouped.defaulted.push(loan);
+      } else {
+        const category = loan.category === "permanent" ? "permanent" : "casual";
+        let status = loan.status.toLowerCase();
 
-      // Map backend statuses to frontend keys
-      if (status === "partially paid") {
-        status = "partiallyPaid";
-      } else if (status === "fully paid") {
-        status = "fullyPaid";
-      }
+        if (status === "partially paid") status = "partiallyPaid";
+        else if (status === "fully paid") status = "fullyPaid";
 
-      if (grouped[category][status]) {
-        grouped[category][status].push(loan);
+        if (grouped[category][status]) {
+          grouped[category][status].push(loan);
+        }
       }
     });
 
@@ -94,9 +99,10 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     }
   }, []);
 
-  // Filter loans by status
+  // Filter loans by status (excluding defaulted from regular filters)
   const filterLoansByStatus = useCallback((loans, status) => {
-    if (status === "all") return loans;
+    if (status === "all")
+      return loans.filter((loan) => loan.status !== "defaulted");
     return loans.filter((loan) => loan.status === status);
   }, []);
 
@@ -167,6 +173,79 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   // Group filtered loans
   const groupedLoans = groupLoans(filteredLoans);
 
+  // Defaulted Loans Table Component
+  const DefaultedLoansTable = ({
+    loans,
+    openMarkPaidModal,
+    openPartialPaymentModal,
+  }) => {
+    return (
+      <div className="mt-12">
+        <h2 className="text-xl font-bold mb-4 text-red-600">Defaulted Loans</h2>
+        {loans.length > 0 ? (
+          <table className="w-full striped-table sticky-header text-sm">
+            <thead>
+              <tr className="bg-red-50">
+                <th className="px-4 py-3 text-left">User</th>
+                <th className="px-4 py-3 text-left">Loan Amount</th>
+                <th className="px-4 py-3 text-left">Interest</th>
+                <th className="px-4 py-3 text-left">Total Repayment</th>
+                <th className="px-4 py-3 text-left">Paid Amount</th>
+                <th className="px-4 py-3 text-left">Remaining Balance</th>
+                <th className="px-4 py-3 text-left">Repayment Date</th>
+                <th className="px-4 py-3 text-left">Default Reason</th>
+                <th className="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loans.map((loan) => (
+                <tr
+                  key={loan._id}
+                  className="border-b border-gray-200 hover:bg-red-50 bg-red-100"
+                >
+                  <td className="px-4 py-3">{loan.userId?.fullName}</td>
+                  <td className="px-4 py-3">Ksh {loan.loanAmount}</td>
+                  <td className="px-4 py-3">Ksh {loan.interest}</td>
+                  <td className="px-4 py-3">Ksh {loan.totalRepayment}</td>
+                  <td className="px-4 py-3">Ksh {loan.paidAmount}</td>
+                  <td className="px-4 py-3">Ksh {loan.remainingBalance}</td>
+                  <td className="px-4 py-3">
+                    {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
+                  </td>
+                  <td className="px-4 py-3">
+                    {loan.defaultReason || "Not specified"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex space-x-2">
+                      <button
+                        data-tooltip-id="partial-pay-tooltip"
+                        onClick={() => openPartialPaymentModal(loan)}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded-lg flex items-center"
+                      >
+                        <FaEdit className="mr-2" /> Partial Pay
+                      </button>
+                      <button
+                        data-tooltip-id="mark-paid-tooltip"
+                        onClick={() => openMarkPaidModal(loan)}
+                        className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center"
+                      >
+                        <FaCheck className="mr-2" /> Mark Paid
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center py-4 text-gray-500">
+            No defaulted loans found
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Approve a loan
   const approveLoan = useCallback(
     async (loanId) => {
@@ -182,8 +261,8 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         );
         if (response.ok) {
           toast.success("Loan approved successfully.");
-          fetchLoans(); // Refresh loans
-          fetchLoanStats(); // Refresh loan stats
+          fetchLoans();
+          fetchLoanStats();
         } else {
           toast.error("Failed to approve loan.");
         }
@@ -210,8 +289,8 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         );
         if (response.ok) {
           toast.success("Loan rejected successfully.");
-          fetchLoans(); // Refresh loans
-          fetchLoanStats(); // Refresh loan stats
+          fetchLoans();
+          fetchLoanStats();
         } else {
           toast.error("Failed to reject loan.");
         }
@@ -238,7 +317,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         );
         if (response.ok) {
           toast.success("Repayment date extended successfully.");
-          fetchLoans(); // Refresh loans
+          fetchLoans();
         } else {
           toast.error("Failed to extend repayment date.");
         }
@@ -287,7 +366,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       );
       if (response.ok) {
         toast.success("Partial payment recorded successfully.");
-        fetchLoans(); // Refresh loans
+        fetchLoans();
         closePartialPaymentModal();
       } else {
         toast.error("Failed to record partial payment.");
@@ -323,7 +402,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       );
       if (response.ok) {
         toast.success("Loan marked as fully paid.");
-        fetchLoans(); // Refresh loans
+        fetchLoans();
         closeMarkPaidModal();
       } else {
         toast.error("Failed to mark loan as paid.");
@@ -368,7 +447,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
 
       if (response.ok) {
         toast.success("Category assigned successfully.");
-        fetchLoans(); // Refresh loans
+        fetchLoans();
         closeAssignCategoryModal();
       } else {
         toast.error("Failed to assign category.");
@@ -378,6 +457,48 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       toast.error("Failed to assign category.");
     }
   }, [selectedCategory, selectedLoan, fetchLoans]);
+
+  // Open mark defaulted modal
+  const openMarkDefaultedModal = (loan) => {
+    setSelectedLoan(loan);
+    setIsMarkDefaultedModalOpen(true);
+  };
+
+  // Close mark defaulted modal
+  const closeMarkDefaultedModal = () => {
+    setIsMarkDefaultedModalOpen(false);
+    setDefaultReason("");
+  };
+
+  // Mark loan as defaulted
+  const markLoanAsDefaulted = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `https://tester-server.vercel.app/api/admin/mark-defaulted/${selectedLoan._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            reason: defaultReason,
+            extensionCount: selectedLoan.extensionCount,
+          }),
+        }
+      );
+      if (response.ok) {
+        toast.success("Loan marked as defaulted.");
+        fetchLoans();
+        closeMarkDefaultedModal();
+      } else {
+        toast.error("Failed to mark loan as defaulted.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to mark loan as defaulted.");
+    }
+  }, [selectedLoan, defaultReason, fetchLoans]);
 
   // Render collapsible tables for each category and status
   const renderCategoryTable = (category, loansByStatus) => {
@@ -417,11 +538,11 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                         key={loan._id}
                         className={`border-b border-gray-200 hover:bg-gray-50 ${
                           loan.extensionCount === 0
-                            ? "bg-green-100" // Color for extensionCount = 0
+                            ? "bg-green-100"
                             : loan.extensionCount === 1
-                            ? "bg-yellow-100" // Color for extensionCount = 1
+                            ? "bg-yellow-100"
                             : loan.extensionCount === 2
-                            ? "bg-red-100" // Color for extensionCount = 2
+                            ? "bg-red-100"
                             : "bg-red-400"
                         }`}
                       >
@@ -504,6 +625,14 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                                 >
                                   <FaTag className="mr-2" /> Assign
                                 </button>
+                                <button
+                                  data-tooltip-id="mark-defaulted-tooltip"
+                                  data-tooltip-content="Mark as defaulted"
+                                  onClick={() => openMarkDefaultedModal(loan)}
+                                  className="bg-red-600 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaTimes className="mr-2" /> Default
+                                </button>
                               </>
                             )}
                           </div>
@@ -568,6 +697,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           <option value="approved">Approved</option>
           <option value="partially paid">Partially Paid</option>
           <option value="fully paid">Fully Paid</option>
+          <option value="defaulted">Defaulted</option>
         </select>
 
         <select
@@ -582,9 +712,49 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       </div>
 
       {/* Collapsible Tables */}
-      {Object.entries(groupedLoans).map(([category, loansByStatus]) =>
-        renderCategoryTable(category, loansByStatus)
-      )}
+      {Object.entries(groupedLoans).map(([category, loansByStatus]) => {
+        if (category === "defaulted") return null; // Skip defaulted here, we'll render separately
+        return renderCategoryTable(category, loansByStatus);
+      })}
+
+      {/* Defaulted Loans Section */}
+      <div className="my-8 border-t-2 border-red-200 pt-6">
+        {/* Summary Card */}
+        {groupedLoans.defaulted.length > 0 && (
+          <div className="bg-red-50 p-4 rounded-lg mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">
+                  Defaulted Loans Summary
+                </h3>
+                <p className="text-red-600">
+                  Total: {groupedLoans.defaulted.length} loans | Outstanding:
+                  Ksh{" "}
+                  {groupedLoans.defaulted
+                    .reduce((sum, loan) => sum + loan.remainingBalance, 0)
+                    .toLocaleString()}
+                </p>
+              </div>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                onClick={() => {
+                  // Optional: Add export functionality
+                  toast.success("Preparing defaulted loans report...");
+                }}
+              >
+                Export Defaulted Loans
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Defaulted Loans Table */}
+        <DefaultedLoansTable
+          loans={groupedLoans.defaulted}
+          openMarkPaidModal={openMarkPaidModal}
+          openPartialPaymentModal={openPartialPaymentModal}
+        />
+      </div>
 
       {/* Partial Payment Modal */}
       {isPartialPaymentModalOpen && (
@@ -675,6 +845,36 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         </div>
       )}
 
+      {/* Mark Defaulted Modal */}
+      {isMarkDefaultedModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-lg font-bold mb-4">Mark Loan as Defaulted</h2>
+            <textarea
+              placeholder="Reason for default (optional)"
+              value={defaultReason}
+              onChange={(e) => setDefaultReason(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+              rows={3}
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={closeMarkDefaultedModal}
+                className="mr-2 bg-gray-300 px-3 py-1 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={markLoanAsDefaulted}
+                className="bg-red-600 text-white px-3 py-1 rounded-lg"
+              >
+                Confirm Default
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tooltips */}
       <Tooltip id="approve-tooltip" />
       <Tooltip id="reject-tooltip" />
@@ -682,6 +882,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       <Tooltip id="mark-paid-tooltip" />
       <Tooltip id="extend-tooltip" />
       <Tooltip id="assign-category-tooltip" />
+      <Tooltip id="mark-defaulted-tooltip" />
     </div>
   );
 };

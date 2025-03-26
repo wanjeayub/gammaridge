@@ -1,5 +1,13 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import {
+  FiChevronDown,
+  FiChevronUp,
+  FiSearch,
+  FiX,
+  FiTrash2,
+  FiImage,
+} from "react-icons/fi";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -8,10 +16,19 @@ const Users = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+
+  // Toggle row expansion
+  const toggleRow = (userId) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       const response = await fetch(
         "https://tester-server.vercel.app/api/admin/users",
@@ -24,38 +41,15 @@ const Users = () => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch users.");
-      setUsers([]); // Reset users state on error
+      setUsers([]);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   }, []);
 
-  // Call fetchUsers on component mount
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  // Open image modal
-  const openImageModal = (imageUrl) => {
-    setSelectedImage(imageUrl);
-  };
-
-  // Close image modal
-  const closeImageModal = () => {
-    setSelectedImage(null);
-  };
-
-  // Open delete modal
-  const openDeleteModal = (userId) => {
-    setUserToDelete(userId);
-    setIsDeleteModalOpen(true);
-  };
-
-  // Close delete modal
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setUserToDelete(null);
-  };
 
   // Handle delete request
   const handleConfirmDelete = useCallback(async () => {
@@ -76,14 +70,19 @@ const Users = () => {
       );
 
       if (!response.ok) {
-        const errorData = await response.json(); // Log the error response
+        const errorData = await response.json();
         console.error("Delete error:", errorData);
         throw new Error(errorData.message || "Failed to delete user.");
       }
 
       toast.success("User deleted successfully.");
-      fetchUsers(); // Refresh users after deletion
+      fetchUsers();
       closeDeleteModal();
+      setExpandedRows((prev) => {
+        const newState = { ...prev };
+        delete newState[userToDelete];
+        return newState;
+      });
     } catch (error) {
       console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
@@ -91,159 +90,173 @@ const Users = () => {
   }, [userToDelete, fetchUsers]);
 
   // Filter users by search query
-  const filterUsersBySearch = useCallback((users, query) => {
-    if (!query) return users; // Return all users if search query is empty
-
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery) return users;
     return users.filter(
       (user) =>
-        user.fullName?.toLowerCase().includes(query.toLowerCase()) ||
-        user.idNumber?.toString().includes(query) ||
-        user.mobileNumber?.toString().includes(query) ||
-        user.alternateMobileNumber?.toString().includes(query)
+        user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.idNumber?.toString().includes(searchQuery) ||
+        user.mobileNumber?.toString().includes(searchQuery) ||
+        user.alternateMobileNumber?.toString().includes(searchQuery)
     );
-  }, []);
-
-  // Apply filters
-  const filteredUsers = useMemo(() => {
-    return filterUsersBySearch(users, searchQuery);
-  }, [users, searchQuery, filterUsersBySearch]);
+  }, [users, searchQuery]);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-semibold mb-4">User Management</h2>
-
-      {/* Search Input with Clear Button */}
-      <div className="relative mb-4">
-        <input
-          type="text"
-          placeholder="Search users..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-1/2 px-3 py-2 border rounded-lg"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-0 top-0 mt-2 mr-4 text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
-        )}
+    <div className="bg-white p-4 rounded-lg shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">User Management</h2>
+        <div className="relative w-64">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FiSearch className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-8 py-2 w-full border rounded-lg text-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+            >
+              <FiX size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Loading State */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <>
-          {/* User Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-2 text-left">Profile</th>
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">ID Number</th>
-                  <th className="px-4 py-2 text-left">Mobile Number</th>
-                  <th className="px-4 py-2 text-left">
-                    Alternate Mobile Number
-                  </th>
-                  <th className="px-4 py-2 text-left">ID Photo Front</th>
-                  <th className="px-4 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="border-b hover:bg-gray-50 transition-colors"
+        <div className="space-y-2">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div key={user._id} className="border rounded-lg overflow-hidden">
+                <div
+                  className={`p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
+                    expandedRows[user._id] ? "bg-gray-50" : ""
+                  }`}
+                  onClick={() => toggleRow(user._id)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={
+                        user.profilePhoto || "https://via.placeholder.com/40"
+                      }
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {user.fullName || "N/A"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {user.idNumber || "No ID"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      className="text-red-500 hover:text-red-700 p-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUserToDelete(user._id);
+                        setIsDeleteModalOpen(true);
+                      }}
+                      aria-label="Delete user"
                     >
-                      <td className="px-4 py-2">
-                        <img
-                          src={
-                            user.profilePhoto ||
-                            "https://via.placeholder.com/150"
-                          }
-                          alt="Profile"
-                          className="w-12 h-12 rounded-full cursor-pointer"
-                          onClick={() => openImageModal(user.profilePhoto)}
-                        />
-                      </td>
-                      <td className="px-4 py-2">{user.fullName || "N/A"}</td>
-                      <td className="px-4 py-2">{user.idNumber || "N/A"}</td>
-                      <td className="px-4 py-2">
-                        {user.mobileNumber || "N/A"}
-                      </td>
-                      <td className="px-4 py-2">
-                        {user.alternateMobileNumber || "N/A"}
-                      </td>
-                      <td className="px-4 py-2">
-                        <img
-                          src={
-                            user.idFrontPhoto ||
-                            "https://via.placeholder.com/150"
-                          }
-                          alt="ID Front"
-                          className="w-12 h-12 rounded-full cursor-pointer"
-                          onClick={() => openImageModal(user.idFrontPhoto)}
-                        />
-                      </td>
-                      <td className="px-4 py-2 flex gap-2">
-                        <button
-                          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition-colors"
-                          onClick={() => openDeleteModal(user._id)}
-                          aria-label="Delete user"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="px-4 py-2 text-center">
-                      {/* No Users Found State */}
-                      <div className="flex flex-col items-center justify-center py-8">
-                        <img
-                          src="/no-users.svg" // Add a relevant illustration
-                          alt="No users found"
-                          className="w-32 h-32 mb-4"
-                        />
-                        <p className="text-gray-600">No users found.</p>
+                      <FiTrash2 size={16} />
+                    </button>
+                    {expandedRows[user._id] ? (
+                      <FiChevronUp className="text-gray-500" />
+                    ) : (
+                      <FiChevronDown className="text-gray-500" />
+                    )}
+                  </div>
+                </div>
+
+                {expandedRows[user._id] && (
+                  <div className="p-3 border-t bg-white">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <h4 className="font-medium mb-1">
+                          Contact Information
+                        </h4>
+                        <p className="text-gray-600">
+                          Mobile: {user.mobileNumber || "N/A"}
+                        </p>
+                        <p className="text-gray-600">
+                          Alt Mobile: {user.alternateMobileNumber || "N/A"}
+                        </p>
+                        <p className="text-gray-600">
+                          Email: {user.email || "N/A"}
+                        </p>
                       </div>
-                    </td>
-                  </tr>
+                      <div>
+                        <h4 className="font-medium mb-1">ID Verification</h4>
+                        <div className="flex space-x-2">
+                          <button
+                            className="flex items-center text-blue-500 hover:text-blue-700 text-xs"
+                            onClick={() => setSelectedImage(user.idFrontPhoto)}
+                          >
+                            <FiImage className="mr-1" /> Front
+                          </button>
+                          <button
+                            className="flex items-center text-blue-500 hover:text-blue-700 text-xs"
+                            onClick={() => setSelectedImage(user.idBackPhoto)}
+                          >
+                            <FiImage className="mr-1" /> Back
+                          </button>
+                        </div>
+                        <p className="text-gray-600 mt-1">
+                          Created:{" "}
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-1">Additional Details</h4>
+                        <p className="text-gray-600">Status: Active</p>
+                        {/* Add more fields as needed */}
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </>
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8">
+              <img
+                src="/no-users.svg"
+                alt="No users found"
+                className="w-24 h-24 mb-3 opacity-70"
+              />
+              <p className="text-gray-500 text-sm">No users found</p>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Image Modal */}
       {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
-          onClick={closeImageModal}
-        >
-          <div className="relative bg-white p-4 rounded-lg shadow-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="relative bg-white rounded-lg max-w-full max-h-full">
             <img
               src={selectedImage}
               alt="Enlarged"
-              className="w-96 h-auto rounded-lg"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
               onError={(e) => {
-                e.target.src = "https://via.placeholder.com/150"; // Fallback image
+                e.target.src = "https://via.placeholder.com/500";
               }}
             />
             <button
-              onClick={closeImageModal}
-              className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full"
-              aria-label="Close image modal"
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
             >
-              ✕
+              <FiX size={20} />
             </button>
           </div>
         </div>
@@ -251,28 +264,25 @@ const Users = () => {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={closeDeleteModal}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold">Confirm Deletion</h3>
-            <p className="mt-2">Are you sure you want to delete this user?</p>
-            <div className="flex justify-end mt-4 gap-2">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 max-w-sm w-full">
+            <h3 className="font-bold text-lg mb-2">Confirm Deletion</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this user? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end space-x-3">
               <button
-                onClick={closeDeleteModal}
-                className="bg-gray-300 px-4 py-2 rounded-lg"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
-                Confirm
+                Delete
               </button>
             </div>
           </div>
