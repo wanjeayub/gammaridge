@@ -16,7 +16,7 @@ const createLocation = async (locationData) => {
 
 // update location
 const updateLocation = async (locationId, locationData) => {
-  const response = await api.put(`${API_URL}/${locationId}`, locationData);
+  const response = await axios.put(`${API_URL}/${locationId}`, locationData);
   return response.data;
 };
 
