@@ -1,9 +1,12 @@
 import { useState } from "react";
 import Button from "../UI/Button";
 
-const LocationForm = ({ onSubmit, initialData = {}, onCancel }) => {
+const LocationForm = ({ onSubmit, initialData, onCancel }) => {
+  // Ensure initialData is always an object, even if null/undefined is passed
+  const safeInitialData = initialData || {};
+
   const [formData, setFormData] = useState({
-    name: initialData.name || "",
+    name: safeInitialData.name || "", // Now safe to access .name
   });
 
   const handleChange = (e) => {
@@ -46,7 +49,7 @@ const LocationForm = ({ onSubmit, initialData = {}, onCancel }) => {
           </Button>
         )}
         <Button type="submit">
-          {initialData._id ? "Update" : "Create"} Location
+          {safeInitialData._id ? "Update" : "Create"} Location
         </Button>
       </div>
     </form>
