@@ -4,9 +4,9 @@ import plotService from "../../api/plots";
 import locationService from "../../api/location";
 import paymentService from "../../api/payments";
 import PlotForm from "../components/forms/PlotForm";
-import Button from "../components/UI/Button";
-import Modal from "../components/UI/Modal";
-import AddScheduleForm from "../components/forms/AddScheduleForm";
+import Button from "../../components/UI/Button";
+import Modal from "../../components/UI/Modal";
+import AddScheduleForm from "../../components/forms/PlotForm";
 
 const Plots = () => {
   const [plots, setPlots] = useState([]);
