@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import plotService from "../api/plots";
+import plotService from "../../api/plots";
 import locationService from "../../api/location";
 import paymentService from "../../api/payments";
 import PlotForm from "../components/forms/PlotForm";
