@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import locationService from "../api/location";
-import Button from "../components/UI/Button";
-import LocationForm from "../components/forms/LocationForm";
-import Modal from "../components/UI/Modal";
+import locationService from "../../api/location";
+import Button from "../../components/UI/Button";
+import LocationForm from "../../components/forms/LocationForm";
+import Modal from "../../components/UI/Modal";
 
 const Locations = () => {
   const [locations, setLocations] = useState([]);

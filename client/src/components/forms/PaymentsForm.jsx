@@ -45,7 +45,7 @@ const PaymentForm = ({ expectedAmount, onSubmit, onCancel }) => {
             htmlFor="defaultAmount"
             className="ml-2 block text-sm text-gray-700"
           >
-            Pay expected amount (${expectedAmount})
+            Pay expected amount (Ksh {expectedAmount})
           </label>
         </div>
 

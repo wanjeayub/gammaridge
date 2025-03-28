@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
-import Loans from "../components/AdminLoans";
-import Users from "../components/AdminUsers";
-import GarbageCollectionList from "../components/GarbageCollectionList";
-import AdminTransportRequests from "../components/AdminTransportRequests";
+import Loans from "../../components/AdminLoans";
+import Users from "../../components/AdminUsers";
+import GarbageCollectionList from "../../components/GarbageCollectionList";
+import AdminTransportRequests from "../../components/AdminTransportRequests";
 
 const AdminDashboard = () => {
   const [summary, setSummary] = useState({

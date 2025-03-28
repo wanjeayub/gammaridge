@@ -6,10 +6,10 @@ import {
   ArrowRightIcon,
   ForwardIcon,
 } from "@heroicons/react/24/solid";
-import paymentService from "../api/payments";
-import Button from "../components/UI/Button";
-import PaymentForm from "../components/forms/PaymentsForm";
-import Modal from "../components/UI/Modal";
+import paymentService from "../../api/payments";
+import Button from "../../components/UI/Button";
+import PaymentForm from "../../components/forms/PaymentsForm";
+import Modal from "../../components/UI/Modal";
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -34,7 +34,7 @@ const Dashboard = () => {
         );
 
         // Debug: Log the response to see its structure
-        console.log("API Response:", response);
+        // console.log("API Response:", response);
 
         // Handle different response formats
         let schedulesData = [];

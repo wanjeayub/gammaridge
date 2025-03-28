@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase/firebase";
+import { storage } from "../../firebase/firebase";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
 const Register = ({ darkMode }) => {

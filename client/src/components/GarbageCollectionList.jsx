@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Toaster } from "react-hot-toast";
-import Dashboard from "../pages/Dashboard";
-import Locations from "../pages/Locations";
+import Dashboard from "../pages/garbage-app/Dashboard";
+import Locations from "../pages/garbage-app/Locations";
 import Plots from "../pages/Plots";
 
 const GarbageCollectionApp = () => {
