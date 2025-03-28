@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import Dashboard from "../pages/garbage-app/Dashboard";
 import Locations from "../pages/garbage-app/Locations";
-import Plots from "../pages/Plots";
+import Plots from "../pages/garbage-app/Plots";
 
 const GarbageCollectionApp = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
