@@ -251,11 +251,11 @@ const Dashboard = () => {
                     {schedule.plot.bagsPerCollection}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${schedule.expectedAmount.toFixed(2)}
+                    Ksh {schedule.expectedAmount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {schedule.isPaid
-                      ? `$${schedule.paidAmount.toFixed(2)}`
+                      ? `Ksh ${schedule.paidAmount.toFixed(2)}`
                       : "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
