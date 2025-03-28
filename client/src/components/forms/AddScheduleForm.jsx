@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { months } from "../../utils/dateUtils"; // Create this helper file
-import Button from "../ui/Button";
+import Button from "../UI/Button";
 
 const AddScheduleForm = ({ plotId, defaultAmount = 0, onSave, onCancel }) => {
   const currentYear = new Date().getFullYear();
