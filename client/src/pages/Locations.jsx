@@ -44,10 +44,16 @@ const Locations = () => {
 
   const handleUpdateLocation = async (locationData) => {
     try {
+      // Make sure editingLocation._id exists
+      if (!editingLocation?._id) {
+        throw new Error("No location ID provided for update");
+      }
+
       const updatedLocation = await locationService.updateLocation(
-        editingLocation._id,
-        locationData
+        editingLocation._id, // Pass ID first
+        locationData // Then pass the update data
       );
+
       setLocations(
         locations.map((loc) =>
           loc._id === updatedLocation._id ? updatedLocation : loc
@@ -58,7 +64,7 @@ const Locations = () => {
       toast.success("Location updated successfully");
     } catch (error) {
       console.error("Failed to update location:", error);
-      toast.error("Failed to update location");
+      toast.error(error.message || "Failed to update location");
     }
   };
 
