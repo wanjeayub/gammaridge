@@ -114,11 +114,10 @@ const Dashboard = () => {
       );
       setSchedules(data.filter((s) => s?.plot?.plotNumber));
     } catch (error) {
-      console.error("Failed to mark as paid:", error);
-      toast.error("Failed to record payment");
+      console.error("Failed to record payment:", error);
+      toast.error(error.response?.data?.error || "Failed to record payment");
     }
   };
-
   // Calculate totals
   const totalExpected = schedules.reduce(
     (sum, s) => sum + (s?.expectedAmount || 0),
@@ -209,16 +208,13 @@ const Dashboard = () => {
                   Plot
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Owner
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Bags
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Expected
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Paid
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Balance
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -229,73 +225,93 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {schedules.map((schedule) => (
-                <tr key={schedule._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">
-                      Plot #{schedule.plot.plotNumber}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {schedule.plot.location?.name || "Unknown Location"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {schedule.plot.ownerName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {schedule.plot.mobileNumber}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {schedule.plot.bagsPerCollection}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Ksh {schedule.expectedAmount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {schedule.isPaid
-                      ? `Ksh ${schedule.paidAmount.toFixed(2)}`
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        schedule.isPaid
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {schedule.isPaid ? "Paid" : "Unpaid"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {!schedule.isPaid && (
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={() => handleMarkPaid(schedule)}
+              {schedules.map((schedule) => {
+                const balance =
+                  schedule.expectedAmount - (schedule.paidAmount || 0);
+                const isFullyPaid = balance <= 0;
+
+                return (
+                  <tr key={schedule._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">
+                        Plot #{schedule.plot.plotNumber}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {schedule.plot.ownerName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      Ksh {schedule.expectedAmount.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      Ksh {(schedule.paidAmount || 0).toFixed(2)}
+                      {schedule.payments?.length > 0 && (
+                        <div className="text-xs text-gray-400">
+                          {schedule.payments.length} payment(s)
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <span
+                        className={
+                          balance > 0 ? "text-red-600" : "text-green-600"
+                        }
                       >
-                        Mark Paid
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                        Ksh {Math.max(balance, 0).toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          isFullyPaid
+                            ? "bg-green-100 text-green-800"
+                            : schedule.paidAmount > 0
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {isFullyPaid
+                          ? "Paid"
+                          : schedule.paidAmount > 0
+                          ? "Partial"
+                          : "Unpaid"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {!isFullyPaid && (
+                        <Button
+                          variant={
+                            schedule.paidAmount > 0 ? "warning" : "success"
+                          }
+                          size="sm"
+                          onClick={() => handleMarkPaid(schedule)}
+                        >
+                          {schedule.paidAmount > 0 ? "Add Payment" : "Pay"}
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
       </div>
 
       {/* Payment modal */}
+      {/* Payment modal - updated to show current balance */}
       {showPaymentModal && (
         <Modal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          title={`Mark Plot #${selectedSchedule.plot.plotNumber} as Paid`}
+          title={`Payment for Plot #${selectedSchedule.plot.plotNumber}`}
         >
           <PaymentForm
             expectedAmount={selectedSchedule.expectedAmount}
+            currentBalance={
+              selectedSchedule.expectedAmount -
+              (selectedSchedule.paidAmount || 0)
+            }
             onSubmit={handlePaymentSubmit}
             onCancel={() => setShowPaymentModal(false)}
           />
