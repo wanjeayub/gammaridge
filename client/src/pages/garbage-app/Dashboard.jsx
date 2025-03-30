@@ -5,11 +5,14 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ForwardIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/solid";
 import paymentService from "../../api/payments";
 import Button from "../../components/UI/Button";
 import PaymentForm from "../../components/forms/PaymentsForm";
 import Modal from "../../components/UI/Modal";
+import ScheduleTable from "../../components/forms/ScheduleTable"; // Import the new component
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -20,6 +23,8 @@ const Dashboard = () => {
     expectedAmount: 0,
   });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [expandedLocations, setExpandedLocations] = useState({});
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
@@ -33,24 +38,15 @@ const Dashboard = () => {
           currentYear
         );
 
-        // Debug: Log the response to see its structure
-        // console.log("API Response:", response);
-
-        // Handle different response formats
         let schedulesData = [];
-
         if (Array.isArray(response)) {
-          // If response is already an array
           schedulesData = response;
         } else if (response && Array.isArray(response.data)) {
-          // If response is an object with a data array (common with Axios)
           schedulesData = response.data;
         } else if (response && response.schedules) {
-          // If response has a schedules property
           schedulesData = response.schedules;
         }
 
-        // Filter out any invalid schedules
         const validSchedules = schedulesData.filter((s) => s?.plot?.plotNumber);
         setSchedules(validSchedules);
         setLoading(false);
@@ -58,12 +54,51 @@ const Dashboard = () => {
         console.error("Failed to fetch payment schedules:", error);
         toast.error("Failed to load payment schedules");
         setLoading(false);
-        setSchedules([]); // Set to empty array on error
+        setSchedules([]);
       }
     };
 
     fetchSchedules();
   }, [currentMonth, currentYear]);
+
+  const groupSchedulesByLocation = () => {
+    const grouped = {};
+
+    schedules.forEach((schedule) => {
+      const locationName = schedule.plot.location?.name || "Unknown Location";
+
+      if (!grouped[locationName]) {
+        grouped[locationName] = {
+          all: [],
+          paid: [],
+        };
+      }
+
+      grouped[locationName].all.push(schedule);
+
+      if (schedule.isPaid) {
+        grouped[locationName].paid.push(schedule);
+      }
+    });
+
+    return grouped;
+  };
+
+  const groupedSchedules = groupSchedulesByLocation();
+
+  const toggleLocation = (location) => {
+    setExpandedLocations((prev) => ({
+      ...prev,
+      [location]: !prev[location],
+    }));
+  };
+
+  const toggleGroup = (location, groupType) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [`${location}-${groupType}`]: !prev[`${location}-${groupType}`],
+    }));
+  };
 
   const handlePreviousMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 2, 1));
@@ -80,7 +115,6 @@ const Dashboard = () => {
         currentYear
       );
       toast.success(message);
-      // Refresh the schedules
       const data = await paymentService.getPaymentSchedules(
         currentMonth,
         currentYear
@@ -106,18 +140,17 @@ const Dashboard = () => {
       await paymentService.markScheduleAsPaid(selectedSchedule._id, paidAmount);
       toast.success("Payment recorded successfully");
       setShowPaymentModal(false);
-
-      // Refresh the schedules
       const data = await paymentService.getPaymentSchedules(
         currentMonth,
         currentYear
       );
       setSchedules(data.filter((s) => s?.plot?.plotNumber));
     } catch (error) {
-      console.error("Failed to record payment:", error);
-      toast.error(error.response?.data?.error || "Failed to record payment");
+      console.error("Failed to mark as paid:", error);
+      toast.error("Failed to record payment");
     }
   };
+
   // Calculate totals
   const totalExpected = schedules.reduce(
     (sum, s) => sum + (s?.expectedAmount || 0),
@@ -192,7 +225,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Payment schedules table */}
+      {/* Grouped schedules */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         {loading ? (
           <div className="p-6 text-center">Loading payment schedules...</div>
@@ -201,103 +234,102 @@ const Dashboard = () => {
             No payment schedules found for this month
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Plot
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Expected
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Paid
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Balance
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {schedules.map((schedule) => {
-                const balance =
-                  schedule.expectedAmount - (schedule.paidAmount || 0);
-                const isFullyPaid = balance <= 0;
+          <div className="divide-y divide-gray-200">
+            {Object.entries(groupedSchedules).map(([location, groups]) => (
+              <div key={location} className="py-4 px-6">
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => toggleLocation(location)}
+                >
+                  <h3 className="text-lg font-medium">{location}</h3>
+                  {expandedLocations[location] ? (
+                    <ChevronDownIcon className="h-5 w-5" />
+                  ) : (
+                    <ChevronRightIcon className="h-5 w-5" />
+                  )}
+                </div>
 
-                return (
-                  <tr key={schedule._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">
-                        Plot #{schedule.plot.plotNumber}
+                {expandedLocations[location] && (
+                  <div className="mt-4 space-y-4">
+                    {/* All Schedules Group */}
+                    <div className="border rounded-lg">
+                      <div
+                        className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer"
+                        onClick={() => toggleGroup(location, "all")}
+                      >
+                        <div className="flex items-center">
+                          {expandedGroups[`${location}-all`] ? (
+                            <ChevronDownIcon className="h-5 w-5 mr-2" />
+                          ) : (
+                            <ChevronRightIcon className="h-5 w-5 mr-2" />
+                          )}
+                          <span>All Schedules ({groups.all.length})</span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          Balance: Ksh{" "}
+                          {groups.all
+                            .reduce(
+                              (sum, s) =>
+                                sum + (s.expectedAmount - (s.paidAmount || 0)),
+                              0
+                            )
+                            .toFixed(2)}
+                        </span>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {schedule.plot.ownerName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      Ksh {schedule.expectedAmount.toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      Ksh {(schedule.paidAmount || 0).toFixed(2)}
-                      {schedule.payments?.length > 0 && (
-                        <div className="text-xs text-gray-400">
-                          {schedule.payments.length} payment(s)
+
+                      {expandedGroups[`${location}-all`] && (
+                        <div className="p-3">
+                          <ScheduleTable
+                            schedules={groups.all}
+                            handleMarkPaid={handleMarkPaid}
+                          />
                         </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <span
-                        className={
-                          balance > 0 ? "text-red-600" : "text-green-600"
-                        }
+                    </div>
+
+                    {/* Fully Paid Schedules Group */}
+                    <div className="border rounded-lg">
+                      <div
+                        className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer"
+                        onClick={() => toggleGroup(location, "paid")}
                       >
-                        Ksh {Math.max(balance, 0).toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          isFullyPaid
-                            ? "bg-green-100 text-green-800"
-                            : schedule.paidAmount > 0
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {isFullyPaid
-                          ? "Paid"
-                          : schedule.paidAmount > 0
-                          ? "Partial"
-                          : "Unpaid"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {!isFullyPaid && (
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handleMarkPaid(schedule)}
-                        >
-                          {schedule.paidAmount > 0 ? "Add Payment" : "Pay"}
-                        </Button>
+                        <div className="flex items-center">
+                          {expandedGroups[`${location}-paid`] ? (
+                            <ChevronDownIcon className="h-5 w-5 mr-2" />
+                          ) : (
+                            <ChevronRightIcon className="h-5 w-5 mr-2" />
+                          )}
+                          <span>
+                            Fully Paid Schedules ({groups.paid.length})
+                          </span>
+                        </div>
+                        <span className="text-sm text-green-600">
+                          Total: Ksh{" "}
+                          {groups.paid
+                            .reduce((sum, s) => sum + (s.paidAmount || 0), 0)
+                            .toFixed(2)}
+                        </span>
+                      </div>
+
+                      {expandedGroups[`${location}-paid`] && (
+                        <div className="p-3">
+                          <ScheduleTable
+                            schedules={groups.paid}
+                            handleMarkPaid={handleMarkPaid}
+                            showActions={false}
+                          />
+                        </div>
                       )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
       {/* Payment modal */}
-      {/* Payment modal - updated to show current balance */}
       {showPaymentModal && (
         <Modal
           isOpen={showPaymentModal}
