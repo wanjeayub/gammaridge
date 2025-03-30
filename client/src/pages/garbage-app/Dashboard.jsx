@@ -280,9 +280,7 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {!isFullyPaid && (
                         <Button
-                          variant={
-                            schedule.paidAmount > 0 ? "warning" : "success"
-                          }
+                          variant="success"
                           size="sm"
                           onClick={() => handleMarkPaid(schedule)}
                         >
