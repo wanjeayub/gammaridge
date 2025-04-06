@@ -10,7 +10,6 @@ const MyAdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -19,11 +18,9 @@ const MyAdminLogin = () => {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form data
     if (!formData.email || !formData.password) {
       toast.error("Please fill in all fields.");
       return;
@@ -32,7 +29,6 @@ const MyAdminLogin = () => {
     setLoading(true);
 
     try {
-      // Send login request to the backend
       const response = await fetch(
         "https://tester-server.vercel.app/api/admin/login",
         {
@@ -45,10 +41,24 @@ const MyAdminLogin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Save the token to localStorage
+        // Save the token and user data to localStorage
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); // Store user data
+        console.log(data);
+
         toast.success("Login successful!");
-        navigate("/admin"); // Redirect to admin dashboard
+
+        // Redirect based on admin role
+        if (data.user.role === "super-admin") {
+          navigate("/admin");
+        } else if (data.user.role === "admin") {
+          navigate("/garbage/dashboard");
+        } else {
+          // Handle other roles or no role
+          toast.error("You don't have admin privileges.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
       } else {
         throw new Error(data.error || "Invalid credentials.");
       }

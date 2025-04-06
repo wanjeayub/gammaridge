@@ -24,6 +24,7 @@ import EntFarmProduce from "./enterprise-pages/FarmProduce";
 import UserCleanupRequest from "./pages/UserCleanUpRequest";
 import TransportRequest from "./pages/Transport";
 import MyAdminLogin from "./pages/loan-app/MyAdminLogin";
+import { AdminsDashboard } from "./pages/garbage-app/my-admins/AdminsDashboard";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -90,6 +91,7 @@ const App = () => {
             <Dashboard user={user} isLoading={isLoading} darkMode={darkMode} />
           }
         />
+        <Route path="/garbage/dashboard" element={<AdminsDashboard />} />
         <Route path="/admin" element={<MyAdminDashboard />} />
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
