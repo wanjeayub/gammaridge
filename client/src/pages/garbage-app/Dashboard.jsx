@@ -12,7 +12,7 @@ import paymentService from "../../api/payments";
 import Button from "../../components/UI/Button";
 import PaymentForm from "../../components/forms/PaymentsForm";
 import Modal from "../../components/UI/Modal";
-import ScheduleTable from "../../components/forms/ScheduleTable"; // Import the new component
+import ScheduleTable from "../../components/forms/ScheduleTable";
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -21,6 +21,8 @@ const Dashboard = () => {
   const [selectedSchedule, setSelectedSchedule] = useState({
     plot: { plotNumber: "" },
     expectedAmount: 0,
+    paidAmount: 0,
+    status: "pending",
   });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [expandedLocations, setExpandedLocations] = useState({});
@@ -71,13 +73,19 @@ const Dashboard = () => {
         grouped[locationName] = {
           all: [],
           paid: [],
+          partial: [],
+          pending: [],
         };
       }
 
       grouped[locationName].all.push(schedule);
 
-      if (schedule.isPaid) {
+      if (schedule.status === "paid") {
         grouped[locationName].paid.push(schedule);
+      } else if (schedule.status === "partial") {
+        grouped[locationName].partial.push(schedule);
+      } else {
+        grouped[locationName].pending.push(schedule);
       }
     });
 
@@ -156,10 +164,7 @@ const Dashboard = () => {
     (sum, s) => sum + (s?.expectedAmount || 0),
     0
   );
-  const totalPaid = schedules.reduce(
-    (sum, s) => sum + (s?.isPaid ? s.paidAmount : 0),
-    0
-  );
+  const totalPaid = schedules.reduce((sum, s) => sum + (s?.paidAmount || 0), 0);
   const totalPending = totalExpected - totalPaid;
 
   return (
@@ -317,6 +322,78 @@ const Dashboard = () => {
                             schedules={groups.paid}
                             handleMarkPaid={handleMarkPaid}
                             showActions={false}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Partial Payments Group */}
+                    <div className="border rounded-lg">
+                      <div
+                        className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer"
+                        onClick={() => toggleGroup(location, "partial")}
+                      >
+                        <div className="flex items-center">
+                          {expandedGroups[`${location}-partial`] ? (
+                            <ChevronDownIcon className="h-5 w-5 mr-2" />
+                          ) : (
+                            <ChevronRightIcon className="h-5 w-5 mr-2" />
+                          )}
+                          <span>
+                            Partial Payments ({groups.partial.length})
+                          </span>
+                        </div>
+                        <span className="text-sm text-yellow-600">
+                          Balance: Ksh{" "}
+                          {groups.partial
+                            .reduce(
+                              (sum, s) =>
+                                sum + (s.expectedAmount - (s.paidAmount || 0)),
+                              0
+                            )
+                            .toFixed(2)}
+                        </span>
+                      </div>
+
+                      {expandedGroups[`${location}-partial`] && (
+                        <div className="p-3">
+                          <ScheduleTable
+                            schedules={groups.partial}
+                            handleMarkPaid={handleMarkPaid}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Pending Payments Group */}
+                    <div className="border rounded-lg">
+                      <div
+                        className="flex items-center justify-between p-3 bg-gray-50 cursor-pointer"
+                        onClick={() => toggleGroup(location, "pending")}
+                      >
+                        <div className="flex items-center">
+                          {expandedGroups[`${location}-pending`] ? (
+                            <ChevronDownIcon className="h-5 w-5 mr-2" />
+                          ) : (
+                            <ChevronRightIcon className="h-5 w-5 mr-2" />
+                          )}
+                          <span>
+                            Pending Payments ({groups.pending.length})
+                          </span>
+                        </div>
+                        <span className="text-sm text-red-600">
+                          Total: Ksh{" "}
+                          {groups.pending
+                            .reduce((sum, s) => sum + s.expectedAmount, 0)
+                            .toFixed(2)}
+                        </span>
+                      </div>
+
+                      {expandedGroups[`${location}-pending`] && (
+                        <div className="p-3">
+                          <ScheduleTable
+                            schedules={groups.pending}
+                            handleMarkPaid={handleMarkPaid}
                           />
                         </div>
                       )}
