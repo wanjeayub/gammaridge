@@ -63,6 +63,7 @@ const Dashboard = () => {
     fetchSchedules();
   }, [currentMonth, currentYear]);
 
+  // In your groupSchedulesByLocation function
   const groupSchedulesByLocation = () => {
     const grouped = {};
 
@@ -80,6 +81,7 @@ const Dashboard = () => {
 
       grouped[locationName].all.push(schedule);
 
+      // Group by status
       if (schedule.status === "paid") {
         grouped[locationName].paid.push(schedule);
       } else if (schedule.status === "partial") {
