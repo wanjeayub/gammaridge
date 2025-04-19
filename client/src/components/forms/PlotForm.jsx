@@ -1,73 +1,85 @@
 import { useState, useEffect } from "react";
 import Button from "../UI/Button";
-import locationService from "../../api/location";
 
-const PlotForm = ({ onSubmit, initialData, onCancel }) => {
-  // Initialize formData with proper null checks
+const PlotForm = ({ onSubmit, initialData, onCancel, locations }) => {
   const [formData, setFormData] = useState({
     plotNumber: "",
     location: "",
-    ownerName: "",
-    mobileNumber: "",
+    owners: [
+      { name: "", mobileNumber: "", sharePercentage: 100, isPrimary: true },
+    ],
     bagsPerCollection: 1,
-    expectedAmount: "",
+    expectedAmount: 0,
   });
 
-  const [locations, setLocations] = useState([]);
-  const [loadingLocations, setLoadingLocations] = useState(true);
-
   useEffect(() => {
-    // Set form data when initialData changes
     if (initialData) {
       setFormData({
         plotNumber: initialData.plotNumber || "",
         location: initialData.location?._id || initialData.location || "",
-        ownerName: initialData.ownerName || "",
-        mobileNumber: initialData.mobileNumber || "",
+        owners: initialData.owners?.length
+          ? initialData.owners.map((owner) => ({
+              name: owner.name || "",
+              mobileNumber: owner.mobileNumber || "",
+              sharePercentage: owner.sharePercentage || 100,
+              isPrimary: owner.isPrimary || false,
+            }))
+          : [
+              {
+                name: "",
+                mobileNumber: "",
+                sharePercentage: 100,
+                isPrimary: true,
+              },
+            ],
         bagsPerCollection: initialData.bagsPerCollection || 1,
-        expectedAmount: initialData.expectedAmount || "",
+        expectedAmount: initialData.expectedAmount || 0,
       });
     }
   }, [initialData]);
 
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const data = await locationService.getLocations();
-        setLocations(data);
-        setLoadingLocations(false);
-
-        // If no location is selected but locations exist, select the first one
-        if (!formData.location && data.length > 0) {
-          setFormData((prev) => ({ ...prev, location: data[0]._id }));
-        }
-      } catch (error) {
-        console.error("Failed to fetch locations:", error);
-        setLoadingLocations(false);
-      }
-    };
-
-    fetchLocations();
-  }, []);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNumberChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value === "" ? "" : Number(value),
-    }));
+  const handleOwnerChange = (index, field, value) => {
+    const updatedOwners = [...formData.owners];
+    updatedOwners[index][field] = value;
+
+    if (field === "isPrimary" && value) {
+      updatedOwners.forEach((owner, i) => {
+        if (i !== index) owner.isPrimary = false;
+      });
+    }
+
+    setFormData((prev) => ({ ...prev, owners: updatedOwners }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Validate owner shares
+    const totalShare = formData.owners.reduce(
+      (sum, owner) => sum + (owner.sharePercentage || 0),
+      0
+    );
+
+    if (totalShare !== 100) {
+      alert("Owner shares must total 100%");
+      return;
+    }
+
+    if (!formData.plotNumber) {
+      alert("Plot number is required");
+      return;
+    }
+
+    if (!formData.location) {
+      alert("Location is required");
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -75,15 +87,11 @@ const PlotForm = ({ onSubmit, initialData, onCancel }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label
-            htmlFor="plotNumber"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Plot Number
+          <label className="block text-sm font-medium text-gray-700">
+            Plot Number *
           </label>
           <input
             type="text"
-            id="plotNumber"
             name="plotNumber"
             value={formData.plotNumber}
             onChange={handleChange}
@@ -93,120 +101,165 @@ const PlotForm = ({ onSubmit, initialData, onCancel }) => {
         </div>
 
         <div>
-          <label
-            htmlFor="location"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Location
+          <label className="block text-sm font-medium text-gray-700">
+            Location *
           </label>
           <select
-            id="location"
             name="location"
             value={formData.location}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            disabled={loadingLocations}
             required
           >
-            {loadingLocations ? (
-              <option value="">Loading locations...</option>
-            ) : (
-              <>
-                <option value="">Select a location</option>
-                {locations.map((location) => (
-                  <option key={location._id} value={location._id}>
-                    {location.name}
-                  </option>
-                ))}
-              </>
-            )}
+            <option value="">Select location</option>
+            {locations.map((loc) => (
+              <option key={loc._id} value={loc._id}>
+                {loc.name}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label
-            htmlFor="ownerName"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Owner Name
-          </label>
-          <input
-            type="text"
-            id="ownerName"
-            name="ownerName"
-            value={formData.ownerName}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            required
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="mobileNumber"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Mobile Number
-          </label>
-          <input
-            type="tel"
-            id="mobileNumber"
-            name="mobileNumber"
-            value={formData.mobileNumber}
-            onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            required
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="bagsPerCollection"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Bags per Collection
+          <label className="block text-sm font-medium text-gray-700">
+            Bags Per Collection
           </label>
           <input
             type="number"
-            id="bagsPerCollection"
             name="bagsPerCollection"
             min="1"
             value={formData.bagsPerCollection}
-            onChange={handleNumberChange}
+            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            required
           />
         </div>
 
         <div>
-          <label
-            htmlFor="expectedAmount"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Expected Amount
           </label>
           <input
             type="number"
-            id="expectedAmount"
             name="expectedAmount"
             min="0"
-            step="0.01"
             value={formData.expectedAmount}
-            onChange={handleNumberChange}
+            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            required
           />
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3">
-        {onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
-        )}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Owners</h3>
+        {formData.owners.map((owner, index) => (
+          <div key={index} className="border p-4 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={owner.name}
+                  onChange={(e) =>
+                    handleOwnerChange(index, "name", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Mobile Number
+                </label>
+                <input
+                  type="tel"
+                  value={owner.mobileNumber}
+                  onChange={(e) =>
+                    handleOwnerChange(index, "mobileNumber", e.target.value)
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Share % *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={owner.sharePercentage}
+                  onChange={(e) =>
+                    handleOwnerChange(
+                      index,
+                      "sharePercentage",
+                      Number(e.target.value)
+                    )
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  required
+                />
+              </div>
+            </div>
+            <div className="mt-3 flex justify-between">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={owner.isPrimary}
+                  onChange={(e) =>
+                    handleOwnerChange(index, "isPrimary", e.target.checked)
+                  }
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  Primary Owner
+                </span>
+              </label>
+              {formData.owners.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newOwners = [...formData.owners];
+                    newOwners.splice(index, 1);
+                    setFormData({ ...formData, owners: newOwners });
+                  }}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove Owner
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            setFormData({
+              ...formData,
+              owners: [
+                ...formData.owners,
+                {
+                  name: "",
+                  mobileNumber: "",
+                  sharePercentage: 0,
+                  isPrimary: false,
+                },
+              ],
+            });
+          }}
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+        >
+          + Add Another Owner
+        </button>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4">
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
         <Button type="submit">
-          {initialData?._id ? "Update" : "Create"} Plot
+          {initialData ? "Update Plot" : "Create Plot"}
         </Button>
       </div>
     </form>

@@ -1,13 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import {
-  FiChevronDown,
-  FiChevronUp,
-  FiSearch,
-  FiX,
-  FiTrash2,
-  FiImage,
-} from "react-icons/fi";
+import { FiSearch, FiX, FiTrash2, FiImage } from "react-icons/fi";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -16,15 +9,6 @@ const Users = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [expandedRows, setExpandedRows] = useState({});
-
-  // Toggle row expansion
-  const toggleRow = (userId) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -71,20 +55,13 @@ const Users = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Delete error:", errorData);
         throw new Error(errorData.message || "Failed to delete user.");
       }
 
       toast.success("User deleted successfully.");
       fetchUsers();
-      closeDeleteModal();
-      setExpandedRows((prev) => {
-        const newState = { ...prev };
-        delete newState[userToDelete];
-        return newState;
-      });
+      setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
     }
   }, [userToDelete, fetchUsers]);
@@ -100,6 +77,21 @@ const Users = () => {
         user.alternateMobileNumber?.toString().includes(searchQuery)
     );
   }, [users, searchQuery]);
+
+  // Close image modal when clicking outside or pressing Escape
+  const handleImageModalClick = (e) => {
+    if (e.target === e.currentTarget || e.key === "Escape") {
+      setSelectedImage(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setSelectedImage(null);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -132,132 +124,142 @@ const Users = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="space-y-2">
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => (
-              <div key={user._id} className="border rounded-lg overflow-hidden">
-                <div
-                  className={`p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
-                    expandedRows[user._id] ? "bg-gray-50" : ""
-                  }`}
-                  onClick={() => toggleRow(user._id)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src={
-                        user.profilePhoto || "https://via.placeholder.com/40"
-                      }
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {user.fullName || "N/A"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {user.idNumber || "No ID"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      className="text-red-500 hover:text-red-700 p-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setUserToDelete(user._id);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      aria-label="Delete user"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                    {expandedRows[user._id] ? (
-                      <FiChevronUp className="text-gray-500" />
-                    ) : (
-                      <FiChevronDown className="text-gray-500" />
-                    )}
-                  </div>
-                </div>
-
-                {expandedRows[user._id] && (
-                  <div className="p-3 border-t bg-white">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <h4 className="font-medium mb-1">
-                          Contact Information
-                        </h4>
-                        <p className="text-gray-600">
-                          Mobile: {user.mobileNumber || "N/A"}
-                        </p>
-                        <p className="text-gray-600">
-                          Alt Mobile: {user.alternateMobileNumber || "N/A"}
-                        </p>
-                        <p className="text-gray-600">
-                          Email: {user.email || "N/A"}
-                        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Profile
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Mobile
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Alt Mobile
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID Number
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID Front
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID Back
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <img
+                          className="h-10 w-10 rounded-full cursor-pointer"
+                          src={
+                            user.profilePhoto ||
+                            "https://via.placeholder.com/40"
+                          }
+                          alt="Profile"
+                          onClick={() => setSelectedImage(user.profilePhoto)}
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/40";
+                          }}
+                        />
                       </div>
-                      <div>
-                        <h4 className="font-medium mb-1">ID Verification</h4>
-                        <div className="flex space-x-2">
-                          <button
-                            className="flex items-center text-blue-500 hover:text-blue-700 text-xs"
-                            onClick={() => setSelectedImage(user.idFrontPhoto)}
-                          >
-                            <FiImage className="mr-1" /> Front
-                          </button>
-                          <button
-                            className="flex items-center text-blue-500 hover:text-blue-700 text-xs"
-                            onClick={() => setSelectedImage(user.idBackPhoto)}
-                          >
-                            <FiImage className="mr-1" /> Back
-                          </button>
-                        </div>
-                        <p className="text-gray-600 mt-1">
-                          Created:{" "}
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-1">Additional Details</h4>
-                        <p className="text-gray-600">Status: Active</p>
-                        {/* Add more fields as needed */}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8">
-              <img
-                src="/no-users.svg"
-                alt="No users found"
-                className="w-24 h-24 mb-3 opacity-70"
-              />
-              <p className="text-gray-500 text-sm">No users found</p>
-            </div>
-          )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.fullName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.mobileNumber || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.alternateMobileNumber || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.idNumber || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.idFrontPhoto ? (
+                        <button
+                          onClick={() => setSelectedImage(user.idFrontPhoto)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          <FiImage size={20} />
+                        </button>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.idBackPhoto ? (
+                        <button
+                          onClick={() => setSelectedImage(user.idBackPhoto)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          <FiImage size={20} />
+                        </button>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => {
+                          setUserToDelete(user._id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <FiTrash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="8"
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
+                    No users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* Image Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="relative bg-white rounded-lg max-w-full max-h-full">
-            <img
-              src={selectedImage}
-              alt="Enlarged"
-              className="max-w-[90vw] max-h-[90vh] object-contain"
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/500";
-              }}
-            />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50"
+          onClick={handleImageModalClick}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+              className="absolute -top-10 right-0 text-white p-1 rounded-full hover:bg-white hover:bg-opacity-20"
             >
-              <FiX size={20} />
+              <FiX size={24} />
             </button>
+            <img
+              src={selectedImage}
+              alt="Enlarged view"
+              className="max-w-full max-h-[80vh] object-contain"
+              onError={(e) => {
+                e.target.src =
+                  "https://via.placeholder.com/500x300?text=Image+Not+Available";
+              }}
+            />
           </div>
         </div>
       )}

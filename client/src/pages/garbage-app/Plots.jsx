@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import plotService from "../../api/plots";
 import locationService from "../../api/location";
-import paymentService from "../../api/payments";
 import PlotForm from "../../components/forms/PlotForm";
 import Button from "../../components/UI/Button";
 import Modal from "../../components/UI/Modal";
-import AddScheduleForm from "../../components/forms/PlotForm";
 
 const Plots = () => {
   const [plots, setPlots] = useState([]);
@@ -14,104 +12,49 @@ const Plots = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPlot, setEditingPlot] = useState(null);
-  const [showAddScheduleModal, setShowAddScheduleModal] = useState(false);
-  const [selectedPlotForSchedule, setSelectedPlotForSchedule] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [plotsData, locationsData] = await Promise.all([
-          plotService.getPlots(),
-          locationService.getLocations(),
-        ]);
-        setPlots(plotsData);
-        setLocations(locationsData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toast.error("Failed to load data");
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleAddSchedule = (plot) => {
-    setSelectedPlotForSchedule(plot);
-    setShowAddScheduleModal(true);
-  };
-
-  const handleSaveSchedule = async (scheduleData) => {
-    try {
-      await paymentService.createPaymentSchedule(scheduleData);
-      toast.success("Payment schedule added successfully");
-      setShowAddScheduleModal(false);
-      fetchData(); // Refresh plots data
-    } catch (error) {
-      toast.error(error.message || "Failed to add schedule");
-    }
-  };
-
-  const handleCreatePlot = async (plotData) => {
-    try {
-      const createdPlot = await plotService.createPlot(plotData);
-      setPlots([...plots, createdPlot]);
-      setShowForm(false);
-      toast.success("Plot created successfully");
-    } catch (error) {
-      console.error("Failed to create plot:", error);
-      toast.error("Failed to create plot");
-    }
-  };
-
-  const handleEditPlot = async (plotData) => {
-    try {
-      const updatedPlot = await plotService.updatePlot(
-        editingPlot._id,
-        plotData
-      );
-
-      // Update the plots state
-      setPlots(plots.map((p) => (p._id === editingPlot._id ? updatedPlot : p)));
-
-      // Close the modal and reset editing state
-      setShowForm(false);
-      setEditingPlot(null);
-
-      toast.success("Plot updated successfully");
-    } catch (error) {
-      console.error("Failed to update plot:", error);
-      toast.error(error.response?.data?.error || "Failed to update plot");
-    }
-  };
-
-  const handleDeletePlot = async (plotId) => {
-    try {
-      await plotService.deletePlot(plotId);
-      setPlots(plots.filter((p) => p._id !== plotId));
-      toast.success("Plot deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete plot:", error);
-      toast.error("Failed to delete plot");
-    }
-  };
-
-  const fetchData = async () => {
+  const fetchPlots = async () => {
     try {
       setLoading(true);
-      const [plotsData, locationsData] = await Promise.all([
-        plotService.getPlots(),
-        locationService.getLocations(),
-      ]);
+      const plotsData = await plotService.getPlots();
       setPlots(plotsData);
-      setLocations(locationsData);
-      setLoading(false);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      toast.error("Failed to load data");
+      toast.error("Failed to load plots");
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLocations = async () => {
+    try {
+      const locationsData = await locationService.getLocations();
+      setLocations(locationsData);
+    } catch (error) {
+      toast.error("Failed to load locations");
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      await Promise.all([fetchPlots(), fetchLocations()]);
+    };
+    loadData();
+  }, []);
+
+  const handleSubmit = async (formData) => {
+    try {
+      if (editingPlot) {
+        await plotService.updatePlot(editingPlot._id, formData);
+        toast.success("Plot updated successfully");
+      } else {
+        await plotService.createPlot(formData);
+        toast.success("Plot created successfully");
+      }
+      fetchPlots();
+      setShowForm(false);
+      setEditingPlot(null);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to save plot");
     }
   };
 
@@ -119,33 +62,26 @@ const Plots = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Plots</h2>
-        <Button
-          onClick={() => {
-            setEditingPlot(null);
-            setShowForm(true);
-          }}
-        >
-          Add Plot
-        </Button>
+        <Button onClick={() => setShowForm(true)}>Add Plot</Button>
       </div>
 
       {loading ? (
-        <div className="text-center">Loading plots...</div>
+        <div className="text-center py-8">Loading plots...</div>
       ) : plots.length === 0 ? (
-        <div className="text-center">No plots found</div>
+        <div className="text-center py-8">No plots found</div>
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Plot
+                  Plot Number
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Location
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Owner
+                  Primary Owner
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -157,7 +93,7 @@ const Plots = () => {
                 <tr key={plot._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      Plot #{plot.plotNumber}
+                      {plot.plotNumber || "N/A"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -167,38 +103,20 @@ const Plots = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {plot.ownerName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {plot.mobileNumber}
+                      {plot.owners?.find((o) => o.isPrimary)?.name ||
+                        "No owner"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setEditingPlot(plot);
-                          setShowForm(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleAddSchedule(plot)}
-                      >
-                        Add Schedule
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDeletePlot(plot._id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingPlot(plot);
+                        setShowForm(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -216,31 +134,14 @@ const Plots = () => {
         title={editingPlot ? "Edit Plot" : "Add New Plot"}
       >
         <PlotForm
-          locations={locations}
+          onSubmit={handleSubmit}
           initialData={editingPlot}
-          onSubmit={editingPlot ? handleEditPlot : handleCreatePlot}
+          locations={locations}
           onCancel={() => {
             setShowForm(false);
             setEditingPlot(null);
           }}
         />
-      </Modal>
-
-      <Modal
-        isOpen={showAddScheduleModal}
-        onClose={() => setShowAddScheduleModal(false)}
-        title={`Add Payment Schedule for Plot #${
-          selectedPlotForSchedule?.plotNumber || ""
-        }`}
-      >
-        {selectedPlotForSchedule && (
-          <AddScheduleForm
-            plotId={selectedPlotForSchedule._id}
-            defaultAmount={selectedPlotForSchedule.expectedAmount}
-            onSave={handleSaveSchedule}
-            onCancel={() => setShowAddScheduleModal(false)}
-          />
-        )}
       </Modal>
     </div>
   );

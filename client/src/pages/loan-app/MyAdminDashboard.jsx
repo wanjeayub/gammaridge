@@ -13,14 +13,14 @@ const AdminDashboard = () => {
     totalInterest: 0,
   });
   const [loans, setLoans] = useState([]);
-  const [activityLogs, setActivityLogs] = useState([]);
-  const [loanStats, setLoanStats] = useState({
-    approved: 0,
-    pending: 0,
-    fullyPaid: 0,
-  });
+  // const [activityLogs, setActivityLogs] = useState([]);
+  // const [loanStats, setLoanStats] = useState({
+  //   approved: 0,
+  //   pending: 0,
+  //   fullyPaid: 0,
+  // });
   const [users, setUsers] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  // const [notifications, setNotifications] = useState([]);
   const [settings, setSettings] = useState({ username: "", password: "" });
 
   // Fetch summary data
@@ -58,38 +58,38 @@ const AdminDashboard = () => {
   };
 
   // Fetch activity logs
-  const fetchActivityLogs = async () => {
-    try {
-      const response = await fetch(
-        "https://tester-server.vercel.app/api/admin/activity-logs",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const data = await response.json();
-      setActivityLogs(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch activity logs.");
-    }
-  };
+  // const fetchActivityLogs = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://tester-server.vercel.app/api/admin/activity-logs",
+  //       {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     setActivityLogs(data);
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Failed to fetch activity logs.");
+  //   }
+  // };
 
   // Fetch loan statistics
-  const fetchLoanStats = async () => {
-    try {
-      const response = await fetch(
-        "https://tester-server.vercel.app/api/admin/loan-stats",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const data = await response.json();
-      setLoanStats(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch loan statistics.");
-    }
-  };
+  // const fetchLoanStats = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://tester-server.vercel.app/api/admin/loan-stats",
+  //       {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     setLoanStats(data);
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Failed to fetch loan statistics.");
+  //   }
+  // };
 
   // Fetch users
   const fetchUsers = async () => {
@@ -109,21 +109,21 @@ const AdminDashboard = () => {
   };
 
   // Fetch notifications
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch(
-        "https://tester-server.vercel.app/api/admin/notifications",
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const data = await response.json();
-      setNotifications(data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch notifications.");
-    }
-  };
+  // const fetchNotifications = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://tester-server.vercel.app/api/admin/notifications",
+  //       {
+  //         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     setNotifications(data);
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Failed to fetch notifications.");
+  //   }
+  // };
 
   // Update admin credentials
   const updateCredentials = async () => {
@@ -153,10 +153,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchSummary();
     fetchLoans();
-    fetchActivityLogs();
-    fetchLoanStats();
+    // fetchActivityLogs();
+    // fetchLoanStats();
     fetchUsers();
-    fetchNotifications();
+    // fetchNotifications();
   }, []);
 
   return (
@@ -183,7 +183,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Loan Statistics */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold mb-4">Loan Statistics</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-100 p-4 rounded-lg">
@@ -199,17 +199,17 @@ const AdminDashboard = () => {
             <p className="text-2xl">{loanStats.fullyPaid}</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Loans Table */}
       <Loans
         loans={loans}
         fetchLoans={fetchLoans}
-        fetchLoanStats={fetchLoanStats}
+        // fetchLoanStats={fetchLoanStats}
       />
 
       {/* User Activity Logs */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
         <table className="w-full table-auto">
           <thead>
@@ -231,13 +231,13 @@ const AdminDashboard = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* User Management */}
       <Users users={users} fetchUsers={fetchUsers} />
 
       {/* Notifications */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+      {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold mb-4">Notifications</h2>
         <ul>
           {notifications.map((notification) => (
@@ -249,7 +249,7 @@ const AdminDashboard = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </div> */}
 
       {/* Garbage collection Requests */}
       <div className="bg-white p-6 rounded-lg shadow-md">
