@@ -234,7 +234,10 @@ const AdminDashboard = () => {
       </div> */}
 
       {/* User Management */}
-      <Users users={users} fetchUsers={fetchUsers} />
+      <div className="bg-gray-200 p-6 rounded-lg shadow-md mb-6">
+        {" "}
+        <Users users={users} fetchUsers={fetchUsers} />
+      </div>
 
       {/* Notifications */}
       {/* <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -252,22 +255,22 @@ const AdminDashboard = () => {
       </div> */}
 
       {/* Garbage collection Requests */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      {/* <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">
           Garbage Collection Summary
         </h2>
         <div className="space-y-4">
           <GarbageCollectionList />
         </div>
-      </div>
+      </div> */}
 
       {/* Transport Requests */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      {/* <div className="bg-white p-6 rounded-lg shadow-md">
         <AdminTransportRequests />
-      </div>
+      </div> */}
 
       {/* Settings Tab */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-gray-300 p-6 rounded-lg shadow-md mt-8">
         <h2 className="text-xl font-semibold mb-4">Settings</h2>
         <div className="space-y-4">
           <div>
