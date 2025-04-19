@@ -49,22 +49,29 @@ const Users = () => {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
           },
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete user.");
+        throw new Error(data.error || "Failed to delete user.");
       }
 
-      toast.success("User deleted successfully.");
-      fetchUsers();
+      // Update the UI immediately by filtering out the deleted user
+      setUsers((prevUsers) =>
+        prevUsers.filter((user) => user._id !== userToDelete)
+      );
+
+      toast.success(data.message || "User deleted successfully.");
       setIsDeleteModalOpen(false);
     } catch (error) {
+      console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
     }
-  }, [userToDelete, fetchUsers]);
+  }, [userToDelete]); // Removed fetchUsers from dependencies
 
   // Filter users by search query
   const filteredUsers = useMemo(() => {
