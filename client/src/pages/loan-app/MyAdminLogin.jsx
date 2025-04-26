@@ -49,15 +49,10 @@ const MyAdminLogin = () => {
         toast.success("Login successful!");
 
         // Redirect based on admin role
-        if (data.user.role === "super-admin") {
+        if (data.user.role === "admin") {
           navigate("/admin");
-        } else if (data.user.role === "admin") {
-          navigate("/garbage/dashboard");
         } else {
-          // Handle other roles or no role
-          toast.error("You don't have admin privileges.");
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          navigate("/login");
         }
       } else {
         throw new Error(data.error || "Invalid credentials.");
