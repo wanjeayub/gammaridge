@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { FiSearch, FiX, FiTrash2, FiImage } from "react-icons/fi";
+import profile from "../assets/img/profile.jpg";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -169,14 +170,11 @@ const Users = () => {
                       <div className="flex-shrink-0 h-10 w-10">
                         <img
                           className="h-10 w-10 rounded-full cursor-pointer"
-                          src={
-                            user.profilePhoto ||
-                            "https://via.placeholder.com/40"
-                          }
+                          src={user.profilePhoto || profile}
                           alt="Profile"
                           onClick={() => setSelectedImage(user.profilePhoto)}
                           onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/40";
+                            e.target.src = profile;
                           }}
                         />
                       </div>
@@ -263,8 +261,7 @@ const Users = () => {
               alt="Enlarged view"
               className="max-w-full max-h-[80vh] object-contain"
               onError={(e) => {
-                e.target.src =
-                  "https://via.placeholder.com/500x300?text=Image+Not+Available";
+                e.target.src = profile;
               }}
             />
           </div>

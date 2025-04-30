@@ -235,7 +235,6 @@ const AdminDashboard = () => {
 
       {/* User Management */}
       <div className="bg-gray-200 p-6 rounded-lg shadow-md mb-6">
-        {" "}
         <Users users={users} fetchUsers={fetchUsers} />
       </div>
 
