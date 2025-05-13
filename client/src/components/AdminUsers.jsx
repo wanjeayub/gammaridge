@@ -10,6 +10,20 @@ const Users = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentAdminId, setCurrentAdminId] = useState(null);
+
+  // Fetch current admin ID on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setCurrentAdminId(payload.userId);
+      } catch (error) {
+        console.error("Failed to parse token:", error);
+      }
+    }
+  }, []);
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -43,6 +57,13 @@ const Users = () => {
       return;
     }
 
+    // Prevent admin from deleting themselves
+    if (userToDelete === currentAdminId) {
+      toast.error("You cannot delete your own admin account.");
+      setIsDeleteModalOpen(false);
+      return;
+    }
+
     try {
       const response = await fetch(
         `https://tester-server.vercel.app/api/admin/users/delete/${userToDelete}`,
@@ -68,11 +89,12 @@ const Users = () => {
 
       toast.success(data.message || "User deleted successfully.");
       setIsDeleteModalOpen(false);
+      setUserToDelete(null);
     } catch (error) {
       console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
     }
-  }, [userToDelete]); // Removed fetchUsers from dependencies
+  }, [userToDelete, currentAdminId]);
 
   // Filter users by search query
   const filteredUsers = useMemo(() => {
@@ -87,11 +109,11 @@ const Users = () => {
   }, [users, searchQuery]);
 
   // Close image modal when clicking outside or pressing Escape
-  const handleImageModalClick = (e) => {
+  const handleImageModalClick = useCallback((e) => {
     if (e.target === e.currentTarget || e.key === "Escape") {
       setSelectedImage(null);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -99,6 +121,12 @@ const Users = () => {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Handle delete button click
+  const handleDeleteClick = useCallback((userId) => {
+    setUserToDelete(userId);
+    setIsDeleteModalOpen(true);
   }, []);
 
   return (
@@ -223,11 +251,18 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button
-                        onClick={() => {
-                          setUserToDelete(user._id);
-                          setIsDeleteModalOpen(true);
-                        }}
-                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteClick(user._id)}
+                        className={`${
+                          user._id === currentAdminId
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-red-500 hover:text-red-700"
+                        }`}
+                        disabled={user._id === currentAdminId}
+                        title={
+                          user._id === currentAdminId
+                            ? "Cannot delete your own account"
+                            : ""
+                        }
                       >
                         <FiTrash2 size={18} />
                       </button>
@@ -237,10 +272,12 @@ const Users = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan="9"
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
-                    No users found
+                    {users.length === 0
+                      ? "No users available"
+                      : "No users match your search"}
                   </td>
                 </tr>
               )}
@@ -285,7 +322,10 @@ const Users = () => {
             </p>
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setIsDeleteModalOpen(false)}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setUserToDelete(null);
+                }}
                 className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancel
