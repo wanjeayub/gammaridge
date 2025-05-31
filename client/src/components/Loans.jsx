@@ -2,50 +2,75 @@ import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import {
-  FaEdit,
-  FaTrash,
-  FaCalendarAlt,
-  FaMoneyCheckAlt,
-} from "react-icons/fa";
+  FiDollarSign,
+  FiCalendar,
+  FiEdit2,
+  FiTrash2,
+  FiCheckCircle,
+  FiXCircle,
+  FiAlertTriangle,
+  FiInfo,
+} from "react-icons/fi";
 import { ImSpinner8 } from "react-icons/im";
-import PaymentModal from "../components/PayModal"; // Adjust the import path as needed
+import PaymentModal from "../components/PayModal";
+import LimitInfoModal from "../components/LimitInfoModal";
 
 const Loans = ({ darkMode }) => {
   const [loans, setLoans] = useState([]);
-  const [loanAmount, setLoanAmount] = useState("");
-  const [repaymentDate, setRepaymentDate] = useState("");
+  const [loanData, setLoanData] = useState({
+    amount: "",
+    repaymentDate: "",
+  });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [hasActiveLoan, setHasActiveLoan] = useState(false);
-  const [editingLoanId, setEditingLoanId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const [limitInfo, setLimitInfo] = useState({
+    maxLoanAmountPerRequest: 0,
+    maxTotalLoanAmount: 0,
+    maxActiveLoans: 0,
+  });
   const navigate = useNavigate();
 
-  // Helper function to format date
+  // Format date for display
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    if (!dateString) return "N/A";
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch (e) {
+      return "Invalid Date";
+    }
   };
 
-  // Fetch loans on component mount
-  useEffect(() => {
-    fetchLoans();
-  }, []);
+  // Calculate days remaining
+  const daysRemaining = (dateString) => {
+    if (!dateString) return 0;
+    try {
+      const today = new Date();
+      const dueDate = new Date(dateString);
+      const diffTime = dueDate - today;
+      return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    } catch (e) {
+      return 0;
+    }
+  };
 
-  // Fetch all loans
+  // Safely parse number with fallback
+  const safeParseNumber = (value, fallback = 0) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? fallback : num;
+  };
+
+  // Fetch loans with limit info
   const fetchLoans = async () => {
     setIsLoading(true);
     const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not authenticated. Please log in.");
-      navigate("/login");
-      return;
-    }
 
     try {
       const response = await fetch(
@@ -56,488 +81,536 @@ const Loans = ({ darkMode }) => {
       );
 
       if (!response.ok) {
-        if (response.status === 401) {
-          toast.error("You are not authorized. Please log in.");
-          navigate("/login");
-        } else if (response.status === 404) {
-          toast.error("Resource not found.");
-        } else {
-          throw new Error("Failed to fetch loans.");
-        }
-        return;
+        if (response.status === 401) navigate("/login");
+        throw new Error("Failed to fetch loans");
       }
 
       const data = await response.json();
-      setLoans(data);
 
-      // Check if the user has any active loans (not fully paid)
-      const activeLoan = data.find((loan) => loan.status !== "fully paid");
-      setHasActiveLoan(!!activeLoan);
+      // Ensure loans is always an array
+      const loansData = Array.isArray(data?.loans) ? data.loans : [];
+
+      // Ensure limit info has proper defaults
+      const limitData = data?.limitInfo || {
+        maxLoanAmountPerRequest: 0,
+        maxTotalLoanAmount: 0,
+        maxActiveLoans: 0,
+      };
+
+      setLoans(loansData);
+      setLimitInfo(limitData);
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred. Please try again.");
+      toast.error(error.message);
+      setLoans([]);
+      setLimitInfo({
+        maxLoanAmountPerRequest: 0,
+        maxTotalLoanAmount: 0,
+        maxActiveLoans: 0,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Validate form inputs
+  useEffect(() => {
+    fetchLoans();
+  }, []);
+
+  // Validate form
   const validateForm = () => {
     const newErrors = {};
+    const amount = safeParseNumber(loanData.amount);
 
-    // Loan Amount Validation
-    if (!loanAmount || isNaN(loanAmount) || loanAmount <= 0) {
-      newErrors.loanAmount = "Please enter a valid loan amount.";
-    } else if (loanAmount > 1000000) {
-      newErrors.loanAmount = "Loan amount cannot exceed Ksh 1,000,000.";
+    if (!loanData.amount || amount <= 0) {
+      newErrors.amount = "Please enter a valid amount";
+    } else if (
+      limitInfo?.maxLoanAmountPerRequest &&
+      amount > limitInfo.maxLoanAmountPerRequest
+    ) {
+      newErrors.amount = "Amount exceeds your loan limit";
+      setIsLimitModalOpen(true);
     }
 
-    // Repayment Date Validation
-    const repaymentDateObj = new Date(repaymentDate);
-    if (isNaN(repaymentDateObj.getTime())) {
-      newErrors.repaymentDate = "Please select a valid date.";
-    } else if (repaymentDateObj < new Date()) {
-      newErrors.repaymentDate = "Please select a valid future date.";
-    } else if (
-      repaymentDateObj >
-      new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-    ) {
-      newErrors.repaymentDate =
-        "Repayment date cannot be more than 1 year in the future.";
+    if (!loanData.repaymentDate) {
+      newErrors.repaymentDate = "Please select a date";
+    } else {
+      try {
+        const selectedDate = new Date(loanData.repaymentDate);
+        if (selectedDate < new Date()) {
+          newErrors.repaymentDate = "Date must be in the future";
+        }
+      } catch (e) {
+        newErrors.repaymentDate = "Invalid date";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle applying for a new loan
-  const handleApplyLoan = async (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
-      return;
-    }
-
-    if (hasActiveLoan) {
-      toast.error(
-        "You already have an active loan. Please repay it before applying for a new one."
-      );
-      return;
-    }
-
+    setIsLoading(true);
     const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not authenticated. Please log in.");
-      navigate("/login");
-      return;
-    }
+    const endpoint = editingId
+      ? `/api/loans/update/${editingId}`
+      : "/api/loans/apply";
 
     try {
       const response = await fetch(
-        "https://tester-server.vercel.app/api/loans/apply",
+        `https://tester-server.vercel.app${endpoint}`,
         {
-          method: "POST",
+          method: editingId ? "PUT" : "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ loanAmount, repaymentDate }),
+          body: JSON.stringify({
+            loanAmount: safeParseNumber(loanData.amount),
+            repaymentDate: loanData.repaymentDate,
+          }),
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to apply for loan.");
-      }
-
       const data = await response.json();
-      toast.success("Loan application submitted successfully!");
-      fetchLoans();
-      setLoanAmount("");
-      setRepaymentDate("");
-      setHasActiveLoan(true);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message || "An error occurred. Please try again.");
-    }
-  };
 
-  // Handle editing an existing loan
-  const handleEditLoan = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form.");
-      return;
-    }
-
-    if (!editingLoanId) {
-      toast.error("No loan selected for editing.");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not authenticated. Please log in.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://tester-server.vercel.app/api/loans/update/${editingLoanId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ loanAmount, repaymentDate }),
+      if (!response.ok) {
+        if (data.code === "LOAN_LIMIT_EXCEEDED") {
+          setIsLimitModalOpen(true);
         }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update loan.");
+        throw new Error(data.message || "Request failed");
       }
 
-      const data = await response.json();
-      toast.success("Loan updated successfully!");
+      toast.success(data.message);
       fetchLoans();
-      setLoanAmount("");
-      setRepaymentDate("");
-      setEditingLoanId(null);
+      resetForm();
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred. Please try again.");
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle deleting a loan
-  const handleDeleteLoan = async (loanId) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not authenticated. Please log in.");
-      navigate("/login");
+  // Reset form
+  const resetForm = () => {
+    setLoanData({ amount: "", repaymentDate: "" });
+    setEditingId(null);
+  };
+
+  // Handle edit
+  const handleEdit = (loan) => {
+    if (!loan) return;
+
+    if (loan.status !== "pending" && loan.status !== "rejected") {
+      toast.error("Only pending or rejected loans can be edited");
       return;
     }
+    setLoanData({
+      amount: loan.loanAmount?.toString() || "",
+      repaymentDate: loan.repaymentDate
+        ? new Date(loan.repaymentDate).toISOString().split("T")[0]
+        : "",
+    });
+    setEditingId(loan._id || null);
+  };
 
+  // Handle delete
+  const handleDelete = async (id) => {
+    if (!id || !window.confirm("Are you sure you want to delete this loan?"))
+      return;
+
+    setIsLoading(true);
     try {
       const response = await fetch(
-        `https://tester-server.vercel.app/api/loans/delete/${loanId}`,
+        `https://tester-server.vercel.app/api/loans/delete/${id}`,
         {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete loan.");
-      }
+      if (!response.ok) throw new Error("Failed to delete loan");
 
-      toast.success("Loan deleted successfully!");
+      toast.success("Loan deleted successfully");
       fetchLoans();
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred. Please try again.");
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle clicking the Edit button
-  const handleEditClick = (loan) => {
-    if (loan.status !== "pending" && loan.status !== "rejected") {
-      toast.error("Only pending or rejected loans can be edited.");
-      return;
+  // Get status details
+  const getStatusDetails = (status) => {
+    if (!status) {
+      return { color: "bg-gray-100 text-gray-800", icon: <FiInfo /> };
     }
-    setLoanAmount(loan.loanAmount);
-    setRepaymentDate(new Date(loan.repaymentDate).toISOString().split("T")[0]);
-    setEditingLoanId(loan._id);
-  };
 
-  // Handle canceling the edit
-  const handleCancelEdit = () => {
-    setLoanAmount("");
-    setRepaymentDate("");
-    setEditingLoanId(null);
-  };
-
-  // Handle navigating back to the dashboard
-  const handleBackToDashboard = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not authenticated. Please log in.");
-      navigate("/login");
-    } else {
-      navigate("/dashboard");
-    }
-  };
-
-  // Handle clicking the Pay Now button
-  const handlePayNowClick = (loan) => {
-    if (loan.status !== "approved") {
-      toast.error("Only approved loans can be paid.");
-      return;
-    }
-    setSelectedLoan(loan);
-    setIsPaymentModalOpen(true);
-  };
-
-  // Handle payment success
-  const handlePaymentSuccess = (updatedLoan) => {
-    setLoans((prevLoans) =>
-      prevLoans.map((loan) =>
-        loan._id === updatedLoan._id ? updatedLoan : loan
-      )
-    );
-  };
-
-  // Get status color based on loan status
-  const getStatusColor = (status) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
-        return "text-red-500";
+        return {
+          color: "bg-yellow-100 text-yellow-800",
+          icon: <FiAlertTriangle />,
+        };
       case "approved":
-        return "text-orange-500";
+        return { color: "bg-blue-100 text-blue-800", icon: <FiInfo /> };
       case "fully paid":
-        return "text-green-500";
+        return {
+          color: "bg-green-100 text-green-800",
+          icon: <FiCheckCircle />,
+        };
       case "rejected":
-        return "text-gray-500";
+        return { color: "bg-red-100 text-red-800", icon: <FiXCircle /> };
       default:
-        return "text-gray-500";
+        return { color: "bg-gray-100 text-gray-800", icon: <FiInfo /> };
     }
   };
 
   return (
-    <div
-      className={`min-h-screen ${
-        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto p-6">
+    <div className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Loans Dashboard</h1>
-        </div>
-
-        {/* Back to Dashboard Button */}
-        <button
-          onClick={handleBackToDashboard}
-          className={`${
-            darkMode ? "bg-gray-700" : "bg-gray-700"
-          } text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-all mb-6`}
-        >
-          Back to Dashboard
-        </button>
-
-        {/* Loan Application Form */}
-        <form
-          onSubmit={editingLoanId ? handleEditLoan : handleApplyLoan}
-          className={`p-6 rounded-lg shadow-md ${
-            darkMode ? "bg-gray-800" : "bg-white"
-          }`}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="loanAmount"
-                className={`block text-sm font-medium mb-2 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Loan Amount
-              </label>
-              <input
-                id="loanAmount"
-                type="number"
-                placeholder="Loan Amount"
-                value={loanAmount}
-                onChange={(e) => setLoanAmount(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300"
-                }`}
-                aria-describedby="loanAmountError"
-                disabled={isLoading || (hasActiveLoan && !editingLoanId)}
-              />
-              {errors.loanAmount && (
-                <p id="loanAmountError" className="text-red-500 text-sm mt-1">
-                  {errors.loanAmount}
-                </p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="repaymentDate"
-                className={`block text-sm font-medium mb-2 ${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Repayment Date
-              </label>
-              <input
-                id="repaymentDate"
-                type="date"
-                placeholder="Repayment Date"
-                value={repaymentDate}
-                onChange={(e) => setRepaymentDate(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  darkMode
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300"
-                }`}
-                aria-describedby="repaymentDateError"
-                disabled={isLoading || (hasActiveLoan && !editingLoanId)}
-              />
-              {errors.repaymentDate && (
-                <p
-                  id="repaymentDateError"
-                  className="text-red-500 text-sm mt-1"
-                >
-                  {errors.repaymentDate}
-                </p>
-              )}
-            </div>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1
+              className={`text-3xl font-bold ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              My Loans
+            </h1>
+            <p
+              className={`mt-1 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
+            >
+              Manage your loan applications and payments
+            </p>
           </div>
           <button
-            type="submit"
-            className={`mt-4 ${
-              darkMode ? "bg-blue-600" : "bg-blue-600"
-            } text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all disabled:bg-gray-400`}
-            disabled={isLoading || (hasActiveLoan && !editingLoanId)}
+            onClick={() => navigate("/dashboard")}
+            className={`px-4 py-2 rounded-lg ${
+              darkMode
+                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+            }`}
           >
-            {editingLoanId ? "Update Loan" : "Apply for Loan"}
+            Back to Dashboard
           </button>
-          {editingLoanId && (
-            <button
-              type="button"
-              onClick={handleCancelEdit}
-              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all ml-4"
-            >
-              Cancel Edit
-            </button>
-          )}
-          {hasActiveLoan && (
-            <p className="text-red-500 text-sm mt-2">
-              You already have an active loan. Please repay it before applying
-              for a new one.
-            </p>
-          )}
-        </form>
+        </div>
 
-        {/* Loan Summary */}
+        {/* Loan Application Card */}
         <div
-          className={`mt-6 p-6 rounded-lg shadow-md ${
+          className={`rounded-xl shadow-md overflow-hidden mb-8 ${
             darkMode ? "bg-gray-800" : "bg-white"
           }`}
         >
-          <h2 className="text-2xl font-bold mb-4">Loan Summary</h2>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <ImSpinner8 className="animate-spin text-4xl text-blue-600" />
-            </div>
-          ) : loans.length === 0 ? (
-            <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-              No loans found.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loans.map((loan) => (
-                <div
-                  key={loan._id}
-                  className={`p-6 rounded-lg shadow-sm hover:shadow-md transition-all ${
-                    darkMode ? "bg-gray-700" : "bg-gray-50"
-                  }`}
-                >
-                  <div className="flex items-center space-x-4 mb-4">
-                    <FaMoneyCheckAlt className="text-2xl text-blue-600" />
-                    <h3
-                      className={`text-xl font-semibold ${
-                        darkMode ? "text-white" : "text-gray-800"
+          <div
+            className={`p-6 ${
+              darkMode ? "border-gray-700" : "border-gray-200"
+            } border-b`}
+          >
+            <h2
+              className={`text-xl font-semibold ${
+                darkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
+              {editingId ? "Update Loan Application" : "New Loan Application"}
+            </h2>
+          </div>
+          <div className="p-6">
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="amount"
+                    className={`block text-sm font-medium mb-2 ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    Loan Amount (Ksh)
+                  </label>
+                  <div className="relative">
+                    <div
+                      className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
                       }`}
                     >
-                      Loan Details
-                    </h3>
-                  </div>
-                  <p
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <span className="font-medium">Amount:</span> Ksh{" "}
-                    {loan.loanAmount}
-                  </p>
-                  <p
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <span className="font-medium">Total Repayment:</span> Ksh{" "}
-                    {loan.totalRepayment}
-                  </p>
-                  <p
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <span className="font-medium">Interest:</span> Ksh{" "}
-                    {loan.interest}
-                  </p>
-                  <p
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    <span className="font-medium">Due Date:</span>{" "}
-                    {formatDate(loan.repaymentDate)}
-                  </p>
-                  <p
-                    className={`mt-2 font-semibold ${getStatusColor(
-                      loan.status
-                    )}`}
-                  >
-                    Status: {loan.status}
-                  </p>
-                  {(loan.status === "pending" ||
-                    loan.status === "rejected") && (
-                    <div className="mt-4 flex gap-2">
-                      <button
-                        onClick={() => handleEditClick(loan)}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 flex items-center"
-                      >
-                        <FaEdit className="mr-2" /> Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteLoan(loan._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 flex items-center"
-                      >
-                        <FaTrash className="mr-2" /> Delete
-                      </button>
+                      <span>Ksh</span>
                     </div>
+                    <input
+                      id="amount"
+                      type="number"
+                      placeholder="e.g. 5000"
+                      value={loanData.amount}
+                      onChange={(e) =>
+                        setLoanData({ ...loanData, amount: e.target.value })
+                      }
+                      className={`pl-10 w-full px-4 py-3 rounded-lg border ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300"
+                      } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                      min="1"
+                      step="0.01"
+                    />
+                  </div>
+                  {errors.amount && (
+                    <p className="mt-1 text-sm text-red-500">{errors.amount}</p>
                   )}
-                  {loan.status === "approved" && (
-                    <button
-                      onClick={() => handlePayNowClick(loan)}
-                      className="mt-4 bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600"
+                  {limitInfo?.maxLoanAmountPerRequest && (
+                    <p
+                      className={`mt-1 text-xs ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
                     >
-                      Pay Now
-                    </button>
+                      Your limit: Ksh{" "}
+                      {safeParseNumber(
+                        limitInfo.maxLoanAmountPerRequest
+                      ).toLocaleString()}
+                    </p>
                   )}
                 </div>
-              ))}
+
+                <div>
+                  <label
+                    htmlFor="repaymentDate"
+                    className={`block text-sm font-medium mb-2 ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    Repayment Date
+                  </label>
+                  <div className="relative">
+                    <div
+                      className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
+                      <FiCalendar />
+                    </div>
+                    <input
+                      id="repaymentDate"
+                      type="date"
+                      value={loanData.repaymentDate}
+                      onChange={(e) =>
+                        setLoanData({
+                          ...loanData,
+                          repaymentDate: e.target.value,
+                        })
+                      }
+                      className={`pl-10 w-full px-4 py-3 rounded-lg border ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300"
+                      } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                      min={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
+                  {errors.repaymentDate && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.repaymentDate}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex space-x-4">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center"
+                >
+                  {isLoading ? (
+                    <>
+                      <ImSpinner8 className="animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {editingId ? (
+                        <>
+                          <FiEdit2 className="mr-2" />
+                          Update Loan
+                        </>
+                      ) : (
+                        <>
+                          <FiCheckCircle className="mr-2" />
+                          Apply Now
+                        </>
+                      )}
+                    </>
+                  )}
+                </button>
+
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Loans List */}
+        <div
+          className={`rounded-xl shadow-md overflow-hidden ${
+            darkMode ? "bg-gray-800" : "bg-white"
+          }`}
+        >
+          <div
+            className={`p-6 ${
+              darkMode ? "border-gray-700" : "border-gray-200"
+            } border-b`}
+          >
+            <h2
+              className={`text-xl font-semibold ${
+                darkMode ? "text-white" : "text-gray-800"
+              }`}
+            >
+              My Loan Applications
+            </h2>
+          </div>
+
+          {isLoading ? (
+            <div className="p-8 flex justify-center">
+              <ImSpinner8 className="animate-spin text-4xl text-blue-600" />
+            </div>
+          ) : !Array.isArray(loans) || loans.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                You don't have any loan applications yet.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {loans.map((loan) => {
+                if (!loan) return null;
+
+                const status = getStatusDetails(loan.status);
+                const days = daysRemaining(loan.repaymentDate);
+                const loanAmount = safeParseNumber(loan.loanAmount);
+                const totalRepayment = safeParseNumber(loan.totalRepayment);
+
+                return (
+                  <div
+                    key={loan._id || Math.random().toString(36).substring(2, 9)}
+                    className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                      <div className="mb-4 md:mb-0">
+                        <div className="flex items-center space-x-3">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${status.color}`}
+                          >
+                            {status.icon}
+                            <span className="ml-1">
+                              {loan.status || "Unknown"}
+                            </span>
+                          </span>
+                          <h3
+                            className={`text-lg font-medium ${
+                              darkMode ? "text-white" : "text-gray-900"
+                            }`}
+                          >
+                            Ksh {loanAmount.toLocaleString()}
+                          </h3>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-4">
+                          <div
+                            className={`flex items-center text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            <FiCalendar className="mr-1.5" />
+                            Due {formatDate(loan.repaymentDate)}
+                            {days > 0 && (
+                              <span className="ml-1.5 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-600 rounded text-xs">
+                                {days} {days === 1 ? "day" : "days"} left
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            className={`flex items-center text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
+                            <FiDollarSign className="mr-1.5" />
+                            Total repayment: Ksh{" "}
+                            {totalRepayment.toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        {loan.status === "approved" && (
+                          <button
+                            onClick={() => {
+                              setSelectedLoan(loan);
+                              setIsPaymentModalOpen(true);
+                            }}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm font-medium"
+                          >
+                            Make Payment
+                          </button>
+                        )}
+
+                        {(loan.status === "pending" ||
+                          loan.status === "rejected") && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(loan)}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(loan._id)}
+                              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
-
-        {/* Payment Modal */}
-        {isPaymentModalOpen && (
-          <PaymentModal
-            loan={selectedLoan}
-            onClose={() => setIsPaymentModalOpen(false)}
-            onPaymentSuccess={handlePaymentSuccess}
-          />
-        )}
       </div>
+
+      {/* Payment Modal */}
+      {isPaymentModalOpen && (
+        <PaymentModal
+          loan={selectedLoan}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaymentSuccess={() => {
+            fetchLoans();
+            setIsPaymentModalOpen(false);
+          }}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* Limit Info Modal */}
+      {isLimitModalOpen && limitInfo && (
+        <LimitInfoModal
+          limitInfo={limitInfo}
+          onClose={() => setIsLimitModalOpen(false)}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 };
