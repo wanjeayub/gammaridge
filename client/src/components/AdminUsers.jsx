@@ -1,6 +1,17 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { FiSearch, FiX, FiTrash2, FiImage } from "react-icons/fi";
+import {
+  FiSearch,
+  FiX,
+  FiTrash2,
+  FiImage,
+  FiDollarSign,
+  FiEdit,
+  FiChevronDown,
+  FiChevronUp,
+  FiCheck,
+  FiSliders,
+} from "react-icons/fi";
 import profile from "../assets/img/profile.jpg";
 
 const Users = () => {
@@ -11,6 +22,9 @@ const Users = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentAdminId, setCurrentAdminId] = useState(null);
+  const [editingLimits, setEditingLimits] = useState(null);
+  const [limitChanges, setLimitChanges] = useState({});
+  const [expandedUser, setExpandedUser] = useState(null);
 
   // Fetch current admin ID on component mount
   useEffect(() => {
@@ -25,7 +39,7 @@ const Users = () => {
     }
   }, []);
 
-  // Fetch users
+  // Fetch users with loan limits
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -36,7 +50,8 @@ const Users = () => {
         }
       );
       const data = await response.json();
-      setUsers(data);
+      // Filter out admin users from the list
+      setUsers(data.filter((user) => user.role !== "admin"));
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch users.");
@@ -54,13 +69,6 @@ const Users = () => {
   const handleConfirmDelete = useCallback(async () => {
     if (!userToDelete) {
       toast.error("No user selected for deletion.");
-      return;
-    }
-
-    // Prevent admin from deleting themselves
-    if (userToDelete === currentAdminId) {
-      toast.error("You cannot delete your own admin account.");
-      setIsDeleteModalOpen(false);
       return;
     }
 
@@ -82,7 +90,6 @@ const Users = () => {
         throw new Error(data.error || "Failed to delete user.");
       }
 
-      // Update the UI immediately by filtering out the deleted user
       setUsers((prevUsers) =>
         prevUsers.filter((user) => user._id !== userToDelete)
       );
@@ -94,7 +101,7 @@ const Users = () => {
       console.error("Delete error:", error);
       toast.error(error.message || "Failed to delete user.");
     }
-  }, [userToDelete, currentAdminId]);
+  }, [userToDelete]);
 
   // Filter users by search query
   const filteredUsers = useMemo(() => {
@@ -127,6 +134,108 @@ const Users = () => {
   const handleDeleteClick = useCallback((userId) => {
     setUserToDelete(userId);
     setIsDeleteModalOpen(true);
+  }, []);
+
+  // Handle edit limits click
+  const handleEditLimits = useCallback((user) => {
+    setEditingLimits(user._id);
+    setLimitChanges({
+      maxTotalLoanAmount: user.loanLimits?.maxTotalLoanAmount || 0,
+      maxActiveLoans: user.loanLimits?.maxActiveLoans || 0,
+      maxLoanAmountPerRequest: user.loanLimits?.maxLoanAmountPerRequest || 0,
+      changeReason: "",
+    });
+  }, []);
+
+  // Handle limit change
+  const handleLimitChange = useCallback((field, value) => {
+    setLimitChanges((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  // Save limit changes
+  const saveLimitChanges = useCallback(async () => {
+    if (!editingLimits) return;
+
+    try {
+      const response = await fetch(
+        `https://tester-server.vercel.app/api/limits/users/${editingLimits}/limits`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(limitChanges),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update limits");
+      }
+
+      // Update the user in our local state
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === editingLimits
+            ? {
+                ...user,
+                loanLimits: {
+                  ...user.loanLimits,
+                  maxTotalLoanAmount: limitChanges.maxTotalLoanAmount,
+                  maxActiveLoans: limitChanges.maxActiveLoans,
+                  maxLoanAmountPerRequest: limitChanges.maxLoanAmountPerRequest,
+                  lastUpdated: new Date(),
+                  updatedBy: currentAdminId,
+                },
+                limitHistory: [
+                  ...(user.limitHistory || []),
+                  {
+                    limitType: "maxTotalLoanAmount",
+                    oldValue: user.loanLimits?.maxTotalLoanAmount || 0,
+                    newValue: limitChanges.maxTotalLoanAmount,
+                    changedBy: currentAdminId,
+                    changeReason: limitChanges.changeReason,
+                    changedAt: new Date(),
+                  },
+                  {
+                    limitType: "maxActiveLoans",
+                    oldValue: user.loanLimits?.maxActiveLoans || 0,
+                    newValue: limitChanges.maxActiveLoans,
+                    changedBy: currentAdminId,
+                    changeReason: limitChanges.changeReason,
+                    changedAt: new Date(),
+                  },
+                  {
+                    limitType: "maxLoanAmountPerRequest",
+                    oldValue: user.loanLimits?.maxLoanAmountPerRequest || 0,
+                    newValue: limitChanges.maxLoanAmountPerRequest,
+                    changedBy: currentAdminId,
+                    changeReason: limitChanges.changeReason,
+                    changedAt: new Date(),
+                  },
+                ],
+              }
+            : user
+        )
+      );
+
+      toast.success("Loan limits updated successfully");
+      setEditingLimits(null);
+      setLimitChanges({});
+    } catch (error) {
+      console.error("Error updating limits:", error);
+      toast.error(error.message || "Failed to update limits");
+    }
+  }, [editingLimits, limitChanges, currentAdminId]);
+
+  // Toggle user details expansion
+  const toggleExpandUser = useCallback((userId) => {
+    setExpandedUser((prev) => (prev === userId ? null : userId));
   }, []);
 
   return (
@@ -177,16 +286,7 @@ const Users = () => {
                   Mobile
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Alt Mobile
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Number
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Front
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID Back
+                  Limits
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -196,83 +296,263 @@ const Users = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-full cursor-pointer"
-                          src={user.profilePhoto || profile}
-                          alt="Profile"
-                          onClick={() => setSelectedImage(user.profilePhoto)}
-                          onError={(e) => {
-                            e.target.src = profile;
-                          }}
-                        />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.fullName || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.email || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.mobileNumber || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.alternateMobileNumber || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.idNumber || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.idFrontPhoto ? (
-                        <button
-                          onClick={() => setSelectedImage(user.idFrontPhoto)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <FiImage size={20} />
-                        </button>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.idBackPhoto ? (
-                        <button
-                          onClick={() => setSelectedImage(user.idBackPhoto)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <FiImage size={20} />
-                        </button>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button
-                        onClick={() => handleDeleteClick(user._id)}
-                        className={`${
-                          user._id === currentAdminId
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "text-red-500 hover:text-red-700"
-                        }`}
-                        disabled={user._id === currentAdminId}
-                        title={
-                          user._id === currentAdminId
-                            ? "Cannot delete your own account"
-                            : ""
-                        }
-                      >
-                        <FiTrash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
+                  <>
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <img
+                            className="h-10 w-10 rounded-full cursor-pointer"
+                            src={user.profilePhoto || profile}
+                            alt="Profile"
+                            onClick={() => setSelectedImage(user.profilePhoto)}
+                            onError={(e) => {
+                              e.target.src = profile;
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.fullName || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.email || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.mobileNumber || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <span>
+                            Ksh{" "}
+                            {user.loanLimits?.maxLoanAmountPerRequest?.toLocaleString() ||
+                              "0"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => toggleExpandUser(user._id)}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="View details"
+                          >
+                            {expandedUser === user._id ? (
+                              <FiChevronUp size={18} />
+                            ) : (
+                              <FiChevronDown size={18} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleEditLimits(user)}
+                            className="text-yellow-500 hover:text-yellow-700"
+                            title="Edit limits"
+                          >
+                            <FiSliders size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(user._id)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Delete user"
+                          >
+                            <FiTrash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedUser === user._id && (
+                      <tr className="bg-gray-50">
+                        <td colSpan="6" className="px-6 py-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-white p-4 rounded-lg shadow-sm">
+                              <h3 className="font-medium text-gray-700 mb-2 flex items-center">
+                                <FiDollarSign className="mr-2" />
+                                Loan Limits
+                              </h3>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Max per loan
+                                  </label>
+                                  <p className="font-medium">
+                                    {user.loanLimits?.maxLoanAmountPerRequest?.toLocaleString() ||
+                                      "0"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Max total loans
+                                  </label>
+                                  <p className="font-medium">
+                                    {user.loanLimits?.maxTotalLoanAmount?.toLocaleString() ||
+                                      "0"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Max active loans
+                                  </label>
+                                  <p className="font-medium">
+                                    {user.loanLimits?.maxActiveLoans || "0"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg shadow-sm">
+                              <h3 className="font-medium text-gray-700 mb-2">
+                                ID Documents
+                              </h3>
+                              <div className="flex space-x-4">
+                                {user.idFrontPhoto && (
+                                  <button
+                                    onClick={() =>
+                                      setSelectedImage(user.idFrontPhoto)
+                                    }
+                                    className="text-blue-500 hover:text-blue-700 flex flex-col items-center"
+                                  >
+                                    <FiImage size={24} />
+                                    <span className="text-xs mt-1">Front</span>
+                                  </button>
+                                )}
+                                {user.idBackPhoto && (
+                                  <button
+                                    onClick={() =>
+                                      setSelectedImage(user.idBackPhoto)
+                                    }
+                                    className="text-blue-500 hover:text-blue-700 flex flex-col items-center"
+                                  >
+                                    <FiImage size={24} />
+                                    <span className="text-xs mt-1">Back</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg shadow-sm">
+                              <h3 className="font-medium text-gray-700 mb-2">
+                                Contact Info
+                              </h3>
+                              <div className="space-y-2">
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    Alternate Mobile
+                                  </label>
+                                  <p className="font-medium">
+                                    {user.alternateMobileNumber || "N/A"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500">
+                                    ID Number
+                                  </label>
+                                  <p className="font-medium">
+                                    {user.idNumber || "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {editingLimits === user._id && (
+                      <tr className="bg-blue-50">
+                        <td colSpan="6" className="px-6 py-4">
+                          <div className="bg-white p-4 rounded-lg shadow-sm border border-blue-200">
+                            <h3 className="font-medium text-gray-700 mb-3 flex items-center">
+                              <FiEdit className="mr-2 text-blue-500" />
+                              Edit Loan Limits
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Max per loan (KSh)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={limitChanges.maxLoanAmountPerRequest}
+                                  onChange={(e) =>
+                                    handleLimitChange(
+                                      "maxLoanAmountPerRequest",
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Max total loans (KSh)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={limitChanges.maxTotalLoanAmount}
+                                  onChange={(e) =>
+                                    handleLimitChange(
+                                      "maxTotalLoanAmount",
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Max active loans
+                                </label>
+                                <input
+                                  type="number"
+                                  value={limitChanges.maxActiveLoans}
+                                  onChange={(e) =>
+                                    handleLimitChange(
+                                      "maxActiveLoans",
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-full p-2 border rounded"
+                                />
+                              </div>
+                            </div>
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Reason for change
+                              </label>
+                              <input
+                                type="text"
+                                value={limitChanges.changeReason}
+                                onChange={(e) =>
+                                  handleLimitChange(
+                                    "changeReason",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Enter reason for limit changes"
+                                className="w-full p-2 border rounded"
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-3">
+                              <button
+                                onClick={() => setEditingLimits(null)}
+                                className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={saveLimitChanges}
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+                              >
+                                <FiCheck className="mr-1" />
+                                Save Changes
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="6"
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     {users.length === 0
