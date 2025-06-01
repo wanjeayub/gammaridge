@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -161,7 +162,7 @@ const Users = () => {
 
     try {
       const response = await fetch(
-        `https://tester-server.vercel.app/api/limits/users/${editingLimits}/limits`,
+        `https://tester-server.vercel.app/api/admin/users/${editingLimits}/loan-limits`,
         {
           method: "PUT",
           headers: {
@@ -296,8 +297,9 @@ const Users = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <>
-                    <tr key={user._id} className="hover:bg-gray-50">
+                  <React.Fragment key={`user-${user._id}`}>
+                    {/* Main User Row */}
+                    <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex-shrink-0 h-10 w-10">
                           <img
@@ -306,6 +308,7 @@ const Users = () => {
                             alt="Profile"
                             onClick={() => setSelectedImage(user.profilePhoto)}
                             onError={(e) => {
+                              e.target.onerror = null;
                               e.target.src = profile;
                             }}
                           />
@@ -359,9 +362,11 @@ const Users = () => {
                         </div>
                       </td>
                     </tr>
+
+                    {/* Expanded Details Row */}
                     {expandedUser === user._id && (
                       <tr className="bg-gray-50">
-                        <td colSpan="6" className="px-6 py-4">
+                        <td colSpan={6} className="px-6 py-4">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-white p-4 rounded-lg shadow-sm">
                               <h3 className="font-medium text-gray-700 mb-2 flex items-center">
@@ -397,12 +402,13 @@ const Users = () => {
                                 </div>
                               </div>
                             </div>
+
                             <div className="bg-white p-4 rounded-lg shadow-sm">
                               <h3 className="font-medium text-gray-700 mb-2">
                                 ID Documents
                               </h3>
                               <div className="flex space-x-4">
-                                {user.idFrontPhoto && (
+                                {user.idFrontPhoto ? (
                                   <button
                                     onClick={() =>
                                       setSelectedImage(user.idFrontPhoto)
@@ -412,8 +418,12 @@ const Users = () => {
                                     <FiImage size={24} />
                                     <span className="text-xs mt-1">Front</span>
                                   </button>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">
+                                    No front ID
+                                  </span>
                                 )}
-                                {user.idBackPhoto && (
+                                {user.idBackPhoto ? (
                                   <button
                                     onClick={() =>
                                       setSelectedImage(user.idBackPhoto)
@@ -423,9 +433,14 @@ const Users = () => {
                                     <FiImage size={24} />
                                     <span className="text-xs mt-1">Back</span>
                                   </button>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">
+                                    No back ID
+                                  </span>
                                 )}
                               </div>
                             </div>
+
                             <div className="bg-white p-4 rounded-lg shadow-sm">
                               <h3 className="font-medium text-gray-700 mb-2">
                                 Contact Info
@@ -453,9 +468,11 @@ const Users = () => {
                         </td>
                       </tr>
                     )}
+
+                    {/* Edit Limits Row */}
                     {editingLimits === user._id && (
                       <tr className="bg-blue-50">
-                        <td colSpan="6" className="px-6 py-4">
+                        <td colSpan={6} className="px-6 py-4">
                           <div className="bg-white p-4 rounded-lg shadow-sm border border-blue-200">
                             <h3 className="font-medium text-gray-700 mb-3 flex items-center">
                               <FiEdit className="mr-2 text-blue-500" />
@@ -475,7 +492,8 @@ const Users = () => {
                                       parseInt(e.target.value) || 0
                                     )
                                   }
-                                  className="w-full p-2 border rounded"
+                                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                                  min="0"
                                 />
                               </div>
                               <div>
@@ -491,7 +509,8 @@ const Users = () => {
                                       parseInt(e.target.value) || 0
                                     )
                                   }
-                                  className="w-full p-2 border rounded"
+                                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                                  min="0"
                                 />
                               </div>
                               <div>
@@ -507,7 +526,8 @@ const Users = () => {
                                       parseInt(e.target.value) || 0
                                     )
                                   }
-                                  className="w-full p-2 border rounded"
+                                  className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
+                                  min="0"
                                 />
                               </div>
                             </div>
@@ -525,19 +545,19 @@ const Users = () => {
                                   )
                                 }
                                 placeholder="Enter reason for limit changes"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
                             <div className="flex justify-end space-x-3">
                               <button
                                 onClick={() => setEditingLimits(null)}
-                                className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
+                                className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={saveLimitChanges}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center"
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center"
                               >
                                 <FiCheck className="mr-1" />
                                 Save Changes
@@ -547,12 +567,12 @@ const Users = () => {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan={6}
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     {users.length === 0
