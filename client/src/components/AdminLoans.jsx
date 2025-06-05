@@ -26,12 +26,15 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     useState(false);
   const [isMarkDefaultedModalOpen, setIsMarkDefaultedModalOpen] =
     useState(false);
+  const [isEditRepaymentDateModalOpen, setIsEditRepaymentDateModalOpen] =
+    useState(false);
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [defaultReason, setDefaultReason] = useState("");
   const [validationError, setValidationError] = useState("");
   const [expandedSection, setExpandedSection] = useState(null);
+  const [newRepaymentDate, setNewRepaymentDate] = useState("");
 
   // Group loans by category and status, with defaulted loans separated
   const groupLoans = (loans) => {
@@ -69,6 +72,27 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
 
     return grouped;
   };
+
+  // Calculate monthly summary
+  const calculateMonthlySummary = useMemo(() => {
+    const months = {};
+    loans.forEach((loan) => {
+      const month = format(new Date(loan.createdAt), "yyyy-MM");
+      if (!months[month]) {
+        months[month] = {
+          loanAmount: 0,
+          totalRepayment: 0,
+          interest: 0,
+          count: 0,
+        };
+      }
+      months[month].loanAmount += loan.loanAmount;
+      months[month].totalRepayment += loan.totalRepayment;
+      months[month].interest += loan.interest;
+      months[month].count++;
+    });
+    return months;
+  }, [loans]);
 
   // Toggle collapsible sections
   const toggleSection = (section) => {
@@ -329,6 +353,39 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     [fetchLoans]
   );
 
+  // Edit repayment date
+  const editRepaymentDate = useCallback(async () => {
+    if (!newRepaymentDate) {
+      toast.error("Please select a valid date.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://tester-server.vercel.app/api/admin/edit-repayment-date/${selectedLoan._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ repaymentDate: newRepaymentDate }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Repayment date updated successfully.");
+        fetchLoans();
+        closeEditRepaymentDateModal();
+      } else {
+        toast.error("Failed to update repayment date.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update repayment date.");
+    }
+  }, [selectedLoan, newRepaymentDate, fetchLoans]);
+
   // Open partial payment modal
   const openPartialPaymentModal = (loan) => {
     setSelectedLoan(loan);
@@ -500,6 +557,19 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     }
   }, [selectedLoan, defaultReason, fetchLoans]);
 
+  // Open edit repayment date modal
+  const openEditRepaymentDateModal = (loan) => {
+    setSelectedLoan(loan);
+    setNewRepaymentDate(format(new Date(loan.repaymentDate), "yyyy-MM-dd"));
+    setIsEditRepaymentDateModalOpen(true);
+  };
+
+  // Close edit repayment date modal
+  const closeEditRepaymentDateModal = () => {
+    setIsEditRepaymentDateModalOpen(false);
+    setNewRepaymentDate("");
+  };
+
   // Render collapsible tables for each category and status
   const renderCategoryTable = (category, loansByStatus) => {
     return (
@@ -598,6 +668,16 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                                 >
                                   <FaCheck className="mr-2" /> Mark Paid
                                 </button>
+                                <button
+                                  data-tooltip-id="edit-repayment-tooltip"
+                                  data-tooltip-content="Edit repayment date"
+                                  onClick={() =>
+                                    openEditRepaymentDateModal(loan)
+                                  }
+                                  className="bg-teal-500 text-white px-3 py-1 rounded-lg flex items-center"
+                                >
+                                  <FaCalendarAlt className="mr-2" /> Edit Date
+                                </button>
                                 {loan.extensionCount < 3 ? (
                                   <button
                                     data-tooltip-id="extend-tooltip"
@@ -652,6 +732,46 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">All Loans</h1>
+
+      {/* Monthly Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {Object.entries(calculateMonthlySummary)
+          .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+          .map(([month, data]) => (
+            <div
+              key={month}
+              className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
+            >
+              <h3 className="font-bold text-lg mb-2">
+                {format(new Date(month), "MMMM yyyy")}
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-sm text-gray-600">Total Loans</p>
+                  <p className="font-semibold">{data.count}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Loan Amount</p>
+                  <p className="font-semibold">
+                    Ksh {data.loanAmount.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total Repayment</p>
+                  <p className="font-semibold">
+                    Ksh {data.totalRepayment.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total Interest</p>
+                  <p className="font-semibold">
+                    Ksh {data.interest.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+      </div>
 
       {/* Filters and Search */}
       <div className="mb-8">
@@ -875,6 +995,36 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         </div>
       )}
 
+      {/* Edit Repayment Date Modal */}
+      {isEditRepaymentDateModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-lg font-bold mb-4">Edit Repayment Date</h2>
+            <input
+              type="date"
+              value={newRepaymentDate}
+              onChange={(e) => setNewRepaymentDate(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+              min={format(new Date(), "yyyy-MM-dd")}
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={closeEditRepaymentDateModal}
+                className="mr-2 bg-gray-300 px-3 py-1 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={editRepaymentDate}
+                className="bg-teal-500 text-white px-3 py-1 rounded-lg"
+              >
+                Update Date
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tooltips */}
       <Tooltip id="approve-tooltip" />
       <Tooltip id="reject-tooltip" />
@@ -883,6 +1033,7 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       <Tooltip id="extend-tooltip" />
       <Tooltip id="assign-category-tooltip" />
       <Tooltip id="mark-defaulted-tooltip" />
+      <Tooltip id="edit-repayment-tooltip" />
     </div>
   );
 };
