@@ -19,7 +19,6 @@ const Loans = ({ darkMode }) => {
   const [loans, setLoans] = useState([]);
   const [loanData, setLoanData] = useState({
     amount: "",
-    repaymentDate: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -131,19 +130,6 @@ const Loans = ({ darkMode }) => {
       setIsLimitModalOpen(true);
     }
 
-    if (!loanData.repaymentDate) {
-      newErrors.repaymentDate = "Please select a date";
-    } else {
-      try {
-        const selectedDate = new Date(loanData.repaymentDate);
-        if (selectedDate < new Date()) {
-          newErrors.repaymentDate = "Date must be in the future";
-        }
-      } catch (e) {
-        newErrors.repaymentDate = "Invalid date";
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -170,7 +156,6 @@ const Loans = ({ darkMode }) => {
           },
           body: JSON.stringify({
             loanAmount: safeParseNumber(loanData.amount),
-            repaymentDate: loanData.repaymentDate,
           }),
         }
       );
@@ -196,7 +181,7 @@ const Loans = ({ darkMode }) => {
 
   // Reset form
   const resetForm = () => {
-    setLoanData({ amount: "", repaymentDate: "" });
+    setLoanData({ amount: "" });
     setEditingId(null);
   };
 
@@ -210,9 +195,6 @@ const Loans = ({ darkMode }) => {
     }
     setLoanData({
       amount: loan.loanAmount?.toString() || "",
-      repaymentDate: loan.repaymentDate
-        ? new Date(loan.repaymentDate).toISOString().split("T")[0]
-        : "",
     });
     setEditingId(loan._id || null);
   };
@@ -323,7 +305,7 @@ const Loans = ({ darkMode }) => {
           </div>
           <div className="p-6">
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label
                     htmlFor="amount"
@@ -371,48 +353,6 @@ const Loans = ({ darkMode }) => {
                       {safeParseNumber(
                         limitInfo.maxLoanAmountPerRequest
                       ).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="repaymentDate"
-                    className={`block text-sm font-medium mb-2 ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Repayment Date
-                  </label>
-                  <div className="relative">
-                    <div
-                      className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none ${
-                        darkMode ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      <FiCalendar />
-                    </div>
-                    <input
-                      id="repaymentDate"
-                      type="date"
-                      value={loanData.repaymentDate}
-                      onChange={(e) =>
-                        setLoanData({
-                          ...loanData,
-                          repaymentDate: e.target.value,
-                        })
-                      }
-                      className={`pl-10 w-full px-4 py-3 rounded-lg border ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300"
-                      } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
-                  {errors.repaymentDate && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.repaymentDate}
                     </p>
                   )}
                 </div>
@@ -498,6 +438,7 @@ const Loans = ({ darkMode }) => {
                 const status = getStatusDetails(loan.status);
                 const days = daysRemaining(loan.repaymentDate);
                 const loanAmount = safeParseNumber(loan.loanAmount);
+                const interest = safeParseNumber(loan.interest);
                 const totalRepayment = safeParseNumber(loan.totalRepayment);
 
                 return (
@@ -546,6 +487,10 @@ const Loans = ({ darkMode }) => {
                             <FiDollarSign className="mr-1.5" />
                             Total repayment: Ksh{" "}
                             {totalRepayment.toLocaleString()}
+                            <span className="ml-1.5">
+                              (Principal: Ksh {loanAmount.toLocaleString()},
+                              Interest: Ksh {interest.toLocaleString()})
+                            </span>
                           </div>
                         </div>
                       </div>
