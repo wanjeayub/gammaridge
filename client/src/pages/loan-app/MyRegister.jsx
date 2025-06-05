@@ -190,7 +190,7 @@ const Register = ({ darkMode }) => {
           toast.success("Registration successful!");
           navigate("/login");
         } else {
-          throw new Error(result.message || "Registration failed.");
+          throw new Error(result.message);
         }
       } catch (apiError) {
         console.error("API request failed:", apiError);
