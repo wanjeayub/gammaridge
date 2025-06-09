@@ -18,7 +18,9 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(
+    format(new Date(), "yyyy-MM")
+  );
   const [isPartialPaymentModalOpen, setIsPartialPaymentModalOpen] =
     useState(false);
   const [isMarkPaidModalOpen, setIsMarkPaidModalOpen] = useState(false);
@@ -780,12 +782,15 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
           onChange={(e) => setSelectedMonth(e.target.value)}
           className="px-3 py-2 border rounded-lg mb-4 mr-4"
         >
+          <option value={format(new Date(), "yyyy-MM")}>Current Month</option>
           <option value="">All Months</option>
-          {getAvailableMonths(loans).map((month) => (
-            <option key={month} value={month}>
-              {format(new Date(month), "MMM yyyy")}
-            </option>
-          ))}
+          {getAvailableMonths(loans)
+            .filter((month) => month !== format(new Date(), "yyyy-MM"))
+            .map((month) => (
+              <option key={month} value={month}>
+                {format(new Date(month), "MMM yyyy")}
+              </option>
+            ))}
         </select>
 
         <input
