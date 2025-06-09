@@ -75,26 +75,27 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     return grouped;
   };
 
-  // Calculate monthly summary
-  const calculateMonthlySummary = useMemo(() => {
-    const months = {};
+  // Calculate summary for the selected month only
+  const monthlySummary = useMemo(() => {
+    const summary = {
+      loanAmount: 0,
+      totalRepayment: 0,
+      interest: 0,
+      count: 0,
+    };
+
     loans.forEach((loan) => {
-      const month = format(new Date(loan.createdAt), "yyyy-MM");
-      if (!months[month]) {
-        months[month] = {
-          loanAmount: 0,
-          totalRepayment: 0,
-          interest: 0,
-          count: 0,
-        };
+      const loanMonth = format(new Date(loan.createdAt), "yyyy-MM");
+      if (selectedMonth === "" || loanMonth === selectedMonth) {
+        summary.loanAmount += loan.loanAmount;
+        summary.totalRepayment += loan.totalRepayment;
+        summary.interest += loan.interest;
+        summary.count++;
       }
-      months[month].loanAmount += loan.loanAmount;
-      months[month].totalRepayment += loan.totalRepayment;
-      months[month].interest += loan.interest;
-      months[month].count++;
     });
-    return months;
-  }, [loans]);
+
+    return summary;
+  }, [loans, selectedMonth]);
 
   // Toggle collapsible sections
   const toggleSection = (section) => {
@@ -735,44 +736,41 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     <div>
       <h1 className="text-2xl font-bold mb-4">All Loans</h1>
 
-      {/* Monthly Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {Object.entries(calculateMonthlySummary)
-          .sort((a, b) => new Date(b[0]) - new Date(a[0]))
-          .map(([month, data]) => (
-            <div
-              key={month}
-              className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
-            >
-              <h3 className="font-bold text-lg mb-2">
-                {format(new Date(month), "MMMM yyyy")}
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <p className="text-sm text-gray-600">Total Loans</p>
-                  <p className="font-semibold">{data.count}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Loan Amount</p>
-                  <p className="font-semibold">
-                    Ksh {data.loanAmount.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Repayment</p>
-                  <p className="font-semibold">
-                    Ksh {data.totalRepayment.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Interest</p>
-                  <p className="font-semibold">
-                    Ksh {data.interest.toLocaleString()}
-                  </p>
-                </div>
-              </div>
+      {/* Monthly Summary Card */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <h3 className="font-bold text-lg mb-2">
+            {selectedMonth === format(new Date(), "yyyy-MM")
+              ? "Current Month"
+              : selectedMonth === ""
+              ? "All Time"
+              : format(new Date(selectedMonth), "MMMM yyyy")}
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-sm text-gray-600">Total Loans</p>
+              <p className="font-semibold">{monthlySummary.count}</p>
             </div>
-          ))}
+            <div>
+              <p className="text-sm text-gray-600">Loan Amount</p>
+              <p className="font-semibold">
+                Ksh {monthlySummary.loanAmount.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Repayment</p>
+              <p className="font-semibold">
+                Ksh {monthlySummary.totalRepayment.toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Interest</p>
+              <p className="font-semibold">
+                Ksh {monthlySummary.interest.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filters and Search */}
