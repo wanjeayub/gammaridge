@@ -28,8 +28,9 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     useState(false);
   const [isMarkDefaultedModalOpen, setIsMarkDefaultedModalOpen] =
     useState(false);
-  const [isEditRepaymentDateModalOpen, setIsEditRepaymentDateModalOpen] =
+  const [isEditApplicationDateModalOpen, setIsEditApplicationDateModalOpen] =
     useState(false);
+  const [newApplicationDate, setNewApplicationDate] = useState("");
   const [selectedLoan, setSelectedLoan] = useState(null);
   const [partialPaymentAmount, setPartialPaymentAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -356,38 +357,39 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     [fetchLoans]
   );
 
-  // Edit repayment date
-  const editRepaymentDate = useCallback(async () => {
-    if (!newRepaymentDate) {
+  // Edit application date function
+  const editApplicationDate = useCallback(async () => {
+    if (!newApplicationDate) {
       toast.error("Please select a valid date.");
       return;
     }
 
     try {
       const response = await fetch(
-        `https://tester-server.vercel.app/api/admin/edit-repayment-date/${selectedLoan._id}`,
+        `https://tester-server.vercel.app/api/admin/edit-application-date/${selectedLoan._id}`,
         {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ repaymentDate: newRepaymentDate }),
+          body: JSON.stringify({ applicationDate: newApplicationDate }),
         }
       );
 
       if (response.ok) {
-        toast.success("Repayment date updated successfully.");
+        toast.success("Application date updated successfully.");
         fetchLoans();
-        closeEditRepaymentDateModal();
+        closeEditApplicationDateModal();
       } else {
-        toast.error("Failed to update repayment date.");
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to update application date.");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to update repayment date.");
+      toast.error("Failed to update application date.");
     }
-  }, [selectedLoan, newRepaymentDate, fetchLoans]);
+  }, [selectedLoan, newApplicationDate, fetchLoans]);
 
   // Open partial payment modal
   const openPartialPaymentModal = (loan) => {
@@ -560,17 +562,15 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
     }
   }, [selectedLoan, defaultReason, fetchLoans]);
 
-  // Open edit repayment date modal
-  const openEditRepaymentDateModal = (loan) => {
+  const openEditApplicationDateModal = (loan) => {
     setSelectedLoan(loan);
-    setNewRepaymentDate(format(new Date(loan.repaymentDate), "yyyy-MM-dd"));
-    setIsEditRepaymentDateModalOpen(true);
+    setNewApplicationDate(format(new Date(loan.createdAt), "yyyy-MM-dd"));
+    setIsEditApplicationDateModalOpen(true);
   };
 
-  // Close edit repayment date modal
-  const closeEditRepaymentDateModal = () => {
-    setIsEditRepaymentDateModalOpen(false);
-    setNewRepaymentDate("");
+  const closeEditApplicationDateModal = () => {
+    setIsEditApplicationDateModalOpen(false);
+    setNewApplicationDate("");
   };
 
   // Render collapsible tables for each category and status
@@ -672,14 +672,15 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                                   <FaCheck className="mr-2" /> Mark Paid
                                 </button>
                                 <button
-                                  data-tooltip-id="edit-repayment-tooltip"
-                                  data-tooltip-content="Edit repayment date"
+                                  data-tooltip-id="edit-application-tooltip"
+                                  data-tooltip-content="Edit application date"
                                   onClick={() =>
-                                    openEditRepaymentDateModal(loan)
+                                    openEditApplicationDateModal(loan)
                                   }
                                   className="bg-teal-500 text-white px-3 py-1 rounded-lg flex items-center"
                                 >
-                                  <FaCalendarAlt className="mr-2" /> Edit Date
+                                  <FaCalendarAlt className="mr-2" /> Edit App
+                                  Date
                                 </button>
                                 {loan.extensionCount < 3 ? (
                                   <button
@@ -998,27 +999,27 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         </div>
       )}
 
-      {/* Edit Repayment Date Modal */}
-      {isEditRepaymentDateModalOpen && (
+      {/* Edit Application Date Modal */}
+      {isEditApplicationDateModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg">
-            <h2 className="text-lg font-bold mb-4">Edit Repayment Date</h2>
+            <h2 className="text-lg font-bold mb-4">Edit Application Date</h2>
             <input
               type="date"
-              value={newRepaymentDate}
-              onChange={(e) => setNewRepaymentDate(e.target.value)}
+              value={newApplicationDate}
+              onChange={(e) => setNewApplicationDate(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg mb-4"
-              min={format(new Date(), "yyyy-MM-dd")}
+              max={format(new Date(), "yyyy-MM-dd")}
             />
             <div className="flex justify-end">
               <button
-                onClick={closeEditRepaymentDateModal}
+                onClick={closeEditApplicationDateModal}
                 className="mr-2 bg-gray-300 px-3 py-1 rounded-lg"
               >
                 Cancel
               </button>
               <button
-                onClick={editRepaymentDate}
+                onClick={editApplicationDate}
                 className="bg-teal-500 text-white px-3 py-1 rounded-lg"
               >
                 Update Date
