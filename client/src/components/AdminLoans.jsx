@@ -611,11 +611,11 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
                         key={loan._id}
                         className={`border-b border-gray-200 hover:bg-gray-50 ${
                           loan.extensionCount === 0
-                            ? "bg-green-100"
+                            ? "bg-green-500"
                             : loan.extensionCount === 1
-                            ? "bg-yellow-100"
+                            ? "bg-yellow-500"
                             : loan.extensionCount === 2
-                            ? "bg-red-100"
+                            ? "bg-red-500"
                             : "bg-red-400"
                         }`}
                       >
