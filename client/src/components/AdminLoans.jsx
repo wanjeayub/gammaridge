@@ -54,12 +54,23 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         partiallyPaid: [],
         fullyPaid: [],
       },
-      defaulted: [], // Separate array for all defaulted loans
+      defaulted: [],
+      extended: {}, // New group for extended loans
     };
 
     loans.forEach((loan) => {
       if (loan.status.toLowerCase() === "defaulted") {
         grouped.defaulted.push(loan);
+      } else if (loan.extensionCount > 0) {
+        // Group extended loans by extension month
+        const month =
+          loan.extensionMonth ||
+          format(new Date(loan.repaymentDate), "yyyy-MM");
+
+        if (!grouped.extended[month]) {
+          grouped.extended[month] = [];
+        }
+        grouped.extended[month].push(loan);
       } else {
         const category = loan.category === "permanent" ? "permanent" : "casual";
         let status = loan.status.toLowerCase();
@@ -390,6 +401,96 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
       toast.error("Failed to update application date.");
     }
   }, [selectedLoan, newApplicationDate, fetchLoans]);
+
+  // Add this new method to the Loans component
+  const renderExtendedLoans = (extendedLoans) => {
+    return (
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Extended Loans</h2>
+        {Object.entries(extendedLoans).map(([month, loans]) => {
+          const sectionId = `extended-${month}`;
+          const isExpanded = expandedSection === sectionId;
+
+          return (
+            <div key={month} className="mb-4">
+              <div
+                className="flex justify-between items-center bg-purple-100 p-3 rounded-lg cursor-pointer"
+                onClick={() => toggleSection(sectionId)}
+              >
+                <h3 className="font-semibold">
+                  {format(new Date(`${month}-01`), "MMMM yyyy")} ({loans.length}{" "}
+                  loans)
+                </h3>
+                <span>{isExpanded ? "▲" : "▼"}</span>
+              </div>
+              {isExpanded && (
+                <table className="w-full striped-table sticky-header text-sm mt-2">
+                  <thead>
+                    <tr className="bg-purple-50">
+                      <th className="px-4 py-3 text-left">User</th>
+                      <th className="px-4 py-3 text-left">Loan Amount</th>
+                      <th className="px-4 py-3 text-left">Interest</th>
+                      <th className="px-4 py-3 text-left">Total Repayment</th>
+                      <th className="px-4 py-3 text-left">Paid Amount</th>
+                      <th className="px-4 py-3 text-left">Remaining Balance</th>
+                      <th className="px-4 py-3 text-left">Repayment Date</th>
+                      <th className="px-4 py-3 text-left">Extensions</th>
+                      <th className="px-4 py-3 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loans.map((loan) => (
+                      <tr
+                        key={loan._id}
+                        className={`border-b border-gray-200 hover:bg-purple-50 ${
+                          loan.extensionCount === 1
+                            ? "bg-yellow-100"
+                            : loan.extensionCount === 2
+                            ? "bg-orange-100"
+                            : "bg-red-100"
+                        }`}
+                      >
+                        {/* Same table cells as in other tables */}
+                        <td className="px-4 py-3">{loan.userId?.fullName}</td>
+                        <td className="px-4 py-3">Ksh {loan.loanAmount}</td>
+                        <td className="px-4 py-3">Ksh {loan.interest}</td>
+                        <td className="px-4 py-3">Ksh {loan.totalRepayment}</td>
+                        <td className="px-4 py-3">Ksh {loan.paidAmount}</td>
+                        <td className="px-4 py-3">
+                          Ksh {loan.remainingBalance}
+                        </td>
+                        <td className="px-4 py-3">
+                          {format(new Date(loan.repaymentDate), "dd MMM yyyy")}
+                        </td>
+                        <td className="px-4 py-3">{loan.extensionCount}</td>
+                        <td className="px-4 py-3">
+                          {/* Same action buttons as in other tables */}
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => openPartialPaymentModal(loan)}
+                              className="bg-yellow-500 text-white px-3 py-1 rounded-lg flex items-center"
+                            >
+                              <FaEdit className="mr-2" /> Partial Pay
+                            </button>
+                            <button
+                              onClick={() => openMarkPaidModal(loan)}
+                              className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center"
+                            >
+                              <FaCheck className="mr-2" /> Mark Paid
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   // Open partial payment modal
   const openPartialPaymentModal = (loan) => {
@@ -840,6 +941,13 @@ const Loans = ({ loans, fetchLoans, fetchLoanStats }) => {
         if (category === "defaulted") return null; // Skip defaulted here, we'll render separately
         return renderCategoryTable(category, loansByStatus);
       })}
+
+      {groupedLoans.extended &&
+        Object.keys(groupedLoans.extended).length > 0 && (
+          <div className="my-8 border-t-2 border-purple-200 pt-6">
+            {renderExtendedLoans(groupedLoans.extended)}
+          </div>
+        )}
 
       {/* Defaulted Loans Section */}
       <div className="my-8 border-t-2 border-red-200 pt-6">
